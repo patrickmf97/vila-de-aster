@@ -22,26 +22,28 @@
 - dados separados da lógica;
 - CI de build.
 
-## v0.3.0 — Living Village
+## ✅ v0.3.0 — Living Village
 
-- sprites/animações direcionais mantendo o estilo atual;
-- estados de NPC: trabalhar, caminhar, comer, descansar e socializar;
-- interiores da taverna, forja, empório e casas;
-- interação com portas, placas, camas, bancadas e objetos;
-- memória v2 com fatos, importância e expiração;
-- relações entre NPCs;
-- escolhas simples com consequências persistentes.
+- animação direcional procedural;
+- estados visíveis de NPC;
+- interiores da taverna, forja, empório e casa;
+- portas e objetos interativos;
+- lore ambiental;
+- memória v2 com fatos, importância, origem e expiração;
+- relações NPC ↔ NPC;
+- propagação de conhecimento entre moradores.
 
 ## v0.4.0 — NPC Brain
 
 - personalidade;
-- valores;
 - necessidades;
+- valores;
 - objetivos;
 - Utility AI;
 - conhecimento individual;
-- propagação de informações entre NPCs;
-- logs de decisão para depuração.
+- decisões explicáveis;
+- logs de decisão;
+- escolhas/consequências persistentes.
 
 ## v0.5.0 — Generative NPC
 
