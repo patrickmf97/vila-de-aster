@@ -1,84 +1,100 @@
 # Vila de Aster
 
-RPG 2D top-down para navegador com foco em **mundo vivo, memória, relações, família, decisões autônomas e diálogo dinâmico contextual**.
+RPG 2D top-down para navegador com foco em **mundo vivo, memória, relações, família, decisões autônomas e diálogo contextual por escolhas**.
 
-## Estado atual — v0.6.3 Dynamic Dialogue
+## Estado atual — v0.6.4 Choice Dialogue
 
-A conversa livre dos NPCs não usa mais nenhum modelo generativo.
+A conversa dos NPCs agora usa uma árvore de escolhas de RPG.
 
-O jogador continua digitando livremente com **F**, mas a resposta é construída instantaneamente a partir de:
+O jogador abre a conversa com **F** e escolhe assuntos em vez de digitar texto livremente.
 
-- intenção detectada na frase;
-- personalidade do NPC;
+### Assuntos disponíveis
+
+- estado atual;
+- atividade;
+- passado;
+- sonhos;
+- preocupações;
+- valores;
+- lazer;
+- lugar favorito;
 - profissão;
-- memória individual;
-- afinidade;
-- relações com outros moradores;
-- parceiro e filhos;
-- atividade atual;
-- horário e estado de energia;
-- conhecimento real sobre eventos da vila;
-- histórico recente da conversa.
-
-## Banco modular de diálogos
-
-O sistema não depende de uma lista única de respostas.
-
-Ele combina blocos de:
-
-- saudações;
-- humor;
-- profissão;
+- relação com o trabalho;
 - família;
+- Vila de Aster;
+- rio / Eco Sob o Rio;
+- opinião sobre outros moradores;
+- memórias específicas;
+- o que o NPC lembra do jogador;
+- confidências desbloqueadas por afinidade.
+
+As opções mudam conforme:
+
+- NPC;
+- personalidade;
+- profissão;
+- memória;
 - relações;
-- opiniões;
-- conhecimento do rio;
-- memórias do jogador;
-- contexto da vila;
-- continuidade de conversa;
-- personalidade.
+- parceiro e filhos;
+- evento do rio;
+- afinidade;
+- fatos conhecidos;
+- histórico da conversa.
 
-Com variações por NPC e contexto, centenas de blocos geram milhares de combinações possíveis.
+## Afinidade e desbloqueios
 
-## Vantagens
+Conversas pessoais aumentam mais afinidade do que perguntas superficiais.
 
-- resposta praticamente instantânea;
-- nenhuma chave ou API;
-- nenhum download de modelo;
-- zero custo por conversa;
-- funciona igual no Firefox, Chrome e demais navegadores modernos;
-- lore totalmente controlado;
-- NPC não alucina fatos inexistentes;
-- fácil adicionar novos assuntos e personalidades.
+Ao atingir afinidade suficiente, surgem opções que não aparecem para estranhos, como confidências pessoais.
+
+## Perfis pessoais
+
+Elena, Bram, Mira, Theo e Luma possuem dados próprios de:
+
+- história;
+- sonhos;
+- medos e preocupações;
+- lazer;
+- lugares favoritos;
+- valores;
+- sentimentos sobre o trabalho;
+- confidências.
+
+NPCs gerados usam um perfil-base compatível com crianças e futuras gerações.
 
 ## Controles
 
 - WASD / setas: mover
 - E / Enter: diálogo rápido
-- F: conversa dinâmica livre
+- F: diálogo completo por escolhas
 - B: painel NPC Brain
 - R: reiniciar memória e simulação
 
 ## Arquitetura
 
 ```text
-texto do jogador
+abrir conversa
       ↓
-classificador de intenção
+menu de assuntos
       ↓
-memória + personalidade + estado
+opção escolhida
       ↓
-banco modular de diálogos
+SemanticDialoguePlanner
       ↓
-compositor contextual
+memória + personalidade + relações + estado
       ↓
-resposta instantânea
+banco modular
+      ↓
+resposta
+      ↓
+follow-ups contextuais
 ```
 
 Documentação:
 - `docs/LIFE_SIMULATION.md`
 - `docs/NPC_BRAIN.md`
 - `docs/DYNAMIC_DIALOGUE.md`
+- `docs/CHOICE_DIALOGUE.md`
 
 ## Próximo marco
 
