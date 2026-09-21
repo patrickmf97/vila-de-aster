@@ -6,55 +6,45 @@ RPG 2D top-down browser-first, com estética chibi própria, história forte e u
 
 ## Versão atual
 
-**v0.2.0 — Foundation**
+**v0.3.0 — Living Village**
 
 ### Concluído
 
-- migração do protótipo monolítico para Phaser 3 + TypeScript + Vite;
-- Player separado como entidade;
-- NPC separado como entidade;
-- dados de mundo e NPCs fora da lógica principal;
-- SaveSystem;
-- TimeSystem;
-- DialogueSystem;
-- EventSystem;
-- HUD desacoplada;
-- WorldRenderer;
-- VillageScene como orquestradora;
-- CI preparada para validar TypeScript + build Vite.
-
-### Experiência preservada
-
-- movimentação;
-- câmera;
-- colisões;
-- 5 NPCs;
-- rotinas;
-- memória local;
-- afinidade;
-- dia/noite;
-- diálogo;
-- evento “O Eco Sob o Rio”.
+- fundação Phaser 3 + TypeScript + Vite;
+- personagem com animação procedural direcional;
+- NPCs com estados de atividade e pequenos movimentos contextuais;
+- interiores da Taverna Lua Cheia, Forja do Bram, Empório da Mira e Casa da Elena;
+- portas e objetos interativos;
+- transição exterior ↔ interior;
+- pistas ambientais ligadas ao Eco Sob o Rio;
+- memória v2 com fatos, importância, origem e expiração;
+- relações NPC ↔ NPC persistentes;
+- compartilhamento de fatos entre NPCs próximos;
+- HUD contextual;
+- save, tempo, afinidade e evento narrativo preservados.
 
 ## Decisões oficiais
 
 - permanecer em 2D top-down;
-- manter e evoluir a identidade visual chibi atual;
-- usar Phaser como engine do cliente;
-- TypeScript como linguagem principal;
-- mundo e sistemas devem ser data-driven;
-- IA generativa não controlará cada frame: comportamento cotidiano será local/determinístico;
-- IA externa entrará depois para decisões de alto nível, diálogo e memória semântica;
-- browser-first; multiplayer fica fora da primeira vertical slice.
+- manter e evoluir a identidade visual chibi procedural atual;
+- Phaser no cliente e TypeScript como linguagem principal;
+- mundo e sistemas data-driven;
+- comportamento cotidiano local/determinístico;
+- IA generativa futura apenas para diálogo, planejamento e decisões de alto nível;
+- memória estruturada antes de memória vetorial;
+- browser-first;
+- multiplayer fora da vertical slice inicial.
 
 ## Próximo alvo
 
-**v0.3.0 — Living Village**
+**v0.4.0 — NPC Brain**
 
-- animação direcional;
-- interiores;
-- objetos interativos;
-- NPCs com atividades mais naturais;
-- memória v2;
-- relações NPC ↔ NPC;
-- primeiro sistema de escolhas/consequências.
+- necessidades;
+- traços de personalidade;
+- valores;
+- objetivos;
+- Utility AI;
+- conhecimento individual;
+- decisões explicáveis;
+- logs de raciocínio de gameplay para depuração;
+- primeira camada de consequências baseada nas decisões dos NPCs.
