@@ -36,6 +36,7 @@ export interface ScheduleEntry extends Point {
   activity?: NpcActivity;
   zone?: string;
   interiorPosition?: Point;
+  homeTarget?: boolean;
 }
 
 export interface NpcLifeSeed {
