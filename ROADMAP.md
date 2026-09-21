@@ -15,22 +15,46 @@
 ## ✅ v0.5.0 — NPC Brain
 - personalidade, necessidades, Utility AI e decisões explicáveis.
 
-## ✅ v0.6.0 — Generative NPC
-- conversa livre e memória conversacional.
+## ✅ v0.6.0 — Experimental Generative NPC
+- protótipo inicial de conversa livre.
 
-## ✅ v0.6.1 — Local NPC AI
-- remoção da OpenAI;
-- WebLLM local via WebGPU.
+## ✅ v0.6.1 / v0.6.2 — Local Model Experiments
+- testes WebGPU e CPU/WASM;
+- aprendizado: modelos pequenos locais apresentaram latência e coerência insuficientes para a experiência desejada.
 
-## ✅ v0.6.2 — CPU-Compatible Local AI
-- Transformers.js;
-- SmolLM2 135M Instruct;
-- inferência CPU/WASM;
-- fallback automático quando WebGPU não existe;
-- funcionamento em Firefox/Linux sem exigir flags do navegador.
+## ✅ v0.6.3 — Dynamic Dialogue
+- remoção dos modelos generativos;
+- banco modular de diálogos;
+- classificação de intenção;
+- respostas contextuais;
+- personalidade;
+- profissão;
+- família;
+- relações;
+- memória;
+- recuperação de fatos;
+- conversa livre instantânea;
+- zero dependências de IA.
 
 ## v0.7.0 — Economy & Settlement
-- dinheiro, renda, produção, consumo, recursos e construção.
+- dinheiro;
+- renda;
+- produção;
+- consumo;
+- recursos;
+- mercado;
+- custo de moradia;
+- construção de novas casas;
+- expansão física da vila.
 
 ## v0.8+ — Generations & RPG
-- envelhecimento, herança, morte, combate, quests e expansão regional.
+- envelhecimento completo;
+- profissões e herança;
+- morte e legado;
+- múltiplas gerações;
+- inventário;
+- quests;
+- combate;
+- regiões externas;
+- clima e estações;
+- diretor de mundo.
