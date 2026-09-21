@@ -3,6 +3,7 @@ import type { Facing, NpcActivity, NpcDefinition, ScheduleEntry } from '../types
 
 export class Npc extends Phaser.GameObjects.Container {
   readonly definition: NpcDefinition;
+  currentActivity: NpcActivity = 'rest';
   private readonly body: Phaser.GameObjects.Arc;
   private readonly head: Phaser.GameObjects.Arc;
   private readonly leftEye: Phaser.GameObjects.Arc;
@@ -75,6 +76,8 @@ export class Npc extends Phaser.GameObjects.Container {
   updateRoutine(minuteOfDay: number, deltaSeconds: number, elapsedSeconds: number): void {
     const schedule = this.scheduleAt(minuteOfDay);
     const activity = schedule.activity ?? inferActivity(schedule.label);
+    this.currentActivity = activity;
+
     const micro = this.microOffset(activity, elapsedSeconds);
     const targetX = schedule.x + micro.x;
     const targetY = schedule.y + micro.y;
