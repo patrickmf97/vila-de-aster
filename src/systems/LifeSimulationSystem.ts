@@ -8,6 +8,7 @@ import type {
   Point,
 } from '../types';
 import { doors } from '../data/world';
+import { settlementDoor } from '../data/economy';
 import type { SaveSystem } from './SaveSystem';
 
 const DAYS_PER_YEAR = 28;
@@ -72,7 +73,20 @@ export class LifeSimulationSystem {
   getResidenceDoor(npcId: string): Point | undefined {
     const residenceId = this.save.lifeFor(npcId)?.residenceId;
     if (!residenceId) return undefined;
-    return doors.find((door) => door.buildingId === residenceId)?.returnPoint;
+    const staticDoor = doors.find(
+      (door) => door.buildingId === residenceId,
+    );
+    if (staticDoor) return staticDoor.returnPoint;
+
+    const dynamicBuilding =
+      this.save.snapshot.settlementBuildings.find(
+        (building) =>
+          building.residenceId === residenceId,
+      );
+
+    return dynamicBuilding
+      ? settlementDoor(dynamicBuilding).returnPoint
+      : undefined;
   }
 
   getCurrentInteriorPosition(
