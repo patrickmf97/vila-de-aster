@@ -2,38 +2,61 @@
 
 ## Versão atual
 
-**v0.6.2 — Local NPC AI**
+**v0.6.3 — Dynamic Dialogue**
 
-## Mudança central
+## Decisão arquitetural
 
-A IA local agora funciona em duas rotas:
+Os modelos generativos foram removidos.
 
-- **GPU/WebGPU**: WebLLM com Llama 3.2 1B e SmolLM2 360M.
-- **CPU/WASM**: Transformers.js com SmolLM2 135M Instruct quantizado.
+A conversa dos NPCs agora é produzida por um motor semântico próprio do jogo.
 
-Isso permite conversa generativa também em navegadores que não expõem WebGPU.
+## Componentes
 
-## Regras
+### SemanticDialoguePlanner
 
-- sem API paga;
-- sem chave;
-- sem backend de IA;
-- download do modelo apenas quando necessário;
-- cache no navegador;
-- contexto limitado ao conhecimento do NPC;
-- memória curta e resumo persistente;
-- Utility AI continua sendo autoridade sobre comportamento;
-- fallback determinístico permanece como última camada.
+Identifica intenções como:
 
-## Fluxo
+- saudação;
+- identidade;
+- profissão;
+- atividade atual;
+- estado emocional;
+- rio / Eco Sob o Rio;
+- família;
+- opinião sobre outro NPC;
+- memória sobre o jogador;
+- vila;
+- opinião pessoal;
+- recuperação de memória;
+- continuidade da conversa;
+- assunto desconhecido.
+
+### Dialogue Bank
+
+Contém blocos modulares separados por:
+
+- tom;
+- personalidade;
+- profissão;
+- relação;
+- contexto;
+- assunto.
+
+As respostas são compostas de forma determinística a partir do estado do NPC.
+
+### DynamicDialogueSystem
+
+Mantém a interface de conversa livre, histórico, afinidade e extração de fatos explícitos do jogador.
+
+## Resultado
 
 ```text
-Life Simulation → estado
-NPC Brain → decisão
-Local NPC AI → linguagem
-              ├─ GPU
-              └─ CPU/WASM
+Life Simulation → o que existe na vida
+NPC Brain       → o que o NPC decide fazer
+Dynamic Dialogue→ como o NPC conversa
 ```
+
+Nenhum modelo, API ou servidor de IA participa do diálogo.
 
 ## Próximo alvo
 

@@ -1,48 +1,84 @@
 # Vila de Aster
 
-RPG 2D top-down para navegador com foco em **mundo vivo, memória, relações, família, decisões autônomas e diálogo generativo local**.
+RPG 2D top-down para navegador com foco em **mundo vivo, memória, relações, família, decisões autônomas e diálogo dinâmico contextual**.
 
-## Estado atual — v0.6.2 Local NPC AI
+## Estado atual — v0.6.3 Dynamic Dialogue
 
-A conversa livre não depende de OpenAI, API paga ou chave externa.
+A conversa livre dos NPCs não usa mais nenhum modelo generativo.
 
-### Estratégia automática
+O jogador continua digitando livremente com **F**, mas a resposta é construída instantaneamente a partir de:
 
-1. Se houver WebGPU, o jogo tenta **WebLLM + Llama 3.2 1B**.
-2. Se a GPU falhar, tenta **SmolLM2 360M**.
-3. Se WebGPU não existir, usa **Transformers.js + SmolLM2 135M Instruct em CPU/WASM**.
-4. Se nenhum modelo puder rodar, usa o fallback determinístico.
+- intenção detectada na frase;
+- personalidade do NPC;
+- profissão;
+- memória individual;
+- afinidade;
+- relações com outros moradores;
+- parceiro e filhos;
+- atividade atual;
+- horário e estado de energia;
+- conhecimento real sobre eventos da vila;
+- histórico recente da conversa.
 
-No Firefox/Linux sem WebGPU, a rota CPU/WASM é escolhida automaticamente.
+## Banco modular de diálogos
 
-O primeiro uso baixa o modelo necessário e o navegador reutiliza o cache depois.
+O sistema não depende de uma lista única de respostas.
+
+Ele combina blocos de:
+
+- saudações;
+- humor;
+- profissão;
+- família;
+- relações;
+- opiniões;
+- conhecimento do rio;
+- memórias do jogador;
+- contexto da vila;
+- continuidade de conversa;
+- personalidade.
+
+Com variações por NPC e contexto, centenas de blocos geram milhares de combinações possíveis.
+
+## Vantagens
+
+- resposta praticamente instantânea;
+- nenhuma chave ou API;
+- nenhum download de modelo;
+- zero custo por conversa;
+- funciona igual no Firefox, Chrome e demais navegadores modernos;
+- lore totalmente controlado;
+- NPC não alucina fatos inexistentes;
+- fácil adicionar novos assuntos e personalidades.
 
 ## Controles
 
 - WASD / setas: mover
-- E / Enter: diálogo local
-- F: conversa livre com IA local
+- E / Enter: diálogo rápido
+- F: conversa dinâmica livre
 - B: painel NPC Brain
 - R: reiniciar memória e simulação
 
 ## Arquitetura
 
 ```text
-F
-↓
-GenerativeDialogueSystem
-├─ WebGPU disponível → WebLLM → Llama 3.2 1B / SmolLM2 360M
-└─ sem WebGPU       → Transformers.js → WASM/CPU → SmolLM2 135M
-↓
-Memory v2
+texto do jogador
+      ↓
+classificador de intenção
+      ↓
+memória + personalidade + estado
+      ↓
+banco modular de diálogos
+      ↓
+compositor contextual
+      ↓
+resposta instantânea
 ```
-
-Nenhuma chave, servidor de IA ou cobrança por token é necessária.
 
 Documentação:
 - `docs/LIFE_SIMULATION.md`
 - `docs/NPC_BRAIN.md`
-- `docs/GENERATIVE_NPC.md`
+- `docs/DYNAMIC_DIALOGUE.md`
 
 ## Próximo marco
 

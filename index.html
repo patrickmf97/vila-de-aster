@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0c1515" />
-  <meta name="aster-build" content="0.6.2-cpu-wasm" />
+  <meta name="aster-build" content="0.6.3-dynamic-dialogue" />
   <title>Vila de Aster</title>
 </head>
 <body>
@@ -13,7 +13,7 @@
 
     <div id="top-left" class="hud glass">
       <div class="brand">🌿 Vila de Aster</div>
-      <div class="sub">v0.6.2 • Local NPC AI</div>
+      <div class="sub">v0.6.3 • Dynamic Dialogue</div>
     </div>
 
     <div id="top-right" class="hud glass stats">
@@ -24,7 +24,7 @@
 
     <div id="quest" class="hud glass quest">
       <strong>Objetivo atual</strong>
-      <span>Converse livremente com os moradores. A IA roda no próprio navegador: GPU quando disponível e CPU/WASM como fallback.</span>
+      <span>Converse livremente com os moradores. O diálogo usa memória, personalidade, relações e um grande banco contextual.</span>
     </div>
 
     <aside id="brainDebug" class="brain-debug glass hidden" aria-live="polite">
@@ -40,8 +40,8 @@
     <section id="npcChat" class="npc-chat glass hidden" aria-live="polite">
       <div class="npc-chat-header">
         <div>
-          <strong id="npcChatName">NPC • conversa livre</strong>
-          <span id="npcChatStatus">IA local</span>
+          <strong id="npcChatName">NPC • conversa dinâmica</strong>
+          <span id="npcChatStatus">Diálogo dinâmico</span>
         </div>
         <button id="npcChatClose" type="button" aria-label="Fechar conversa">×</button>
       </div>
@@ -76,7 +76,7 @@
     <div id="help" class="help glass">
       <span><kbd>WASD</kbd>/<kbd>↑↓←→</kbd> mover</span>
       <span><kbd>E</kbd> diálogo local</span>
-      <span><kbd>F</kbd> conversa com IA local</span>
+      <span><kbd>F</kbd> conversa dinâmica</span>
       <span><kbd>B</kbd> cérebro</span>
       <span><kbd>R</kbd> reiniciar simulação</span>
     </div>
