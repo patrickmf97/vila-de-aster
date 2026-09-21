@@ -3,7 +3,6 @@ import type { NpcDefinition, ScheduleEntry } from '../types';
 
 export class Npc extends Phaser.GameObjects.Container {
   readonly definition: NpcDefinition;
-  private phase = Math.random() * 100;
 
   constructor(scene: Phaser.Scene, definition: NpcDefinition) {
     super(scene, definition.x, definition.y);
@@ -27,7 +26,7 @@ export class Npc extends Phaser.GameObjects.Container {
 
     this.add([shadow, body, head, icon, label]);
     scene.add.existing(this);
-    this.setDepth(this.y);
+    this.setDepth(yToDepth(this.y));
   }
 
   scheduleAt(minuteOfDay: number): ScheduleEntry {
@@ -47,8 +46,10 @@ export class Npc extends Phaser.GameObjects.Container {
       this.y += Math.sin(angle) * speed * deltaSeconds;
     }
 
-    this.phase += deltaSeconds;
-    this.y += Math.sin(this.phase * 4) * 0.02;
-    this.setDepth(this.y);
+    this.setDepth(yToDepth(this.y));
   }
+}
+
+function yToDepth(y: number): number {
+  return Math.round(y);
 }
