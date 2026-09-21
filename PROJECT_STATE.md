@@ -2,64 +2,67 @@
 
 ## Versão atual
 
-**v0.6.0 — Generative NPC**
+**v0.6.1 — Local NPC AI**
 
 ## Mudança central
 
-NPCs agora possuem duas formas de conversa:
+A conversa generativa deixou de depender de API externa paga.
 
-1. diálogo local, rápido e determinístico;
-2. conversa livre generativa.
+Agora existem:
 
-A IA generativa foi colocada **por cima** do NPC Brain, e não no lugar dele.
+1. diálogo rápido determinístico;
+2. conversa livre com um modelo aberto rodando no próprio navegador;
+3. fallback determinístico quando WebGPU não estiver disponível.
 
-## Contexto enviado ao modelo
+## Modelos locais
 
-A função recebe somente:
+Ordem de tentativa:
 
-- identidade e profissão do NPC;
+1. `Llama-3.2-1B-Instruct-q4f16_1-MLC`;
+2. `SmolLM2-360M-Instruct-q4f32_1-MLC`.
+
+Os pesos são baixados apenas na primeira utilização e ficam no cache do navegador.
+
+## Contexto do NPC
+
+O modelo recebe somente:
+
+- identidade e profissão;
 - personalidade;
 - atividade/decisão atual;
 - dia, horário e localização;
 - estado familiar;
-- até 12 fatos conhecidos pelo NPC;
+- fatos que o NPC conhece;
 - resumo persistente da conversa;
-- últimas 8 falas;
+- últimas falas;
 - mensagem atual do jogador.
 
-O modelo não recebe o save completo.
+## Memória
 
-## Memória de conversa
-
-Cada NPC mantém:
+Cada NPC mantém localmente:
 
 - até 8 turnos recentes;
-- resumo persistente de longo prazo;
-- fatos novos explicitamente ditos pelo jogador.
+- resumo persistente;
+- fatos explícitos extraídos de frases como nome, origem, moradia, gostos e trabalho.
 
-A resposta generativa devolve:
-
-- fala do NPC;
-- possível fato de memória;
-- resumo atualizado.
+Nenhum servidor de IA é necessário.
 
 ## Segurança de arquitetura
 
-- `OPENAI_API_KEY` fica somente no backend;
-- função Vercel valida payload e limites;
-- rate limit básico por origem/IP;
-- mensagens do jogador têm limite;
-- respostas usam schema estruturado;
-- chamadas usam `store: false`;
-- IA não pode alterar estado canônico;
-- sem API, o jogo usa fallback local.
+- sem `OPENAI_API_KEY`;
+- sem backend de IA;
+- sem cobrança por token;
+- sem envio das conversas para a OpenAI;
+- modelo carregado sob demanda com dynamic import;
+- estado canônico continua sob controle dos sistemas determinísticos;
+- fallback automático se WebGPU ou modelo local falhar.
 
 ## Responsabilidades
 
 ```text
 Life Simulation → o que existe na vida
 NPC Brain       → o que o NPC decide fazer
-Generative NPC  → como o NPC conversa sobre o que sabe
+Local NPC AI    → como o NPC conversa sobre o que sabe
 ```
 
 ## Próximo alvo
@@ -67,8 +70,7 @@ Generative NPC  → como o NPC conversa sobre o que sabe
 **v0.7.0 — Economy & Settlement**
 
 - dinheiro por NPC;
-- renda;
-- despesas;
+- renda e despesas;
 - estoque e recursos;
 - trabalho afetando produção;
 - consumo;
