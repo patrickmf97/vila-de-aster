@@ -10,13 +10,39 @@ export interface Rect extends Point {
   h: number;
 }
 
-export type NpcActivity = 'sleep' | 'work' | 'walk' | 'socialize' | 'rest' | 'fish';
+export type NpcActivity =
+  | 'sleep'
+  | 'work'
+  | 'walk'
+  | 'socialize'
+  | 'rest'
+  | 'fish'
+  | 'play'
+  | 'family';
+
+export type LifeStage = 'child' | 'young-adult' | 'adult' | 'elder';
+export type RelationshipStatus = 'single' | 'dating' | 'married';
+export type LifeEventType =
+  | 'dating'
+  | 'marriage'
+  | 'expecting-child'
+  | 'child-born'
+  | 'moved-home';
 
 export interface ScheduleEntry extends Point {
   from: number;
   to: number;
   label: string;
   activity?: NpcActivity;
+  zone?: string;
+  interiorPosition?: Point;
+}
+
+export interface NpcLifeSeed {
+  ageYears: number;
+  residenceId: string;
+  familyDesire: number;
+  sociability: number;
 }
 
 export interface NpcDefinition extends Point {
@@ -29,6 +55,9 @@ export interface NpcDefinition extends Point {
   remembered: string;
   topic: string;
   schedule: ScheduleEntry[];
+  life: NpcLifeSeed;
+  generated?: boolean;
+  scale?: number;
 }
 
 export interface MemoryFact {
@@ -53,10 +82,55 @@ export interface NpcRelationship {
   lastInteractionDay: number;
 }
 
+export interface NpcLifeState {
+  npcId: string;
+  ageYears: number;
+  ageProgressDays: number;
+  lifeStage: LifeStage;
+  residenceId: string;
+  currentZone: string;
+  currentActivity: NpcActivity;
+  energy: number;
+  socialNeed: number;
+  familyDesire: number;
+  relationshipStatus: RelationshipStatus;
+  partnerId?: string;
+  parents: string[];
+  children: string[];
+  datingSinceDay?: number;
+  marriageDay?: number;
+  expectingChildDueDay?: number;
+  lastProcessedDay: number;
+}
+
+export interface GeneratedNpcData {
+  id: string;
+  name: string;
+  emoji: string;
+  role: string;
+  color: number;
+  parents: [string, string];
+  residenceId: string;
+  birthDay: number;
+  familyDesire: number;
+  sociability: number;
+}
+
+export interface LifeEvent {
+  id: string;
+  type: LifeEventType;
+  day: number;
+  npcIds: string[];
+  text: string;
+}
+
 export interface SaveData {
   player?: Point;
   npcs: Record<string, NpcMemory>;
   relationships: Record<string, NpcRelationship>;
+  life: Record<string, NpcLifeState>;
+  generatedNpcs: GeneratedNpcData[];
+  lifeEvents: LifeEvent[];
   eventTriggered: boolean;
   day: number;
   gameMinutes: number;
@@ -86,5 +160,7 @@ export interface InteriorDefinition {
   accent: number;
   spawn: Point;
   exit: Point;
+  residentSpots?: Point[];
+  sleepSpots?: Point[];
   objects: InteriorObjectDefinition[];
 }
