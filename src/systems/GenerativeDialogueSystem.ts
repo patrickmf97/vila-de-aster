@@ -16,16 +16,16 @@ interface ChatContext {
   location: string;
 }
 
-interface LocalChatMessage {
+interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
 }
 
-interface LocalEngine {
+interface WebLlmEngine {
   chat: {
     completions: {
       create(request: {
-        messages: LocalChatMessage[];
+        messages: ChatMessage[];
         temperature?: number;
         top_p?: number;
         max_tokens?: number;
@@ -41,12 +41,37 @@ interface LocalEngine {
   };
 }
 
-const PRIMARY_MODEL = 'Llama-3.2-1B-Instruct-q4f16_1-MLC';
-const FALLBACK_MODEL = 'SmolLM2-360M-Instruct-q4f32_1-MLC';
+interface CpuGenerator {
+  (
+    messages: ChatMessage[],
+    options: {
+      max_new_tokens: number;
+      do_sample: boolean;
+      temperature: number;
+      top_p: number;
+      repetition_penalty: number;
+    },
+  ): Promise<unknown>;
+}
 
-let localEngine: LocalEngine | null = null;
-let localEnginePromise: Promise<LocalEngine> | null = null;
-let activeModel = '';
+type LocalBackend =
+  | {
+      kind: 'webgpu';
+      name: string;
+      engine: WebLlmEngine;
+    }
+  | {
+      kind: 'wasm';
+      name: string;
+      generator: CpuGenerator;
+    };
+
+const GPU_PRIMARY_MODEL = 'Llama-3.2-1B-Instruct-q4f16_1-MLC';
+const GPU_FALLBACK_MODEL = 'SmolLM2-360M-Instruct-q4f32_1-MLC';
+const CPU_MODEL = 'onnx-community/SmolLM2-135M-Instruct-ONNX';
+
+let localBackend: LocalBackend | null = null;
+let backendPromise: Promise<LocalBackend> | null = null;
 let progressListener: ((status: string) => void) | null = null;
 
 export class GenerativeDialogueSystem {
@@ -67,10 +92,12 @@ export class GenerativeDialogueSystem {
 
     this.input.addEventListener('keydown', (event) => {
       event.stopPropagation();
+
       if (event.key === 'Enter') {
         event.preventDefault();
         void this.send();
       }
+
       if (event.key === 'Escape') {
         event.preventDefault();
         this.close();
@@ -97,11 +124,19 @@ export class GenerativeDialogueSystem {
       this.addMessage('npc', this.localGreeting(context));
     }
 
-    this.status.textContent = localEngine
-      ? 'IA local pronta • ' + activeModel
-      : supportsWebGPU()
-        ? 'IA local gratuita • modelo será carregado no primeiro envio'
-        : 'WebGPU indisponível • usando diálogo local';
+    if (localBackend) {
+      this.status.textContent =
+        'IA local pronta • ' +
+        localBackend.name +
+        ' • ' +
+        (localBackend.kind === 'webgpu' ? 'GPU' : 'CPU');
+    } else if (supportsWebGPU()) {
+      this.status.textContent =
+        'IA local gratuita • GPU será preparada no primeiro envio';
+    } else {
+      this.status.textContent =
+        'Sem WebGPU • IA local via CPU/WASM será carregada no primeiro envio';
+    }
 
     this.root.classList.remove('hidden');
     this.input.value = '';
@@ -136,17 +171,19 @@ export class GenerativeDialogueSystem {
     });
 
     try {
-      const engine = await ensureLocalEngine((status) => {
+      const backend = await ensureLocalBackend((status) => {
         if (this.context?.definition.id === npcId) {
           this.status.textContent = status;
         }
       });
 
       this.status.textContent =
-        context.definition.name + ' está pensando localmente...';
+        context.definition.name +
+        ' está pensando localmente • ' +
+        (backend.kind === 'webgpu' ? 'GPU' : 'CPU');
 
       const reply = await this.generateReply(
-        engine,
+        backend,
         context,
         message,
       );
@@ -163,9 +200,14 @@ export class GenerativeDialogueSystem {
       this.save.persist();
 
       this.status.textContent =
-        'IA local • ' + activeModel + ' • sem custo por conversa';
+        'IA local • ' +
+        backend.name +
+        ' • ' +
+        (backend.kind === 'webgpu' ? 'GPU' : 'CPU/WASM') +
+        ' • sem custo por conversa';
     } catch {
       const fallback = this.localFallback(context, message);
+
       this.addMessage('npc', fallback);
       this.save.appendConversationTurn(npcId, {
         role: 'npc',
@@ -178,9 +220,7 @@ export class GenerativeDialogueSystem {
       this.save.persist();
 
       this.status.textContent =
-        supportsWebGPU()
-          ? 'Modelo local indisponível • fallback determinístico'
-          : 'Sem WebGPU • fallback determinístico';
+        'IA local indisponível • fallback determinístico';
     } finally {
       this.sending = false;
       this.sendButton.disabled = false;
@@ -189,21 +229,42 @@ export class GenerativeDialogueSystem {
   }
 
   private async generateReply(
-    engine: LocalEngine,
+    backend: LocalBackend,
     context: ChatContext,
     playerMessage: string,
   ): Promise<string> {
-    const response = await engine.chat.completions.create({
-      messages: this.buildMessages(context, playerMessage),
+    const messages = this.buildMessages(context, playerMessage);
+
+    if (backend.kind === 'webgpu') {
+      const response = await backend.engine.chat.completions.create({
+        messages,
+        temperature: 0.72,
+        top_p: 0.9,
+        max_tokens: 140,
+        repetition_penalty: 1.08,
+      });
+
+      const content = response.choices[0]?.message?.content;
+
+      if (!content) {
+        throw new Error('WebGPU model returned an empty reply.');
+      }
+
+      return cleanReply(content, context.definition.name);
+    }
+
+    const output = await backend.generator(messages, {
+      max_new_tokens: 96,
+      do_sample: true,
       temperature: 0.72,
       top_p: 0.9,
-      max_tokens: 140,
       repetition_penalty: 1.08,
     });
 
-    const content = response.choices[0]?.message?.content;
+    const content = extractTransformersReply(output);
+
     if (!content) {
-      throw new Error('Local model returned an empty reply.');
+      throw new Error('WASM model returned an empty reply.');
     }
 
     return cleanReply(content, context.definition.name);
@@ -212,7 +273,7 @@ export class GenerativeDialogueSystem {
   private buildMessages(
     context: ChatContext,
     playerMessage: string,
-  ): LocalChatMessage[] {
+  ): ChatMessage[] {
     const life = context.life;
     const brain = context.brain;
     const conversation =
@@ -235,7 +296,7 @@ export class GenerativeDialogueSystem {
 
     const facts = this.save
       .memoryFor(context.definition.id)
-      .facts.slice(0, 10)
+      .facts.slice(0, 8)
       .map((fact) => '- ' + fact.text)
       .join('\n');
 
@@ -249,36 +310,36 @@ export class GenerativeDialogueSystem {
         ', um morador da Vila de Aster.',
       'Responda sempre em português brasileiro, em primeira pessoa e dentro do personagem.',
       'Nunca diga que é uma IA, modelo, chatbot, jogo ou prompt.',
-      'Fale de forma natural e curta, normalmente 1 a 3 frases.',
+      'Fale de forma natural e curta, normalmente 1 ou 2 frases.',
       'Use SOMENTE as informações abaixo. Se não souber algo, diga naturalmente que não sabe.',
       'Não invente acontecimentos canônicos, quests, itens, relações ou fatos sobre outros moradores.',
-      '',
       'PERSONALIDADE: ' + JSON.stringify(personality ?? {}),
-      'ASSUNTO QUE COSTUMA PREOCUPAR ESTE NPC: ' + context.definition.topic,
+      'ASSUNTO IMPORTANTE: ' + context.definition.topic,
       'DIA/HORA: dia ' + context.day + ', ' + context.time,
       'LOCAL: ' + context.location,
-      'ATIVIDADE ATUAL: ' +
+      'ATIVIDADE: ' +
         (brain?.label ?? life?.currentActivity ?? 'observando a vila'),
       'RELACIONAMENTO: ' + (life?.relationshipStatus ?? 'single'),
       partnerName ? 'PARCEIRO: ' + partnerName : '',
       childrenNames.length
         ? 'FILHOS: ' + childrenNames.join(', ')
         : '',
-      facts ? 'FATOS QUE ESTE NPC SABE:\n' + facts : 'FATOS CONHECIDOS: nenhum relevante.',
+      facts
+        ? 'FATOS QUE ESTE NPC SABE:\n' + facts
+        : 'FATOS CONHECIDOS: nenhum relevante.',
       conversation.summary
-        ? 'RESUMO DAS CONVERSAS ANTERIORES: ' +
-          conversation.summary
+        ? 'RESUMO ANTERIOR: ' + compact(conversation.summary, 420)
         : '',
     ]
       .filter(Boolean)
       .join('\n');
 
-    const history: LocalChatMessage[] = conversation.turns
+    const history: ChatMessage[] = conversation.turns
       .slice(0, -1)
-      .slice(-6)
+      .slice(-4)
       .map((turn) => ({
         role: turn.role === 'player' ? 'user' : 'assistant',
-        content: turn.text,
+        content: compact(turn.text, 220),
       }));
 
     return [
@@ -313,6 +374,7 @@ export class GenerativeDialogueSystem {
     this.save.setConversationSummary(npcId, summary);
 
     const fact = extractExplicitPlayerFact(playerMessage);
+
     if (fact) {
       this.save.addFact(npcId, {
         id:
@@ -388,12 +450,14 @@ export class GenerativeDialogueSystem {
       lower.includes('filh')
     ) {
       const life = context.life;
+
       if (life?.partnerId || life?.children.length) {
         return 'Minha família ocupa bastante os meus pensamentos. Cada dia por aqui muda um pouco quando a gente tem alguém para cuidar.';
       }
     }
 
     const fact = memory.facts[0];
+
     if (fact) {
       return (
         'Posso não ter uma resposta perfeita, mas lembro disso: ' +
@@ -405,40 +469,56 @@ export class GenerativeDialogueSystem {
   }
 }
 
-async function ensureLocalEngine(
+async function ensureLocalBackend(
   onProgress: (status: string) => void,
-): Promise<LocalEngine> {
-  if (localEngine) return localEngine;
-
-  if (!supportsWebGPU()) {
-    throw new Error('WebGPU is not available.');
-  }
+): Promise<LocalBackend> {
+  if (localBackend) return localBackend;
 
   progressListener = onProgress;
 
-  if (!localEnginePromise) {
-    localEnginePromise = loadLocalEngine();
+  if (!backendPromise) {
+    backendPromise = loadBestBackend();
   }
 
   try {
-    localEngine = await localEnginePromise;
-    return localEngine;
+    localBackend = await backendPromise;
+    return localBackend;
   } finally {
-    localEnginePromise = null;
+    backendPromise = null;
   }
 }
 
-async function loadLocalEngine(): Promise<LocalEngine> {
+async function loadBestBackend(): Promise<LocalBackend> {
+  if (supportsWebGPU()) {
+    try {
+      return await loadWebGpuBackend();
+    } catch {
+      progressListener?.(
+        'GPU local indisponível • alternando automaticamente para CPU/WASM...',
+      );
+    }
+  } else {
+    progressListener?.(
+      'WebGPU não disponível • usando IA local via CPU/WASM...',
+    );
+  }
+
+  return loadWasmBackend();
+}
+
+async function loadWebGpuBackend(): Promise<LocalBackend> {
   const webllm = await import('@mlc-ai/web-llm');
-  const candidates = [PRIMARY_MODEL, FALLBACK_MODEL];
+  const candidates = [
+    GPU_PRIMARY_MODEL,
+    GPU_FALLBACK_MODEL,
+  ];
 
   let lastError: unknown;
 
   for (const model of candidates) {
     try {
-      activeModel = model;
       progressListener?.(
-        'Preparando IA local • ' + friendlyModelName(model),
+        'Preparando IA local GPU • ' + friendlyGpuModelName(model),
       );
 
       const engine = await webllm.CreateMLCEngine(
@@ -455,10 +535,10 @@ async function loadLocalEngine(): Promise<LocalEngine> {
 
             progressListener?.(
               percentage !== null
-                ? 'Baixando modelo local • ' +
+                ? 'Baixando modelo GPU • ' +
                     percentage +
                     '% • primeira vez apenas'
-                : report.text ?? 'Carregando modelo local...',
+                : report.text ?? 'Carregando modelo GPU...',
             );
           },
           logLevel: 'WARN',
@@ -468,34 +548,128 @@ async function loadLocalEngine(): Promise<LocalEngine> {
         },
       );
 
-      progressListener?.(
-        'IA local pronta • ' + friendlyModelName(model),
-      );
-
-      return engine as unknown as LocalEngine;
+      return {
+        kind: 'webgpu',
+        name: friendlyGpuModelName(model),
+        engine: engine as unknown as WebLlmEngine,
+      };
     } catch (error) {
       lastError = error;
       progressListener?.(
-        'Tentando modelo local mais leve...',
+        'Tentando outro modelo GPU...',
       );
     }
   }
 
-  activeModel = '';
-  throw lastError ?? new Error('Unable to load a local model.');
+  throw lastError ?? new Error('Unable to load WebGPU model.');
+}
+
+async function loadWasmBackend(): Promise<LocalBackend> {
+  progressListener?.(
+    'Preparando IA local CPU • SmolLM2 135M...',
+  );
+
+  const transformers = await import('@huggingface/transformers');
+
+  const generator = await transformers.pipeline(
+    'text-generation',
+    CPU_MODEL,
+    {
+      device: 'wasm',
+      dtype: 'q4',
+      progress_callback: (report) => {
+        const rawProgress =
+          typeof report === 'object' &&
+          report !== null &&
+          'progress' in report &&
+          typeof report.progress === 'number'
+            ? report.progress
+            : null;
+
+        const percentage =
+          rawProgress === null
+            ? null
+            : Math.round(
+                rawProgress <= 1
+                  ? rawProgress * 100
+                  : rawProgress,
+              );
+
+        progressListener?.(
+          percentage !== null
+            ? 'Baixando IA CPU • ' +
+                percentage +
+                '% • primeira vez apenas'
+            : 'Preparando arquivos da IA CPU...',
+        );
+      },
+    },
+  );
+
+  progressListener?.(
+    'IA local CPU pronta • SmolLM2 135M',
+  );
+
+  return {
+    kind: 'wasm',
+    name: 'SmolLM2 135M',
+    generator: generator as unknown as CpuGenerator,
+  };
+}
+
+function extractTransformersReply(output: unknown): string | null {
+  if (!Array.isArray(output) || output.length === 0) {
+    return null;
+  }
+
+  const first = output[0];
+
+  if (
+    typeof first !== 'object' ||
+    first === null ||
+    !('generated_text' in first)
+  ) {
+    return null;
+  }
+
+  const generated = first.generated_text;
+
+  if (typeof generated === 'string') {
+    return generated;
+  }
+
+  if (Array.isArray(generated)) {
+    const last = generated[generated.length - 1];
+
+    if (
+      typeof last === 'object' &&
+      last !== null &&
+      'content' in last &&
+      typeof last.content === 'string'
+    ) {
+      return last.content;
+    }
+  }
+
+  return null;
 }
 
 function supportsWebGPU(): boolean {
-  return typeof navigator !== 'undefined' && 'gpu' in navigator;
+  return (
+    typeof navigator !== 'undefined' &&
+    'gpu' in navigator
+  );
 }
 
-function friendlyModelName(model: string): string {
+function friendlyGpuModelName(model: string): string {
   if (model.startsWith('Llama-3.2-1B')) {
     return 'Llama 3.2 1B';
   }
+
   if (model.startsWith('SmolLM2-360M')) {
     return 'SmolLM2 360M';
   }
+
   return model;
 }
 
@@ -507,7 +681,9 @@ function cleanReply(
     .replace(/^\s*(assistant|npc)\s*:\s*/i, '')
     .replace(
       new RegExp(
-        '^\\s*' + escapeRegExp(npcName) + '\\s*:\\s*',
+        '^\\s*' +
+          escapeRegExp(npcName) +
+          '\\s*:\\s*',
         'i',
       ),
       '',
@@ -533,38 +709,53 @@ function extractExplicitPlayerFact(
     {
       pattern: /\bmeu nome (?:é|e)\s+([^,.!?]{2,40})/i,
       format: (value) =>
-        'O jogador disse que seu nome é ' + value.trim() + '.',
+        'O jogador disse que seu nome é ' +
+        value.trim() +
+        '.',
     },
     {
       pattern: /\beu (?:vim|venho) (?:de|da|do)\s+([^,.!?]{2,70})/i,
       format: (value) =>
-        'O jogador disse que veio de ' + value.trim() + '.',
+        'O jogador disse que veio de ' +
+        value.trim() +
+        '.',
     },
     {
       pattern: /\beu moro (?:em|na|no)\s+([^,.!?]{2,70})/i,
       format: (value) =>
-        'O jogador disse que mora em ' + value.trim() + '.',
+        'O jogador disse que mora em ' +
+        value.trim() +
+        '.',
     },
     {
       pattern: /\beu gosto de\s+([^,.!?]{2,80})/i,
       format: (value) =>
-        'O jogador disse que gosta de ' + value.trim() + '.',
+        'O jogador disse que gosta de ' +
+        value.trim() +
+        '.',
     },
     {
       pattern: /\beu não gosto de\s+([^,.!?]{2,80})/i,
       format: (value) =>
-        'O jogador disse que não gosta de ' + value.trim() + '.',
+        'O jogador disse que não gosta de ' +
+        value.trim() +
+        '.',
     },
     {
       pattern: /\beu trabalho (?:como|com)\s+([^,.!?]{2,80})/i,
       format: (value) =>
-        'O jogador disse que trabalha ' + value.trim() + '.',
+        'O jogador disse que trabalha ' +
+        value.trim() +
+        '.',
     },
   ];
 
   for (const rule of rules) {
     const match = normalized.match(rule.pattern);
-    if (match?.[1]) return rule.format(match[1]);
+
+    if (match?.[1]) {
+      return rule.format(match[1]);
+    }
   }
 
   return null;
@@ -572,6 +763,7 @@ function extractExplicitPlayerFact(
 
 function compact(value: string, max: number): string {
   const compacted = value.replace(/\s+/g, ' ').trim();
+
   return compacted.length <= max
     ? compacted
     : compacted.slice(0, max - 1) + '…';
@@ -583,9 +775,11 @@ function escapeRegExp(value: string): string {
 
 function stableHash(value: string): number {
   let hash = 2166136261;
+
   for (const char of value) {
     hash ^= char.charCodeAt(0);
     hash = Math.imul(hash, 16777619);
   }
+
   return Math.abs(hash >>> 0);
 }

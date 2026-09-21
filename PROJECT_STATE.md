@@ -2,78 +2,39 @@
 
 ## Versão atual
 
-**v0.6.1 — Local NPC AI**
+**v0.6.2 — Local NPC AI**
 
 ## Mudança central
 
-A conversa generativa deixou de depender de API externa paga.
+A IA local agora funciona em duas rotas:
 
-Agora existem:
+- **GPU/WebGPU**: WebLLM com Llama 3.2 1B e SmolLM2 360M.
+- **CPU/WASM**: Transformers.js com SmolLM2 135M Instruct quantizado.
 
-1. diálogo rápido determinístico;
-2. conversa livre com um modelo aberto rodando no próprio navegador;
-3. fallback determinístico quando WebGPU não estiver disponível.
+Isso permite conversa generativa também em navegadores que não expõem WebGPU.
 
-## Modelos locais
+## Regras
 
-Ordem de tentativa:
-
-1. `Llama-3.2-1B-Instruct-q4f16_1-MLC`;
-2. `SmolLM2-360M-Instruct-q4f32_1-MLC`.
-
-Os pesos são baixados apenas na primeira utilização e ficam no cache do navegador.
-
-## Contexto do NPC
-
-O modelo recebe somente:
-
-- identidade e profissão;
-- personalidade;
-- atividade/decisão atual;
-- dia, horário e localização;
-- estado familiar;
-- fatos que o NPC conhece;
-- resumo persistente da conversa;
-- últimas falas;
-- mensagem atual do jogador.
-
-## Memória
-
-Cada NPC mantém localmente:
-
-- até 8 turnos recentes;
-- resumo persistente;
-- fatos explícitos extraídos de frases como nome, origem, moradia, gostos e trabalho.
-
-Nenhum servidor de IA é necessário.
-
-## Segurança de arquitetura
-
-- sem `OPENAI_API_KEY`;
+- sem API paga;
+- sem chave;
 - sem backend de IA;
-- sem cobrança por token;
-- sem envio das conversas para a OpenAI;
-- modelo carregado sob demanda com dynamic import;
-- estado canônico continua sob controle dos sistemas determinísticos;
-- fallback automático se WebGPU ou modelo local falhar.
+- download do modelo apenas quando necessário;
+- cache no navegador;
+- contexto limitado ao conhecimento do NPC;
+- memória curta e resumo persistente;
+- Utility AI continua sendo autoridade sobre comportamento;
+- fallback determinístico permanece como última camada.
 
-## Responsabilidades
+## Fluxo
 
 ```text
-Life Simulation → o que existe na vida
-NPC Brain       → o que o NPC decide fazer
-Local NPC AI    → como o NPC conversa sobre o que sabe
+Life Simulation → estado
+NPC Brain → decisão
+Local NPC AI → linguagem
+              ├─ GPU
+              └─ CPU/WASM
 ```
 
 ## Próximo alvo
 
-**v0.7.0 — Economy & Settlement**
-
-- dinheiro por NPC;
-- renda e despesas;
-- estoque e recursos;
-- trabalho afetando produção;
-- consumo;
-- necessidade de moradia;
-- construção de casas;
-- expansão orgânica da vila.
+**v0.7.0 — Economy & Settlement**.

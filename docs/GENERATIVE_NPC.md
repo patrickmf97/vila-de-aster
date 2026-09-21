@@ -1,114 +1,61 @@
-# Generative NPC — v0.6.1 Local NPC AI
+# Generative NPC — v0.6.2
 
-A camada generativa existe para linguagem e memória conversacional. Ela roda diretamente no navegador e não substitui a Life Simulation nem a Utility AI.
+A IA conversacional roda localmente no dispositivo do jogador.
 
-## Fluxo
-
-```text
-jogador pressiona F
-      ↓
-GenerativeDialogueSystem
-      ↓
-contexto mínimo daquele NPC
-      ↓
-WebLLM
-      ↓
-WebGPU do dispositivo
-      ↓
-modelo aberto local
-      ↓
-fala do NPC
-      ↓
-SaveSystem local
-```
-
-## Modelos
-
-O sistema tenta, nesta ordem:
+## Seleção automática de backend
 
 ```text
-Llama-3.2-1B-Instruct-q4f16_1-MLC
-SmolLM2-360M-Instruct-q4f32_1-MLC
+pressiona F
+   ↓
+há WebGPU?
+   ├─ sim → WebLLM
+   │        ├─ Llama 3.2 1B
+   │        └─ SmolLM2 360M
+   │
+   └─ não → Transformers.js
+            ↓
+            WASM / CPU
+            ↓
+            SmolLM2 135M Instruct q4
 ```
 
-O primeiro prioriza qualidade. O segundo é um fallback mais leve.
+Se todos os modelos falharem, o sistema usa diálogo determinístico.
 
-## Download e cache
+## Por que existe o fallback CPU
 
-Na primeira conversa livre, o WebLLM baixa o modelo escolhido. O progresso aparece no painel de conversa.
+Alguns navegadores e drivers não expõem WebGPU. A rota WASM usa CPU e tem compatibilidade maior, embora seja mais lenta.
 
-Depois do primeiro carregamento, os artefatos ficam no cache do navegador e são reutilizados nas sessões seguintes.
+## Modelo CPU
 
-## Conhecimento limitado
+```text
+onnx-community/SmolLM2-135M-Instruct-ONNX
+dtype: q4
+device: wasm
+```
 
-O prompt local contém apenas:
+O modelo quantizado é baixado sob demanda e reutilizado pelo cache do navegador.
 
-- identidade do NPC;
-- personalidade;
+## Contexto
+
+Cada NPC recebe somente:
+
+- identidade;
 - profissão;
+- personalidade;
 - atividade atual;
-- situação familiar;
-- localização e horário;
-- fatos presentes na memória daquele NPC;
-- resumo e histórico curto da conversa.
-
-Se o NPC não conhece um fato, ele é instruído a admitir que não sabe em vez de inventar lore.
-
-## Memória curta e longa
-
-### Curta
-
-O save mantém os últimos 8 turnos da conversa daquele NPC.
-
-### Longa
-
-O cliente mantém um resumo compacto dos intercâmbios anteriores, limitado a 900 caracteres.
-
-### Fatos explícitos
-
-Fatos simples ditos pelo jogador são extraídos deterministicamente, sem depender do modelo.
-
-Exemplos reconhecidos:
-
-- "meu nome é ...";
-- "eu vim de ...";
-- "eu moro em ...";
-- "eu gosto de ...";
-- "eu não gosto de ...";
-- "eu trabalho como/com ...".
-
-Esses fatos entram na Memory v2 com `source = player`.
+- família;
+- horário/local;
+- fatos que conhece;
+- resumo da conversa;
+- histórico curto.
 
 ## Autoridade
 
-O modelo pode:
+A IA conversa, mas não altera quests, itens, casamento, filhos, dinheiro, movimento ou decisões da Utility AI.
 
-- conversar;
-- reagir;
-- expressar opinião coerente com sua personalidade;
-- mencionar memórias recebidas.
+## Custos
 
-O modelo não pode:
-
-- criar item;
-- concluir quest;
-- casar NPCs;
-- gerar filhos;
-- alterar dinheiro;
-- mover personagem;
-- mudar BrainAction;
-- modificar estado canônico.
-
-## Compatibilidade
-
-WebLLM depende de WebGPU. Quando WebGPU não estiver disponível, ou se nenhum modelo puder ser carregado, a conversa livre usa automaticamente o fallback determinístico já existente.
-
-## Custos e configuração
-
-- nenhuma chave;
-- nenhuma variável de ambiente;
-- nenhum servidor de IA;
-- nenhum custo por token;
-- nenhuma dependência da OpenAI.
-
-A única despesa de infraestrutura continua sendo a hospedagem normal do jogo, caso o plano de hospedagem ultrapasse seus próprios limites.
+- sem OpenAI;
+- sem API key;
+- sem backend de IA;
+- sem cobrança por token.
