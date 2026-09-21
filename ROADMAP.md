@@ -21,17 +21,21 @@
 - logs explicáveis.
 
 ## ✅ v0.6.0 — Generative NPC
-- Vercel Function para IA;
-- Responses API;
-- conversa livre com F;
+- conversa livre;
+- memória curta e longa;
 - contexto limitado ao conhecimento individual;
-- memória curta;
-- resumo persistente;
-- extração de fatos explícitos do jogador;
-- fallback local;
-- rate limit básico;
-- chave somente no backend;
-- IA sem autoridade sobre estado canônico.
+- autoridade separada do estado canônico.
+
+## ✅ v0.6.1 — Local NPC AI
+- remoção completa da OpenAI;
+- remoção de chave/API paga;
+- WebLLM no navegador;
+- Llama 3.2 1B como modelo principal;
+- SmolLM2 360M como fallback;
+- download apenas no primeiro uso;
+- cache local;
+- zero custo por conversa;
+- fallback determinístico sem WebGPU.
 
 ## v0.7.0 — Economy & Settlement
 - dinheiro individual;
