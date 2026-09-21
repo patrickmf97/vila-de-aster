@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import type { Facing, NpcActivity, NpcDefinition, Point, ScheduleEntry } from '../types';
+import type { Facing, NpcActivity, NpcBrainState, NpcDefinition, Point, ScheduleEntry } from '../types';
 
 export class Npc extends Phaser.GameObjects.Container {
   readonly definition: NpcDefinition;
@@ -79,20 +79,21 @@ export class Npc extends Phaser.GameObjects.Container {
     deltaSeconds: number,
     elapsedSeconds: number,
     residenceTarget?: Point,
+    brain?: NpcBrainState,
   ): void {
     const schedule = this.scheduleAt(minuteOfDay);
-    const activity = schedule.activity ?? inferActivity(schedule.label);
+    const activity = brain?.currentActivity ?? schedule.activity ?? inferActivity(schedule.label);
     this.currentActivity = activity;
 
     const micro = this.microOffset(activity, elapsedSeconds);
-    const baseTarget = schedule.homeTarget && residenceTarget
+    const baseTarget = brain?.target ?? (schedule.homeTarget && residenceTarget
       ? residenceTarget
-      : { x: schedule.x, y: schedule.y };
+      : { x: schedule.x, y: schedule.y });
     const targetX = baseTarget.x + micro.x;
     const targetY = baseTarget.y + micro.y;
     const distance = Phaser.Math.Distance.Between(this.x, this.y, targetX, targetY);
 
-    this.activityLabel.setText(activityText(activity));
+    this.activityLabel.setText(brain?.label ?? activityText(activity));
 
     if (distance > 5 && activity !== 'sleep') {
       const speed = activity === 'walk' ? 54 : 38;
@@ -176,6 +177,8 @@ function inferActivity(label: string): NpcActivity {
   if (value.includes('pesc')) return 'fish';
   if (value.includes('brinc')) return 'play';
   if (value.includes('família')) return 'family';
+  if (value.includes('comendo')) return 'eat';
+  if (value.includes('investig')) return 'investigate';
   if (value.includes('convers') || value.includes('praça')) return 'socialize';
   if (value.includes('caminh') || value.includes('voltando')) return 'walk';
   if (value.includes('trabalh') || value.includes('forja') || value.includes('empório') || value.includes('taverna')) return 'work';
@@ -192,6 +195,8 @@ function activityText(activity: NpcActivity): string {
     fish: '🎣 pescando',
     play: '🪁 brincando',
     family: '🏠 com a família',
+    eat: '🍲 comendo',
+    investigate: '🔎 investigando',
   }[activity];
 }
 
