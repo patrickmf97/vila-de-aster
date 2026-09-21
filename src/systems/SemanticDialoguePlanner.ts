@@ -695,10 +695,16 @@ function result(
   confidence: number,
   reply: string,
 ): SemanticReply {
+  const compacted = compactSentence(reply);
+  const hasMeaningfulText =
+    compacted.replace(/[.\s…!?—-]/g, '').length >= 2;
+
   return {
     intent,
     confidence,
-    reply: compactSentence(reply),
+    reply: hasMeaningfulText
+      ? compacted
+      : 'Não sei bem como colocar isso em palavras agora.',
   };
 }
 
@@ -732,9 +738,9 @@ function toneFor(
 
 function activityPhrase(value: string): string {
   return value
-    .replace(/^decidius+/i, '')
-    .replace(/^estous+/i, '')
-    .replace(/^eus+/i, '')
+    .replace(/^decidiu\s+/i, '')
+    .replace(/^estou\s+/i, '')
+    .replace(/^eu\s+/i, '')
     .trim();
 }
 
@@ -812,7 +818,7 @@ function significantWords(value: string): string[] {
   ]);
 
   return normalize(value)
-    .split(/s+/)
+    .split(/\s+/)
     .filter(
       (word) =>
         word.length >= 3 && !stop.has(word),
@@ -821,8 +827,8 @@ function significantWords(value: string): string[] {
 
 function stripPlayerPrefix(value: string): string {
   return value
-    .replace(/^O jogador disse ques*/i, '')
-    .replace(/.$/, '');
+    .replace(/^O jogador disse que\s*/i, '')
+    .replace(/\.$/, '');
 }
 
 function naturalNames(names: string[]): string {
@@ -848,8 +854,8 @@ function normalize(value: string): string {
     .toLocaleLowerCase('pt-BR')
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
-    .replace(/[^p{L}p{N}s]/gu, ' ')
-    .replace(/s+/g, ' ')
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -860,8 +866,8 @@ function lowercaseFirst(value: string): string {
 
 function compactSentence(value: string): string {
   return value
-    .replace(/s+/g, ' ')
-    .replace(/.s*./g, '.')
+    .replace(/\s+/g, ' ')
+    .replace(/\.\s*\./g, '.')
     .trim();
 }
 
