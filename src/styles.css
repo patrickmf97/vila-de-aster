@@ -1,25 +1,27 @@
 :root {
-  color-scheme: dark;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #f8fff7;
+  background: #0c1515;
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; overflow: hidden; background: #0c1515; }
-body { display: grid; place-items: center; }
+html, body, #app { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+body { background: #0c1515; }
 
-#game-shell {
+#app {
   position: relative;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  background: #15231f;
+  isolation: isolate;
 }
 
 #game {
+  position: absolute;
+  inset: 0;
+}
+
+#game canvas {
+  display: block;
   width: 100%;
   height: 100%;
-  display: block;
-  image-rendering: pixelated;
 }
 
 .glass {
@@ -30,20 +32,29 @@ body { display: grid; place-items: center; }
   border-radius: 14px;
 }
 
-.hud { position: absolute; z-index: 3; color: #f8fff7; }
+.hud { position: absolute; z-index: 10; color: #f8fff7; pointer-events: none; }
 #top-left { left: 18px; top: 18px; padding: 12px 16px; min-width: 210px; }
 .brand { font-weight: 800; letter-spacing: .2px; font-size: 17px; }
 .sub { color: #cfe8d6; font-size: 12px; margin-top: 2px; }
+
 #top-right { right: 18px; top: 18px; padding: 12px 16px; text-align: right; min-width: 120px; }
 .stats div:first-child { font-size: 17px; }
 #dayText { color: #cfe8d6; font-size: 12px; margin-top: 2px; }
-.quest { left: 18px; top: 102px; width: 280px; padding: 12px 14px; display: grid; gap: 5px; }
+
+.quest {
+  left: 18px;
+  top: 102px;
+  width: 280px;
+  padding: 12px 14px;
+  display: grid;
+  gap: 5px;
+}
 .quest strong { font-size: 13px; color: #ffe9a6; }
 .quest span { font-size: 12px; color: #e7f2e9; line-height: 1.35; }
 
 .help {
   position: absolute;
-  z-index: 3;
+  z-index: 10;
   right: 18px;
   bottom: 18px;
   padding: 10px 12px;
@@ -51,6 +62,7 @@ body { display: grid; place-items: center; }
   gap: 12px;
   color: #dce9df;
   font-size: 11px;
+  pointer-events: none;
 }
 
 kbd {
@@ -66,7 +78,7 @@ kbd {
 
 .hint {
   position: absolute;
-  z-index: 4;
+  z-index: 12;
   left: 50%;
   bottom: 135px;
   transform: translateX(-50%);
@@ -76,11 +88,12 @@ kbd {
   color: white;
   font-size: 13px;
   border: 1px solid rgba(255,255,255,.14);
+  pointer-events: none;
 }
 
 .dialogue {
   position: absolute;
-  z-index: 10;
+  z-index: 20;
   left: 50%;
   bottom: 30px;
   transform: translateX(-50%);
@@ -94,6 +107,7 @@ kbd {
   display: flex;
   gap: 18px;
   padding: 18px;
+  pointer-events: none;
 }
 
 .portrait {
@@ -115,7 +129,7 @@ kbd {
 
 .toast {
   position: absolute;
-  z-index: 20;
+  z-index: 30;
   left: 50%;
   top: 24px;
   transform: translateX(-50%);
@@ -126,6 +140,7 @@ kbd {
   border: 1px solid rgba(153,255,183,.22);
   box-shadow: 0 10px 30px rgba(0,0,0,.35);
   font-size: 13px;
+  pointer-events: none;
 }
 
 .hidden { display: none !important; }
