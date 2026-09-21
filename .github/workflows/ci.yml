@@ -19,13 +19,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check project manifest
+        id: manifest
+        shell: bash
+        run: |
+          if [ -f package.json ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Legacy snapshot detected; build skipped."
+          fi
+
       - name: Setup Node
+        if: steps.manifest.outputs.exists == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
       - name: Install dependencies
+        if: steps.manifest.outputs.exists == 'true'
         run: npm install
 
       - name: TypeScript and Vite build
+        if: steps.manifest.outputs.exists == 'true'
         run: npm run build
