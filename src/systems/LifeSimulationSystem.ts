@@ -62,10 +62,10 @@ export class LifeSimulationSystem {
     }
 
     this.processDaysUntil(day);
-    this.save.persist();
 
     const events = this.save.snapshot.lifeEvents.slice(this.lastEventCount);
     this.lastEventCount = this.save.snapshot.lifeEvents.length;
+    if (events.length) this.save.persist();
     return events;
   }
 
