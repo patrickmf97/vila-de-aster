@@ -2,8 +2,10 @@ import type {
   GeneratedNpcData,
   LifeEvent,
   BrainDecisionLog,
+  ConversationTurn,
   MemoryFact,
   NpcBrainState,
+  NpcConversationState,
   NpcLifeState,
   NpcMemory,
   NpcRelationship,
@@ -26,6 +28,7 @@ export class SaveSystem {
       life: {},
       brains: {},
       brainLogs: [],
+      conversations: {},
       generatedNpcs: [],
       lifeEvents: [],
       eventTriggered: false,
@@ -55,6 +58,7 @@ export class SaveSystem {
         life: parsed.life ?? {},
         brains: parsed.brains ?? {},
         brainLogs: Array.isArray(parsed.brainLogs) ? parsed.brainLogs : [],
+        conversations: parsed.conversations ?? {},
         generatedNpcs: Array.isArray(parsed.generatedNpcs) ? parsed.generatedNpcs : [],
         lifeEvents: Array.isArray(parsed.lifeEvents) ? parsed.lifeEvents : [],
         eventTriggered: parsed.eventTriggered ?? false,
@@ -104,6 +108,26 @@ export class SaveSystem {
   addBrainLog(log: BrainDecisionLog): void {
     this.data.brainLogs.push(log);
     this.data.brainLogs = this.data.brainLogs.slice(-160);
+  }
+
+  conversationFor(id: string): NpcConversationState {
+    if (!this.data.conversations[id]) {
+      this.data.conversations[id] = {
+        summary: '',
+        turns: [],
+      };
+    }
+    return this.data.conversations[id];
+  }
+
+  appendConversationTurn(id: string, turn: ConversationTurn): void {
+    const conversation = this.conversationFor(id);
+    conversation.turns.push(turn);
+    conversation.turns = conversation.turns.slice(-8);
+  }
+
+  setConversationSummary(id: string, summary: string): void {
+    this.conversationFor(id).summary = summary.slice(0, 900);
   }
 
   addGeneratedNpc(data: GeneratedNpcData): void {
