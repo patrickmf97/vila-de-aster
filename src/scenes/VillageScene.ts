@@ -8,6 +8,7 @@ import { SaveSystem } from '../systems/SaveSystem';
 import { TimeSystem } from '../systems/TimeSystem';
 import { DialogueSystem } from '../systems/DialogueSystem';
 import { EventSystem } from '../systems/EventSystem';
+import { RelationshipSystem } from '../systems/RelationshipSystem';
 import { Hud } from '../ui/Hud';
 import type { DoorDefinition, Point } from '../types';
 
@@ -27,6 +28,7 @@ export class VillageScene extends Phaser.Scene {
   private timeSystem!: TimeSystem;
   private dialogue!: DialogueSystem;
   private eventSystem!: EventSystem;
+  private relationshipSystem!: RelationshipSystem;
   private hud!: Hud;
   private spawnOverride?: Point;
   private fromInterior = false;
@@ -57,6 +59,7 @@ export class VillageScene extends Phaser.Scene {
     );
     this.dialogue = new DialogueSystem();
     this.eventSystem = new EventSystem(this.save);
+    this.relationshipSystem = new RelationshipSystem(this.save);
     this.hud = new Hud();
 
     new WorldRenderer(this).create();
@@ -121,6 +124,12 @@ export class VillageScene extends Phaser.Scene {
     this.npcs.forEach((npc) =>
       npc.updateRoutine(this.timeSystem.minuteOfDay, dt, elapsedSeconds),
     );
+
+    this.save.patch({
+      day: this.timeSystem.day,
+      gameMinutes: this.timeSystem.minutes,
+    });
+    this.relationshipSystem.update(this.npcs, dt, this.timeSystem.day);
 
     const target = this.nearestInteraction();
     this.hud.setInteractionHint(
@@ -226,6 +235,14 @@ export class VillageScene extends Phaser.Scene {
     memory.affinity = Math.min(100, memory.affinity + 8);
     memory.lastDay = this.timeSystem.day;
 
+    this.save.addFact(definition.id, {
+      id: 'met-player',
+      text: 'Conheceu o viajante que chegou recentemente à Vila de Aster.',
+      importance: 1,
+      createdDay: this.timeSystem.day,
+      source: 'player',
+    });
+
     const schedule = npc.scheduleAt(this.timeSystem.minuteOfDay);
     const lines = [
       memory.talks === 1 ? definition.intro : definition.remembered,
@@ -240,14 +257,36 @@ export class VillageScene extends Phaser.Scene {
 
     lines.push(`Agora estou ${schedule.label}. A vila muda bastante dependendo da hora.`);
 
+    const sharedFact = memory.facts.find(
+      (fact) => fact.source !== 'player' && fact.source !== definition.id,
+    );
+    if (sharedFact) {
+      const sourceName = npcDefinitions.find((entry) => entry.id === sharedFact.source)?.name ?? 'outro morador';
+      lines.push(`Aliás, ${sourceName} me contou uma coisa: ${sharedFact.text}`);
+    }
+
     if (this.eventSystem.shouldTriggerRiverEcho()) {
       this.eventSystem.triggerRiverEcho();
+      this.save.addFact(definition.id, {
+        id: 'river-echo',
+        text: 'Um tremor estranho veio da direção do rio e parece ligado às mudanças recentes na vila.',
+        importance: 5,
+        createdDay: this.timeSystem.day,
+        source: definition.id,
+      });
       lines.push(
         '...Você também sentiu? Um tremor leve. Veio da direção do rio. Isso não acontecia há anos.',
       );
       this.hud.setRiverQuest();
       this.hud.showToast('⚠️ Evento do mundo desbloqueado: “O Eco Sob o Rio”');
     } else if (this.eventSystem.riverEchoActive) {
+      this.save.addFact(definition.id, {
+        id: 'river-echo',
+        text: 'Um tremor estranho veio da direção do rio e parece ligado às mudanças recentes na vila.',
+        importance: 5,
+        createdDay: this.timeSystem.day,
+        source: 'village',
+      });
       lines.push(
         'Desde aquele tremor, ninguém está totalmente tranquilo. Cada morador parece saber um pedaço diferente da história.',
       );
