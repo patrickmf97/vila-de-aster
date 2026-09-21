@@ -15,6 +15,7 @@ import { DialogueSystem } from '../systems/DialogueSystem';
 import { SaveSystem } from '../systems/SaveSystem';
 import { TimeSystem } from '../systems/TimeSystem';
 import { LifeSimulationSystem } from '../systems/LifeSimulationSystem';
+import { NpcBrainSystem } from '../systems/NpcBrainSystem';
 import { Hud } from '../ui/Hud';
 
 interface InteriorSceneData {
@@ -37,12 +38,14 @@ export class InteriorScene extends Phaser.Scene {
   private save!: SaveSystem;
   private timeSystem!: TimeSystem;
   private lifeSystem!: LifeSimulationSystem;
+  private brainSystem!: NpcBrainSystem;
   private hud!: Hud;
 
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd!: Record<'W' | 'A' | 'S' | 'D', Phaser.Input.Keyboard.Key>;
   private interactKey!: Phaser.Input.Keyboard.Key;
   private enterKey!: Phaser.Input.Keyboard.Key;
+  private brainKey!: Phaser.Input.Keyboard.Key;
   private persistAccumulator = 0;
 
   constructor() {
@@ -61,6 +64,7 @@ export class InteriorScene extends Phaser.Scene {
       this.save.snapshot.gameMinutes,
     );
     this.lifeSystem = new LifeSimulationSystem(this.save, npcDefinitions);
+    this.brainSystem = new NpcBrainSystem(this.save, this.lifeSystem);
     this.dialogue = new DialogueSystem();
     this.hud = new Hud();
 
@@ -84,6 +88,7 @@ export class InteriorScene extends Phaser.Scene {
     >;
     this.interactKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.E);
     this.enterKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+    this.brainKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.B);
 
     this.cameras.main.setBounds(0, 0, INTERIOR_SIZE.width, INTERIOR_SIZE.height);
     this.cameras.main.centerOn(INTERIOR_SIZE.width / 2, INTERIOR_SIZE.height / 2);
@@ -129,6 +134,11 @@ export class InteriorScene extends Phaser.Scene {
       dt,
     );
     this.showLifeEvents(events);
+    this.brainSystem.update(
+      this.timeSystem.day,
+      this.timeSystem.minuteOfDay,
+      dt,
+    );
     this.syncResidentRoster();
     this.syncResidents();
 
@@ -151,6 +161,10 @@ export class InteriorScene extends Phaser.Scene {
       } else if (target?.type === 'resident') {
         this.talkToResident(target.npc);
       }
+    }
+
+    if (Phaser.Input.Keyboard.JustDown(this.brainKey)) {
+      this.hud.toggleBrainDebug();
     }
 
     this.persistAccumulator += dt;
@@ -199,7 +213,8 @@ export class InteriorScene extends Phaser.Scene {
       const spot = spots[index % spots.length];
 
       npc.setPosition(spot.x, spot.y);
-      npc.setInteriorActivity(life.currentActivity);
+      const brain = this.brainSystem.getBrain(npc.definition.id);
+      npc.setInteriorActivity(life.currentActivity, brain?.label);
       npc.setDepth(Math.round(spot.y));
     }
   }
@@ -296,7 +311,15 @@ export class InteriorScene extends Phaser.Scene {
     }
 
     const definitions = this.lifeSystem.getAllDefinitions();
-    const lines = ['Você encontrou ' + definition.name + ' em casa.'];
+    const brain = this.brainSystem.getBrain(definition.id);
+    const lines = ['Você encontrou ' + definition.name + ' aqui.'];
+
+    if (brain) {
+      lines.push('Decidi ' + brain.label + '.');
+      if (brain.reasons.length) {
+        lines.push('O que pesou nisso: ' + brain.reasons.slice(0, 2).join('; ') + '.');
+      }
+    }
 
     if (life.partnerId) {
       const partner = definitions.find((entry) => entry.id === life.partnerId);
@@ -362,6 +385,15 @@ export class InteriorScene extends Phaser.Scene {
   }
 
   private syncHud(): void {
+    const names = new Map(
+      this.lifeSystem.getAllDefinitions().map((definition) => [definition.id, definition.name]),
+    );
+    const brainLines = this.brainSystem.getRecentLogs(7).map((log) => {
+      const name = names.get(log.npcId) ?? log.npcId;
+      const reason = log.reasons[0] ?? 'sem motivo dominante';
+      return name + ' → ' + log.label + ' [' + log.score + '] • ' + reason;
+    });
+    this.hud.setBrainDebug(brainLines.length ? brainLines : ['Aguardando decisões...']);
     this.hud.setPopulation(this.lifeSystem.getAllDefinitions().length);
     this.hud.setClock(
       this.timeSystem.formatted,
