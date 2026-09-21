@@ -31,6 +31,7 @@ type InteriorTarget =
 
 export class InteriorScene extends Phaser.Scene {
   private definition!: InteriorDefinition;
+  private buildingId!: string;
   private returnPoint!: Point;
   private player!: Player;
   private residents: Npc[] = [];
@@ -56,7 +57,12 @@ export class InteriorScene extends Phaser.Scene {
   }
 
   init(data: InteriorSceneData): void {
-    this.definition = interiors[data.buildingId] ?? interiors.inn;
+    this.buildingId = data.buildingId;
+    this.definition =
+      interiors[data.buildingId] ??
+      (data.buildingId.startsWith('settlement-home:')
+        ? interiors['settlement-home']
+        : interiors.inn);
     this.returnPoint = data.returnPoint;
   }
 
@@ -67,6 +73,21 @@ export class InteriorScene extends Phaser.Scene {
       this.save.snapshot.gameMinutes,
     );
     this.lifeSystem = new LifeSimulationSystem(this.save, npcDefinitions);
+
+    const settlementBuilding =
+      this.save.snapshot.settlementBuildings.find(
+        (building) =>
+          building.residenceId === this.buildingId,
+      );
+    if (settlementBuilding) {
+      this.definition = {
+        ...this.definition,
+        name: settlementBuilding.name,
+        subtitle:
+          'Uma residência construída durante a expansão da Vila de Aster.',
+      };
+    }
+
     this.brainSystem = new NpcBrainSystem(this.save, this.lifeSystem);
     this.dynamicDialogue = new DynamicDialogueSystem(this.save);
     this.dialogue = new DialogueSystem();
@@ -211,7 +232,7 @@ export class InteriorScene extends Phaser.Scene {
   private syncResidents(): void {
     const visibleResidents = this.residents.filter((npc) => {
       const life = this.lifeSystem.getState(npc.definition.id);
-      return life?.currentZone === this.definition.id;
+      return life?.currentZone === this.buildingId;
     });
 
     const sleepSpots =
@@ -221,7 +242,7 @@ export class InteriorScene extends Phaser.Scene {
 
     for (const npc of this.residents) {
       const life = this.lifeSystem.getState(npc.definition.id);
-      const visible = life?.currentZone === this.definition.id;
+      const visible = life?.currentZone === this.buildingId;
       npc.syncWorldPresence(visible);
 
       if (!visible || !life) continue;
