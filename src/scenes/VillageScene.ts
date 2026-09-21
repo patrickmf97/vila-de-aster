@@ -2,13 +2,23 @@ import Phaser from 'phaser';
 import { Player } from '../entities/Player';
 import { Npc } from '../entities/Npc';
 import { npcDefinitions } from '../data/npcs';
-import { collisionRects, WORLD } from '../data/world';
+import { collisionRects, doors, WORLD } from '../data/world';
 import { WorldRenderer } from '../world/WorldRenderer';
 import { SaveSystem } from '../systems/SaveSystem';
 import { TimeSystem } from '../systems/TimeSystem';
 import { DialogueSystem } from '../systems/DialogueSystem';
 import { EventSystem } from '../systems/EventSystem';
 import { Hud } from '../ui/Hud';
+import type { DoorDefinition, Point } from '../types';
+
+interface VillageSceneData {
+  spawn?: Point;
+  fromInterior?: boolean;
+}
+
+type InteractionTarget =
+  | { type: 'npc'; npc: Npc; distance: number }
+  | { type: 'door'; door: DoorDefinition; distance: number };
 
 export class VillageScene extends Phaser.Scene {
   private player!: Player;
@@ -18,6 +28,8 @@ export class VillageScene extends Phaser.Scene {
   private dialogue!: DialogueSystem;
   private eventSystem!: EventSystem;
   private hud!: Hud;
+  private spawnOverride?: Point;
+  private fromInterior = false;
 
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd!: Record<'W' | 'A' | 'S' | 'D', Phaser.Input.Keyboard.Key>;
@@ -32,6 +44,11 @@ export class VillageScene extends Phaser.Scene {
     super('VillageScene');
   }
 
+  init(data: VillageSceneData): void {
+    this.spawnOverride = data.spawn;
+    this.fromInterior = !!data.fromInterior;
+  }
+
   create(): void {
     this.save = new SaveSystem();
     this.timeSystem = new TimeSystem(
@@ -44,7 +61,7 @@ export class VillageScene extends Phaser.Scene {
 
     new WorldRenderer(this).create();
 
-    const start = this.save.snapshot.player ?? { x: 930, y: 790 };
+    const start = this.spawnOverride ?? this.save.snapshot.player ?? { x: 930, y: 790 };
     this.player = new Player(this, start.x, start.y);
     this.npcs = npcDefinitions.map((definition) => new Npc(this, definition));
 
@@ -68,7 +85,15 @@ export class VillageScene extends Phaser.Scene {
 
     this.scale.on('resize', this.resizeOverlay, this);
     this.eventSystem.riverEchoActive && this.hud.setRiverQuest();
-    this.hud.showToast('🌿 Bem-vindo à Vila de Aster. Fale com os moradores.');
+
+    if (this.fromInterior) {
+      this.hud.showToast('🌿 Você voltou para as ruas da vila.');
+    } else {
+      this.hud.showToast('🌿 Bem-vindo à Vila de Aster. Fale com os moradores.');
+    }
+
+    this.spawnOverride = undefined;
+    this.fromInterior = false;
     this.syncHud();
   }
 
@@ -92,11 +117,17 @@ export class VillageScene extends Phaser.Scene {
       }
     }
 
-    this.npcs.forEach((npc) => npc.updateRoutine(this.timeSystem.minuteOfDay, dt));
+    const elapsedSeconds = this.time.now / 1000;
+    this.npcs.forEach((npc) =>
+      npc.updateRoutine(this.timeSystem.minuteOfDay, dt, elapsedSeconds),
+    );
 
-    const nearest = this.nearestNpc();
+    const target = this.nearestInteraction();
     this.hud.setInteractionHint(
-      !this.dialogue.isOpen && nearest !== null && nearest.distance < 78,
+      !this.dialogue.isOpen && target !== null,
+      target?.type === 'door'
+        ? `entrar em ${target.door.label.replace('Entrar em ', '')}`
+        : 'conversar',
     );
 
     if (
@@ -105,8 +136,10 @@ export class VillageScene extends Phaser.Scene {
     ) {
       if (this.dialogue.isOpen) {
         this.dialogue.advance();
-      } else if (nearest && nearest.distance < 78) {
-        this.startNpcDialogue(nearest.npc);
+      } else if (target?.type === 'npc') {
+        this.startNpcDialogue(target.npc);
+      } else if (target?.type === 'door') {
+        this.enterBuilding(target.door);
       }
     }
 
@@ -144,8 +177,8 @@ export class VillageScene extends Phaser.Scene {
     });
   };
 
-  private nearestNpc(): { npc: Npc; distance: number } | null {
-    let best: { npc: Npc; distance: number } | null = null;
+  private nearestInteraction(): InteractionTarget | null {
+    let best: InteractionTarget | null = null;
 
     for (const npc of this.npcs) {
       const distance = Phaser.Math.Distance.Between(
@@ -154,10 +187,35 @@ export class VillageScene extends Phaser.Scene {
         npc.x,
         npc.y,
       );
-      if (!best || distance < best.distance) best = { npc, distance };
+      if (distance <= 78 && (!best || distance < best.distance)) {
+        best = { type: 'npc', npc, distance };
+      }
+    }
+
+    for (const door of doors) {
+      const distance = Phaser.Math.Distance.Between(
+        this.player.x,
+        this.player.y,
+        door.x,
+        door.y,
+      );
+      if (distance <= 82 && (!best || distance < best.distance)) {
+        best = { type: 'door', door, distance };
+      }
     }
 
     return best;
+  }
+
+  private enterBuilding(door: DoorDefinition): void {
+    this.persist();
+    this.cameras.main.fadeOut(180, 20, 24, 22);
+    this.time.delayedCall(190, () => {
+      this.scene.start('InteriorScene', {
+        buildingId: door.buildingId,
+        returnPoint: door.returnPoint,
+      });
+    });
   }
 
   private startNpcDialogue(npc: Npc): void {
