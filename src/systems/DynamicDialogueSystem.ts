@@ -738,7 +738,7 @@ function farewellFor(npcId: string): string {
 }
 
 function compact(value: string, max: number): string {
-  const compacted = value.replace(/s+/g, ' ').trim();
+  const compacted = value.replace(/\s+/g, ' ').trim();
   return compacted.length <= max
     ? compacted
     : compacted.slice(0, max - 1) + '…';
