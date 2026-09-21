@@ -11,7 +11,7 @@ import { EventSystem } from '../systems/EventSystem';
 import { RelationshipSystem } from '../systems/RelationshipSystem';
 import { LifeSimulationSystem } from '../systems/LifeSimulationSystem';
 import { NpcBrainSystem } from '../systems/NpcBrainSystem';
-import { GenerativeDialogueSystem } from '../systems/GenerativeDialogueSystem';
+import { DynamicDialogueSystem } from '../systems/DynamicDialogueSystem';
 import { Hud } from '../ui/Hud';
 import type { DoorDefinition, LifeEvent, Point } from '../types';
 
@@ -34,7 +34,7 @@ export class VillageScene extends Phaser.Scene {
   private relationshipSystem!: RelationshipSystem;
   private lifeSystem!: LifeSimulationSystem;
   private brainSystem!: NpcBrainSystem;
-  private generativeDialogue!: GenerativeDialogueSystem;
+  private dynamicDialogue!: DynamicDialogueSystem;
   private hud!: Hud;
   private spawnOverride?: Point;
   private fromInterior = false;
@@ -70,7 +70,7 @@ export class VillageScene extends Phaser.Scene {
     this.relationshipSystem = new RelationshipSystem(this.save);
     this.lifeSystem = new LifeSimulationSystem(this.save, npcDefinitions);
     this.brainSystem = new NpcBrainSystem(this.save, this.lifeSystem);
-    this.generativeDialogue = new GenerativeDialogueSystem(this.save);
+    this.dynamicDialogue = new DynamicDialogueSystem(this.save);
     this.hud = new Hud();
 
     new WorldRenderer(this).create();
@@ -116,9 +116,9 @@ export class VillageScene extends Phaser.Scene {
   update(_time: number, delta: number): void {
     const dt = Math.min(delta / 1000, 0.033);
     const simulationDt =
-      this.dialogue.isOpen || this.generativeDialogue.isOpen ? 0 : dt;
+      this.dialogue.isOpen || this.dynamicDialogue.isOpen ? 0 : dt;
 
-    if (!this.dialogue.isOpen && !this.generativeDialogue.isOpen) {
+    if (!this.dialogue.isOpen && !this.dynamicDialogue.isOpen) {
       this.player.updateMovement(
         {
           up: this.cursors.up.isDown || this.wasd.W.isDown,
@@ -180,14 +180,14 @@ export class VillageScene extends Phaser.Scene {
 
     const target = this.nearestInteraction();
     this.hud.setInteractionHint(
-      !this.dialogue.isOpen && !this.generativeDialogue.isOpen && target !== null,
+      !this.dialogue.isOpen && !this.dynamicDialogue.isOpen && target !== null,
       target?.type === 'door'
         ? 'entrar em ' + target.door.label.replace('Entrar em ', '')
         : 'conversar',
     );
 
     if (
-      !this.generativeDialogue.isOpen &&
+      !this.dynamicDialogue.isOpen &&
       (Phaser.Input.Keyboard.JustDown(this.interactKey) ||
       Phaser.Input.Keyboard.JustDown(this.enterKey))
     ) {
@@ -202,14 +202,14 @@ export class VillageScene extends Phaser.Scene {
 
     if (
       !this.dialogue.isOpen &&
-      !this.generativeDialogue.isOpen &&
+      !this.dynamicDialogue.isOpen &&
       Phaser.Input.Keyboard.JustDown(this.freeChatKey) &&
       target?.type === 'npc'
     ) {
       this.openGenerativeChat(target.npc);
     }
 
-    if (!this.generativeDialogue.isOpen && Phaser.Input.Keyboard.JustDown(this.brainKey)) {
+    if (!this.dynamicDialogue.isOpen && Phaser.Input.Keyboard.JustDown(this.brainKey)) {
       this.hud.toggleBrainDebug();
     }
 
@@ -307,7 +307,7 @@ export class VillageScene extends Phaser.Scene {
     const life = this.lifeSystem.getState(definition.id);
     const brain = this.brainSystem.getBrain(definition.id);
 
-    this.generativeDialogue.open({
+    this.dynamicDialogue.open({
       definition,
       life,
       brain,
