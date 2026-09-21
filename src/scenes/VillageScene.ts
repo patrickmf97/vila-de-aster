@@ -224,6 +224,6 @@ export class VillageScene extends Phaser.Scene {
   }
 
   private resizeOverlay(gameSize: Phaser.Structs.Size): void {
-    this.nightOverlay.setSize(gameSize.width, gameSize.height);
+    this.nightOverlay.setDisplaySize(gameSize.width, gameSize.height);
   }
 }
