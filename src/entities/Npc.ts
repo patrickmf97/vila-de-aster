@@ -174,6 +174,8 @@ function inferActivity(label: string): NpcActivity {
   const value = label.toLowerCase();
   if (value.includes('dorm')) return 'sleep';
   if (value.includes('pesc')) return 'fish';
+  if (value.includes('brinc')) return 'play';
+  if (value.includes('família')) return 'family';
   if (value.includes('convers') || value.includes('praça')) return 'socialize';
   if (value.includes('caminh') || value.includes('voltando')) return 'walk';
   if (value.includes('trabalh') || value.includes('forja') || value.includes('empório') || value.includes('taverna')) return 'work';
@@ -188,6 +190,8 @@ function activityText(activity: NpcActivity): string {
     socialize: '💬 socializando',
     rest: '🌿 descansando',
     fish: '🎣 pescando',
+    play: '🪁 brincando',
+    family: '🏠 com a família',
   }[activity];
 }
 
