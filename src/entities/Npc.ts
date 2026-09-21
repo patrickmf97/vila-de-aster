@@ -4,12 +4,12 @@ import type { Facing, NpcActivity, NpcDefinition, ScheduleEntry } from '../types
 export class Npc extends Phaser.GameObjects.Container {
   readonly definition: NpcDefinition;
   currentActivity: NpcActivity = 'rest';
-  private readonly body: Phaser.GameObjects.Arc;
+  private readonly visualBody: Phaser.GameObjects.Arc;
   private readonly head: Phaser.GameObjects.Arc;
   private readonly leftEye: Phaser.GameObjects.Arc;
   private readonly rightEye: Phaser.GameObjects.Arc;
-  private readonly leftFoot: Phaser.GameObjects.Arc;
-  private readonly rightFoot: Phaser.GameObjects.Arc;
+  private readonly leftFoot: Phaser.GameObjects.Ellipse;
+  private readonly rightFoot: Phaser.GameObjects.Ellipse;
   private readonly activityLabel: Phaser.GameObjects.Text;
   private facing: Facing = 'down';
   private walkPhase = 0;
@@ -23,7 +23,7 @@ export class Npc extends Phaser.GameObjects.Container {
     const shadow = scene.add.ellipse(0, 20, 32, 14, 0x000000, 0.18);
     this.leftFoot = scene.add.ellipse(-6, 16, 8, 5, darken(definition.color, 0.72));
     this.rightFoot = scene.add.ellipse(6, 16, 8, 5, darken(definition.color, 0.72));
-    this.body = scene.add.circle(0, 4, 15, definition.color);
+    this.visualBody = scene.add.circle(0, 4, 15, definition.color);
     this.head = scene.add.circle(0, -13, 12, 0xf4c6a7);
     this.leftEye = scene.add.circle(-4, -14, 1.4, 0x3d2b26);
     this.rightEye = scene.add.circle(4, -14, 1.4, 0x3d2b26);
@@ -54,7 +54,7 @@ export class Npc extends Phaser.GameObjects.Container {
       shadow,
       this.leftFoot,
       this.rightFoot,
-      this.body,
+      this.visualBody,
       this.head,
       this.leftEye,
       this.rightEye,
@@ -99,14 +99,14 @@ export class Npc extends Phaser.GameObjects.Container {
       this.leftFoot.y = 16 + wave * 2;
       this.rightFoot.y = 16 - wave * 2;
       const bob = Math.abs(wave) * -0.7;
-      this.body.y = 4 + bob;
+      this.visualBody.y = 4 + bob;
       this.head.y = -13 + bob;
       this.leftEye.y = -14 + bob;
       this.rightEye.y = -14 + bob;
     } else {
       this.leftFoot.y = 16;
       this.rightFoot.y = 16;
-      this.body.y = 4;
+      this.visualBody.y = 4;
       this.head.y = -13;
       this.leftEye.y = -14;
       this.rightEye.y = -14;
