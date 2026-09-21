@@ -383,6 +383,7 @@ export class VillageScene extends Phaser.Scene {
   }
 
   private syncHud(): void {
+    this.hud.setPopulation(this.lifeSystem.getAllDefinitions().length);
     this.hud.setClock(
       this.timeSystem.formatted,
       this.timeSystem.day,
