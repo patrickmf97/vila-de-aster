@@ -48,7 +48,7 @@ export const professionEconomy: Record<string, ProfessionEconomyProfile> = {
   Comerciante: {
     baseDailyIncome: 25,
     personalDailyCost: 5,
-    produces: { goods: 7 },
+    produces: { goods: 7, wood: 4, stone: 3 },
   },
   Pescador: {
     baseDailyIncome: 21,
