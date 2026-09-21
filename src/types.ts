@@ -31,15 +31,32 @@ export interface NpcDefinition extends Point {
   schedule: ScheduleEntry[];
 }
 
+export interface MemoryFact {
+  id: string;
+  text: string;
+  importance: number;
+  createdDay: number;
+  source: string;
+  expiresAfterDays?: number;
+}
+
 export interface NpcMemory {
   talks: number;
   affinity: number;
   lastDay: number;
+  facts: MemoryFact[];
+}
+
+export interface NpcRelationship {
+  score: number;
+  interactions: number;
+  lastInteractionDay: number;
 }
 
 export interface SaveData {
   player?: Point;
   npcs: Record<string, NpcMemory>;
+  relationships: Record<string, NpcRelationship>;
   eventTriggered: boolean;
   day: number;
   gameMinutes: number;
