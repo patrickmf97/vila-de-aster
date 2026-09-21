@@ -2,6 +2,7 @@ export class Hud {
   private clock = document.getElementById('clock')!;
   private dayText = document.getElementById('dayText')!;
   private dayIcon = document.getElementById('dayIcon')!;
+  private populationText = document.getElementById('populationText')!;
   private hint = document.getElementById('hint')!;
   private toast = document.getElementById('toast')!;
   private questText = document.querySelector('#quest span')!;
@@ -9,12 +10,16 @@ export class Hud {
 
   setClock(time: string, day: number, icon: string): void {
     this.clock.textContent = time;
-    this.dayText.textContent = `Dia ${day}`;
+    this.dayText.textContent = 'Dia ' + day;
     this.dayIcon.textContent = icon;
   }
 
+  setPopulation(count: number): void {
+    this.populationText.textContent = count + (count === 1 ? ' morador' : ' moradores');
+  }
+
   setInteractionHint(visible: boolean, label = 'conversar'): void {
-    this.hint.innerHTML = `Pressione <kbd>E</kbd> para ${label}`;
+    this.hint.innerHTML = 'Pressione <kbd>E</kbd> para ' + label;
     this.hint.classList.toggle('hidden', !visible);
   }
 
