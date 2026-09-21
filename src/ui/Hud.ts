@@ -6,6 +6,9 @@ export class Hud {
   private hint = document.getElementById('hint')!;
   private toast = document.getElementById('toast')!;
   private questText = document.querySelector('#quest span')!;
+  private brainDebug = document.getElementById('brainDebug')!;
+  private brainDebugContent = document.getElementById('brainDebugContent')!;
+  private brainDebugSignature = '';
   private toastTimer: number | undefined;
 
   setClock(time: string, day: number, icon: string): void {
@@ -29,6 +32,25 @@ export class Hud {
 
   setRiverQuest(): void {
     this.setQuest('Algo despertou perto do rio. Converse com os moradores para juntar pistas.');
+  }
+
+  toggleBrainDebug(): void {
+    this.brainDebug.classList.toggle('hidden');
+  }
+
+  setBrainDebug(lines: string[]): void {
+    const signature = lines.join('\n');
+    if (signature === this.brainDebugSignature) return;
+    this.brainDebugSignature = signature;
+
+    this.brainDebugContent.replaceChildren(
+      ...lines.map((line) => {
+        const row = document.createElement('div');
+        row.className = 'brain-debug-row';
+        row.textContent = line;
+        return row;
+      }),
+    );
   }
 
   showToast(message: string): void {

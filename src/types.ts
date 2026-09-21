@@ -18,7 +18,20 @@ export type NpcActivity =
   | 'rest'
   | 'fish'
   | 'play'
-  | 'family';
+  | 'family'
+  | 'eat'
+  | 'investigate';
+
+export type BrainAction =
+  | 'follow-schedule'
+  | 'sleep'
+  | 'eat'
+  | 'rest'
+  | 'socialize'
+  | 'family'
+  | 'work'
+  | 'fish'
+  | 'investigate-river';
 
 export type LifeStage = 'child' | 'young-adult' | 'adult' | 'elder';
 export type RelationshipStatus = 'single' | 'dating' | 'married';
@@ -46,6 +59,19 @@ export interface NpcLifeSeed {
   sociability: number;
 }
 
+export interface NpcPersonality {
+  curiosity: number;
+  empathy: number;
+  discipline: number;
+  sociability: number;
+  family: number;
+  courage: number;
+}
+
+export interface NpcBrainSeed {
+  personality: NpcPersonality;
+}
+
 export interface NpcDefinition extends Point {
   id: string;
   name: string;
@@ -57,6 +83,7 @@ export interface NpcDefinition extends Point {
   topic: string;
   schedule: ScheduleEntry[];
   life: NpcLifeSeed;
+  brain?: NpcBrainSeed;
   generated?: boolean;
   scale?: number;
 }
@@ -104,6 +131,42 @@ export interface NpcLifeState {
   lastProcessedDay: number;
 }
 
+export interface BrainNeeds {
+  hunger: number;
+  safety: number;
+  purpose: number;
+  curiosity: number;
+}
+
+export interface NpcBrainState {
+  npcId: string;
+  needs: BrainNeeds;
+  currentAction: BrainAction;
+  currentActivity: NpcActivity;
+  target?: Point;
+  zone: string;
+  label: string;
+  score: number;
+  reasons: string[];
+  decidedAt: number;
+  nextDecisionAt: number;
+}
+
+export interface BrainDecisionLog {
+  id: string;
+  npcId: string;
+  day: number;
+  minute: number;
+  action: BrainAction;
+  label: string;
+  score: number;
+  reasons: string[];
+  candidates: Array<{
+    action: BrainAction;
+    score: number;
+  }>;
+}
+
 export interface GeneratedNpcData {
   id: string;
   name: string;
@@ -130,6 +193,8 @@ export interface SaveData {
   npcs: Record<string, NpcMemory>;
   relationships: Record<string, NpcRelationship>;
   life: Record<string, NpcLifeState>;
+  brains: Record<string, NpcBrainState>;
+  brainLogs: BrainDecisionLog[];
   generatedNpcs: GeneratedNpcData[];
   lifeEvents: LifeEvent[];
   eventTriggered: boolean;

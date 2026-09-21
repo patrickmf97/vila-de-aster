@@ -10,6 +10,7 @@ import { DialogueSystem } from '../systems/DialogueSystem';
 import { EventSystem } from '../systems/EventSystem';
 import { RelationshipSystem } from '../systems/RelationshipSystem';
 import { LifeSimulationSystem } from '../systems/LifeSimulationSystem';
+import { NpcBrainSystem } from '../systems/NpcBrainSystem';
 import { Hud } from '../ui/Hud';
 import type { DoorDefinition, LifeEvent, Point } from '../types';
 
@@ -31,6 +32,7 @@ export class VillageScene extends Phaser.Scene {
   private eventSystem!: EventSystem;
   private relationshipSystem!: RelationshipSystem;
   private lifeSystem!: LifeSimulationSystem;
+  private brainSystem!: NpcBrainSystem;
   private hud!: Hud;
   private spawnOverride?: Point;
   private fromInterior = false;
@@ -40,6 +42,7 @@ export class VillageScene extends Phaser.Scene {
   private interactKey!: Phaser.Input.Keyboard.Key;
   private enterKey!: Phaser.Input.Keyboard.Key;
   private resetKey!: Phaser.Input.Keyboard.Key;
+  private brainKey!: Phaser.Input.Keyboard.Key;
 
   private nightOverlay!: Phaser.GameObjects.Rectangle;
   private persistAccumulator = 0;
@@ -63,6 +66,7 @@ export class VillageScene extends Phaser.Scene {
     this.eventSystem = new EventSystem(this.save);
     this.relationshipSystem = new RelationshipSystem(this.save);
     this.lifeSystem = new LifeSimulationSystem(this.save, npcDefinitions);
+    this.brainSystem = new NpcBrainSystem(this.save, this.lifeSystem);
     this.hud = new Hud();
 
     new WorldRenderer(this).create();
@@ -79,6 +83,7 @@ export class VillageScene extends Phaser.Scene {
     this.interactKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.E);
     this.enterKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
     this.resetKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+    this.brainKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.B);
 
     this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
     this.cameras.main.startFollow(this.player, true, 0.09, 0.09);
@@ -136,6 +141,12 @@ export class VillageScene extends Phaser.Scene {
     this.showLifeEvents(lifeEvents);
     this.syncNpcRoster();
 
+    this.brainSystem.update(
+      this.timeSystem.day,
+      this.timeSystem.minuteOfDay,
+      dt,
+    );
+
     const elapsedSeconds = this.time.now / 1000;
     for (const npc of this.npcs) {
       const life = this.lifeSystem.getState(npc.definition.id);
@@ -149,6 +160,7 @@ export class VillageScene extends Phaser.Scene {
           dt,
           elapsedSeconds,
           residenceDoor,
+          this.brainSystem.getBrain(npc.definition.id),
         );
       }
     }
@@ -178,6 +190,10 @@ export class VillageScene extends Phaser.Scene {
       } else if (target?.type === 'door') {
         this.enterBuilding(target.door);
       }
+    }
+
+    if (Phaser.Input.Keyboard.JustDown(this.brainKey)) {
+      this.hud.toggleBrainDebug();
     }
 
     if (Phaser.Input.Keyboard.JustDown(this.resetKey)) {
@@ -287,6 +303,7 @@ export class VillageScene extends Phaser.Scene {
     });
 
     const schedule = npc.scheduleAt(this.timeSystem.minuteOfDay);
+    const brain = this.brainSystem.getBrain(definition.id);
     const lines = [
       memory.talks === 1 ? definition.intro : definition.remembered,
     ];
@@ -317,7 +334,12 @@ export class VillageScene extends Phaser.Scene {
       }
     }
 
-    lines.push('Agora estou ' + schedule.label + '. A vila muda bastante dependendo da hora.');
+    lines.push(
+      'Agora decidi ' + (brain?.label ?? schedule.label) + '.'
+    );
+    if (brain?.reasons.length) {
+      lines.push('O que pesou nessa decisão: ' + brain.reasons.slice(0, 2).join('; ') + '.');
+    }
 
     const sharedFact = memory.facts.find(
       (fact) => fact.source !== 'player' && fact.source !== definition.id,
@@ -383,6 +405,15 @@ export class VillageScene extends Phaser.Scene {
   }
 
   private syncHud(): void {
+    const names = new Map(
+      this.lifeSystem.getAllDefinitions().map((definition) => [definition.id, definition.name]),
+    );
+    const brainLines = this.brainSystem.getRecentLogs(7).map((log) => {
+      const name = names.get(log.npcId) ?? log.npcId;
+      const reason = log.reasons[0] ?? 'sem motivo dominante';
+      return name + ' → ' + log.label + ' [' + log.score + '] • ' + reason;
+    });
+    this.hud.setBrainDebug(brainLines.length ? brainLines : ['Aguardando decisões...']);
     this.hud.setPopulation(this.lifeSystem.getAllDefinitions().length);
     this.hud.setClock(
       this.timeSystem.formatted,

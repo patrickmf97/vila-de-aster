@@ -1,7 +1,9 @@
 import type {
   GeneratedNpcData,
   LifeEvent,
+  BrainDecisionLog,
   MemoryFact,
+  NpcBrainState,
   NpcLifeState,
   NpcMemory,
   NpcRelationship,
@@ -22,6 +24,8 @@ export class SaveSystem {
       npcs: {},
       relationships: {},
       life: {},
+      brains: {},
+      brainLogs: [],
       generatedNpcs: [],
       lifeEvents: [],
       eventTriggered: false,
@@ -49,6 +53,8 @@ export class SaveSystem {
         npcs,
         relationships: parsed.relationships ?? {},
         life: parsed.life ?? {},
+        brains: parsed.brains ?? {},
+        brainLogs: Array.isArray(parsed.brainLogs) ? parsed.brainLogs : [],
         generatedNpcs: Array.isArray(parsed.generatedNpcs) ? parsed.generatedNpcs : [],
         lifeEvents: Array.isArray(parsed.lifeEvents) ? parsed.lifeEvents : [],
         eventTriggered: parsed.eventTriggered ?? false,
@@ -85,6 +91,19 @@ export class SaveSystem {
 
   setLife(id: string, state: NpcLifeState): void {
     this.data.life[id] = state;
+  }
+
+  brainFor(id: string): NpcBrainState | undefined {
+    return this.data.brains[id];
+  }
+
+  setBrain(id: string, state: NpcBrainState): void {
+    this.data.brains[id] = state;
+  }
+
+  addBrainLog(log: BrainDecisionLog): void {
+    this.data.brainLogs.push(log);
+    this.data.brainLogs = this.data.brainLogs.slice(-160);
   }
 
   addGeneratedNpc(data: GeneratedNpcData): void {

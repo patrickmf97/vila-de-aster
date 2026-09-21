@@ -153,3 +153,58 @@ kbd {
   .dialogue { bottom: 70px; }
   .portrait { width: 68px; min-width: 68px; height: 68px; font-size: 40px; }
 }
+
+
+.brain-debug {
+  position: absolute;
+  z-index: 15;
+  left: 18px;
+  top: 205px;
+  width: min(430px, calc(100vw - 36px));
+  max-height: 48vh;
+  overflow: auto;
+  padding: 12px 14px;
+  color: #eef9ef;
+  pointer-events: none;
+}
+
+.brain-debug-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  color: #d9f4dd;
+}
+
+.brain-debug-header strong {
+  font-size: 13px;
+}
+
+.brain-debug-header span {
+  color: #9eb0a2;
+  font-size: 10px;
+}
+
+.brain-debug-content {
+  display: grid;
+  gap: 6px;
+}
+
+.brain-debug-row {
+  padding: 7px 8px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.055);
+  border: 1px solid rgba(255,255,255,.07);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+@media (max-width: 720px) {
+  .brain-debug {
+    left: 10px;
+    top: 180px;
+    width: calc(100vw - 20px);
+    max-height: 38vh;
+  }
+}
