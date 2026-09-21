@@ -1,19 +1,18 @@
 {
   "name": "vila-de-aster",
   "private": true,
-  "version": "0.6.0",
+  "version": "0.6.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -p tsconfig.api.json --noEmit && tsc -b && vite build",
+    "build": "tsc -b && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "openai": "^7.20.0",
+    "@mlc-ai/web-llm": "^0.2.85",
     "phaser": "^3.90.0"
   },
   "devDependencies": {
-    "@types/node": "^22.18.6",
     "typescript": "^5.6.3",
     "vite": "^8.3.0"
   }
