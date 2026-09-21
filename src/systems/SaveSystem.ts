@@ -1,4 +1,9 @@
-import type { NpcMemory, SaveData } from '../types';
+import type {
+  MemoryFact,
+  NpcMemory,
+  NpcRelationship,
+  SaveData,
+} from '../types';
 
 const SAVE_KEY = 'vila-aster-memory-v2';
 
@@ -10,21 +15,40 @@ export class SaveSystem {
   }
 
   private load(): SaveData {
+    const fallback: SaveData = {
+      npcs: {},
+      relationships: {},
+      eventTriggered: false,
+      day: 1,
+      gameMinutes: 8 * 60,
+    };
+
     try {
       const raw = localStorage.getItem(SAVE_KEY);
-      if (!raw) {
-        return { npcs: {}, eventTriggered: false, day: 1, gameMinutes: 8 * 60 };
-      }
+      if (!raw) return fallback;
+
       const parsed = JSON.parse(raw) as Partial<SaveData>;
+      const npcs: Record<string, NpcMemory> = {};
+
+      for (const [id, memory] of Object.entries(parsed.npcs ?? {})) {
+        npcs[id] = {
+          talks: memory.talks ?? 0,
+          affinity: memory.affinity ?? 0,
+          lastDay: memory.lastDay ?? 0,
+          facts: Array.isArray(memory.facts) ? memory.facts : [],
+        };
+      }
+
       return {
-        npcs: parsed.npcs ?? {},
+        npcs,
+        relationships: parsed.relationships ?? {},
         eventTriggered: parsed.eventTriggered ?? false,
         day: parsed.day ?? 1,
         gameMinutes: parsed.gameMinutes ?? 8 * 60,
         player: parsed.player,
       };
     } catch {
-      return { npcs: {}, eventTriggered: false, day: 1, gameMinutes: 8 * 60 };
+      return fallback;
     }
   }
 
@@ -34,9 +58,50 @@ export class SaveSystem {
 
   memoryFor(id: string): NpcMemory {
     if (!this.data.npcs[id]) {
-      this.data.npcs[id] = { talks: 0, affinity: 0, lastDay: 0 };
+      this.data.npcs[id] = {
+        talks: 0,
+        affinity: 0,
+        lastDay: 0,
+        facts: [],
+      };
     }
+
+    this.pruneExpiredFacts(id);
     return this.data.npcs[id];
+  }
+
+  addFact(npcId: string, fact: MemoryFact): boolean {
+    const memory = this.memoryFor(npcId);
+    if (memory.facts.some((existing) => existing.id === fact.id)) return false;
+
+    memory.facts.push(fact);
+    memory.facts.sort((a, b) => b.importance - a.importance || b.createdDay - a.createdDay);
+    memory.facts = memory.facts.slice(0, 20);
+    return true;
+  }
+
+  knowsFact(npcId: string, factId: string): boolean {
+    return this.memoryFor(npcId).facts.some((fact) => fact.id === factId);
+  }
+
+  mostImportantShareableFact(npcId: string): MemoryFact | null {
+    const facts = this.memoryFor(npcId).facts
+      .filter((fact) => fact.importance >= 2)
+      .sort((a, b) => b.importance - a.importance || b.createdDay - a.createdDay);
+
+    return facts[0] ?? null;
+  }
+
+  relationshipFor(a: string, b: string): NpcRelationship {
+    const key = relationshipKey(a, b);
+    if (!this.data.relationships[key]) {
+      this.data.relationships[key] = {
+        score: 0,
+        interactions: 0,
+        lastInteractionDay: 0,
+      };
+    }
+    return this.data.relationships[key];
   }
 
   totalTalks(): number {
@@ -54,4 +119,18 @@ export class SaveSystem {
   reset(): void {
     localStorage.removeItem(SAVE_KEY);
   }
+
+  private pruneExpiredFacts(npcId: string): void {
+    const memory = this.data.npcs[npcId];
+    if (!memory) return;
+
+    memory.facts = memory.facts.filter((fact) => {
+      if (fact.expiresAfterDays === undefined) return true;
+      return this.data.day - fact.createdDay <= fact.expiresAfterDays;
+    });
+  }
+}
+
+export function relationshipKey(a: string, b: string): string {
+  return [a, b].sort().join('::');
 }

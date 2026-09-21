@@ -1,12 +1,13 @@
 import Phaser from 'phaser';
 import './styles.css';
 import { VillageScene } from './scenes/VillageScene';
+import { InteriorScene } from './scenes/InteriorScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   parent: 'game',
   backgroundColor: '#15231f',
-  scene: [VillageScene],
+  scene: [VillageScene, InteriorScene],
   render: {
     antialias: true,
     pixelArt: false,

@@ -13,12 +13,17 @@ export class Hud {
     this.dayIcon.textContent = icon;
   }
 
-  setInteractionHint(visible: boolean): void {
+  setInteractionHint(visible: boolean, label = 'conversar'): void {
+    this.hint.innerHTML = `Pressione <kbd>E</kbd> para ${label}`;
     this.hint.classList.toggle('hidden', !visible);
   }
 
+  setQuest(text: string): void {
+    this.questText.textContent = text;
+  }
+
   setRiverQuest(): void {
-    this.questText.textContent = 'Algo despertou perto do rio. Converse com os moradores para juntar pistas.';
+    this.setQuest('Algo despertou perto do rio. Converse com os moradores para juntar pistas.');
   }
 
   showToast(message: string): void {

@@ -1,4 +1,4 @@
-import type { Rect } from '../types';
+import type { DoorDefinition, Rect } from '../types';
 
 export const WORLD = {
   width: 1900,
@@ -25,6 +25,18 @@ export const buildings: Building[] = [
   { id: 'shop', name: 'Empório da Mira', x: 1370, y: 190, w: 300, h: 215, roof: 0x607a47, wall: 0xe2ca97, sign: '🧺' },
   { id: 'home', name: 'Casa da Elena', x: 165, y: 825, w: 270, h: 205, roof: 0x755a92, wall: 0xd9c696, sign: '🌸' },
 ];
+
+export const doors: DoorDefinition[] = buildings.map((building) => ({
+  id: `door-${building.id}`,
+  buildingId: building.id,
+  label: `Entrar em ${building.name}`,
+  x: building.x + building.w / 2,
+  y: building.y + building.h + 22,
+  returnPoint: {
+    x: building.x + building.w / 2,
+    y: building.y + building.h + 58,
+  },
+}));
 
 export const pond: Rect = { x: 1260, y: 745, w: 280, h: 160 };
 
