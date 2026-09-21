@@ -108,7 +108,7 @@ export class InteriorScene extends Phaser.Scene {
     this.player.face('up');
 
     this.syncResidentRoster();
-    this.syncResidents();
+    this.syncResidents(0);
 
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.wasd = this.input.keyboard!.addKeys('W,A,S,D') as Record<
@@ -195,7 +195,7 @@ export class InteriorScene extends Phaser.Scene {
     }
 
     this.syncResidentRoster();
-    this.syncResidents();
+    this.syncResidents(simulationDt);
 
     const target = this.getInteractionTarget();
     this.hud.setInteractionHint(
@@ -264,8 +264,8 @@ export class InteriorScene extends Phaser.Scene {
     }
   }
 
-  private syncResidents(): void {
-    const visibleResidents = this.residents.filter((npc) => {
+  private syncResidents(deltaSeconds = 0): void {
+    const currentResidents = this.residents.filter((npc) => {
       const life = this.lifeSystem.getState(npc.definition.id);
       return life?.currentZone === this.buildingId;
     });
@@ -277,22 +277,78 @@ export class InteriorScene extends Phaser.Scene {
 
     for (const npc of this.residents) {
       const life = this.lifeSystem.getState(npc.definition.id);
-      const visible = life?.currentZone === this.buildingId;
-      npc.syncWorldPresence(visible);
+      const brain = this.brainSystem.getBrain(npc.definition.id);
 
-      if (!visible || !life) continue;
+      if (!life) {
+        npc.syncWorldPresence(false);
+        continue;
+      }
 
-      const index = visibleResidents.indexOf(npc);
-      const spots = life.currentActivity === 'sleep' ? sleepSpots : residentSpots;
+      const desiredZone = brain?.zone ?? life.currentZone;
+
+      // The outside world is not rendered while the player is indoors.
+      // An NPC whose destination is this building can therefore enter
+      // through the visible interior door without a visible world teleport.
+      if (
+        life.currentZone === 'world' &&
+        desiredZone === this.buildingId
+      ) {
+        life.currentZone = this.buildingId;
+      }
+
+      if (life.currentZone !== this.buildingId) {
+        npc.syncWorldPresence(false);
+        continue;
+      }
+
+      npc.syncWorldPresence(
+        true,
+        this.definition.exit,
+      );
+
+      if (desiredZone !== this.buildingId) {
+        const remaining = npc.moveToward(
+          this.definition.exit,
+          deltaSeconds,
+          '👣 saindo',
+          52,
+        );
+
+        if (remaining <= 8) {
+          life.currentZone = 'world';
+          npc.syncWorldPresence(false);
+        }
+        continue;
+      }
+
+      const index = Math.max(
+        0,
+        currentResidents.indexOf(npc),
+      );
+      const spots =
+        life.currentActivity === 'sleep'
+          ? sleepSpots
+          : residentSpots;
       const spot = spots[index % spots.length];
 
-      npc.setPosition(spot.x, spot.y);
-      const brain = this.brainSystem.getBrain(npc.definition.id);
-      npc.setInteriorActivity(life.currentActivity, brain?.label);
-      npc.setDepth(Math.round(spot.y));
+      const remaining = npc.moveToward(
+        spot,
+        deltaSeconds,
+        life.currentActivity === 'sleep'
+          ? '👣 indo dormir'
+          : '👣 se acomodando',
+        48,
+      );
+
+      if (remaining <= 6) {
+        npc.setInteriorActivity(
+          life.currentActivity,
+          brain?.label,
+        );
+        npc.setDepth(Math.round(npc.y));
+      }
     }
   }
-
   private readonly canMove = (x: number, y: number, radius: number): boolean => {
     if (
       x - radius < 0 ||
