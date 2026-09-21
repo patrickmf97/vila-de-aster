@@ -1,39 +1,77 @@
-# Vila de Aster — MVP 01
+# Vila de Aster
 
-Protótipo de RPG 2D top-down para navegador, focado em provar o conceito de **mundo vivo + NPCs com memória**.
+RPG 2D top-down para navegador com foco em **mundo vivo, memória e NPCs inteligentes**.
+
+## Estado atual — v0.2.0 Foundation
+
+A experiência do MVP foi migrada para uma base modular usando:
+
+- Phaser 3.90
+- TypeScript
+- Vite
+- localStorage para persistência do protótipo
 
 ## Como rodar
 
-Opção simples:
-
 ```bash
-python3 -m http.server 8080
+npm install
+npm run dev
 ```
 
-Depois acesse `http://localhost:8080`.
+Abra o endereço informado pelo Vite.
 
-Também funciona abrindo `index.html` diretamente na maioria dos navegadores modernos.
+Build de produção:
+
+```bash
+npm run build
+npm run preview
+```
 
 ## Controles
 
 - WASD / setas: mover
 - E / Enter: conversar
-- R: apagar memória e reiniciar
+- R: apagar a memória local e reiniciar
 
-## O que já existe
+## Arquitetura
 
-- mapa 2D desenhado em Canvas;
+```text
+src/
+├── data/
+│   ├── npcs.ts
+│   └── world.ts
+├── entities/
+│   ├── Npc.ts
+│   └── Player.ts
+├── scenes/
+│   └── VillageScene.ts
+├── systems/
+│   ├── DialogueSystem.ts
+│   ├── EventSystem.ts
+│   ├── SaveSystem.ts
+│   └── TimeSystem.ts
+├── ui/
+│   └── Hud.ts
+├── world/
+│   └── WorldRenderer.ts
+├── main.ts
+├── styles.css
+└── types.ts
+```
+
+## Sistemas preservados do MVP
+
+- vila explorável;
+- visual chibi original gerado por formas;
 - câmera seguindo o jogador;
 - colisões;
-- 5 NPCs;
-- rotinas dependentes do horário;
-- ciclo dia/noite;
-- diálogos contextuais;
-- memória persistente em localStorage;
+- 5 NPCs com rotinas por horário;
+- diálogo contextual;
+- memória persistente;
 - afinidade simples;
-- evento de mundo desbloqueado após múltiplas conversas;
-- HUD responsiva.
+- ciclo dia/noite;
+- evento narrativo **O Eco Sob o Rio**.
 
-## Próximo salto técnico
+## Próximo marco
 
-Migrar a base para Phaser 3 + TypeScript, separar mapa/entidades/sistemas, adicionar spritesheets reais e backend para memória persistente/IA generativa dos NPCs.
+A v0.3 será focada em transformar a fundação técnica em uma **vertical slice de jogo**: animações melhores, interiores, objetos interativos, rotina avançada e memória v2.
