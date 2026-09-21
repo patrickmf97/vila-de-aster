@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vila de Aster — MVP</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="game-shell">
+    <canvas id="game" width="1280" height="720" aria-label="Protótipo RPG 2D Vila de Aster"></canvas>
+
+    <div id="top-left" class="hud glass">
+      <div class="brand">🌿 Vila de Aster</div>
+      <div class="sub">MVP • Mundo vivo + memória</div>
+    </div>
+
+    <div id="top-right" class="hud glass stats">
+      <div><span id="dayIcon">☀️</span> <strong id="clock">08:00</strong></div>
+      <div id="dayText">Dia 1</div>
+    </div>
+
+    <div id="quest" class="hud glass quest">
+      <strong>Objetivo do protótipo</strong>
+      <span>Converse com os moradores e descubra o que está acontecendo na vila.</span>
+    </div>
+
+    <div id="hint" class="hint hidden">Pressione <kbd>E</kbd> para conversar</div>
+
+    <div id="dialogue" class="dialogue hidden">
+      <div class="portrait" id="portrait">🙂</div>
+      <div class="dialogue-content">
+        <div class="dialogue-name" id="dialogueName">NPC</div>
+        <div class="dialogue-text" id="dialogueText"></div>
+        <div class="dialogue-footer">E / Enter para continuar</div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <div id="help" class="help glass">
+      <span><kbd>WASD</kbd>/<kbd>↑↓←→</kbd> mover</span>
+      <span><kbd>E</kbd> interagir</span>
+      <span><kbd>R</kbd> reiniciar memória</span>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
