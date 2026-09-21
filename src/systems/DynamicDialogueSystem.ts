@@ -563,8 +563,18 @@ export class DynamicDialogueSystem {
 
   private renderSavedConversation(npcId: string): void {
     const conversation = this.save.conversationFor(npcId);
+    const cleanTurns = conversation.turns.filter(
+      (turn) =>
+        turn.role === 'player' ||
+        isMeaningfulDialogueText(turn.text),
+    );
 
-    for (const turn of conversation.turns.slice(-6)) {
+    if (cleanTurns.length !== conversation.turns.length) {
+      conversation.turns = cleanTurns;
+      this.save.persist();
+    }
+
+    for (const turn of cleanTurns.slice(-6)) {
       this.addMessage(turn.role, turn.text);
     }
   }
@@ -737,8 +747,12 @@ function farewellFor(npcId: string): string {
   return available[Math.abs(stableHash(npcId + Date.now().toString())) % available.length]!;
 }
 
+function isMeaningfulDialogueText(value: string): boolean {
+  return value.replace(/[.\s…!?—-]/g, '').length >= 2;
+}
+
 function compact(value: string, max: number): string {
-  const compacted = value.replace(/s+/g, ' ').trim();
+  const compacted = value.replace(/\s+/g, ' ').trim();
   return compacted.length <= max
     ? compacted
     : compacted.slice(0, max - 1) + '…';

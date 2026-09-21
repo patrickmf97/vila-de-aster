@@ -45,10 +45,10 @@ export class LifeSimulationSystem {
       const activity = schedule.activity ?? inferActivity(schedule.label);
 
       state.currentActivity = activity;
-      state.currentZone =
-        schedule.zone === 'home' || activity === 'sleep'
-          ? state.residenceId
-          : schedule.zone ?? 'world';
+
+      // currentZone represents the NPC's real physical location.
+      // The desired destination is controlled by NpcBrainState.zone and
+      // scene transition logic moves the NPC through doors before changing it.
     }
 
     this.processDaysUntil(day);

@@ -124,7 +124,9 @@ export class NpcBrainSystem {
       }
 
       lifeState.currentActivity = brain.currentActivity;
-      lifeState.currentZone = brain.zone;
+
+      // brain.zone is the desired destination, not the current physical zone.
+      // VillageScene / InteriorScene commit currentZone only after a door transition.
     }
 
     const newLogs =

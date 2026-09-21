@@ -127,6 +127,61 @@ export class Npc extends Phaser.GameObjects.Container {
     this.setDepth(yToDepth(this.y));
   }
 
+  moveToward(
+    target: Point,
+    deltaSeconds: number,
+    label = '👣 a caminho',
+    speed = 54,
+  ): number {
+    this.currentActivity = 'walk';
+    this.activityLabel.setText(label);
+    this.setRotation(0);
+    this.setAlpha(1);
+
+    const distance = Phaser.Math.Distance.Between(
+      this.x,
+      this.y,
+      target.x,
+      target.y,
+    );
+
+    if (distance <= 5 || deltaSeconds <= 0) {
+      this.resetWalkPose();
+      this.setDepth(yToDepth(this.y));
+      return distance;
+    }
+
+    const angle = Phaser.Math.Angle.Between(
+      this.x,
+      this.y,
+      target.x,
+      target.y,
+    );
+    const vx = Math.cos(angle);
+    const vy = Math.sin(angle);
+    const step = Math.min(
+      distance,
+      speed * deltaSeconds,
+    );
+
+    this.x += vx * step;
+    this.y += vy * step;
+    this.updateFacing(vx, vy);
+
+    this.walkPhase += deltaSeconds * 9;
+    const wave = Math.sin(this.walkPhase);
+    this.leftFoot.y = 16 + wave * 2;
+    this.rightFoot.y = 16 - wave * 2;
+    const bob = Math.abs(wave) * -0.7;
+    this.visualBody.y = 4 + bob;
+    this.head.y = -13 + bob;
+    this.leftEye.y = -14 + bob;
+    this.rightEye.y = -14 + bob;
+    this.setDepth(yToDepth(this.y));
+
+    return Math.max(0, distance - step);
+  }
+
   syncWorldPresence(visible: boolean, wakePoint?: Point): void {
     const wasVisible = this.visible;
     if (visible && !wasVisible && wakePoint) {
@@ -141,6 +196,15 @@ export class Npc extends Phaser.GameObjects.Container {
     this.activityLabel.setText(label ?? activityText(activity));
     this.setAlpha(activity === 'sleep' ? 0.65 : 1);
     this.setRotation(activity === 'sleep' ? -0.08 : 0);
+  }
+
+  private resetWalkPose(): void {
+    this.leftFoot.y = 16;
+    this.rightFoot.y = 16;
+    this.visualBody.y = 4;
+    this.head.y = -13;
+    this.leftEye.y = -14;
+    this.rightEye.y = -14;
   }
 
   private microOffset(activity: NpcActivity, elapsedSeconds: number): { x: number; y: number } {

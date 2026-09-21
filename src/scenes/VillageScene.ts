@@ -175,19 +175,80 @@ export class VillageScene extends Phaser.Scene {
     const elapsedSeconds = this.time.now / 1000;
     for (const npc of this.npcs) {
       const life = this.lifeSystem.getState(npc.definition.id);
+      const brain = this.brainSystem.getBrain(npc.definition.id);
       const residenceDoor = this.lifeSystem.getResidenceDoor(npc.definition.id);
-      const inWorld = !life || life.currentZone === 'world';
 
-      npc.syncWorldPresence(inWorld, residenceDoor);
-      if (inWorld) {
+      if (!life) {
+        npc.syncWorldPresence(true);
         npc.updateRoutine(
           this.timeSystem.minuteOfDay,
           simulationDt,
           elapsedSeconds,
           residenceDoor,
-          this.brainSystem.getBrain(npc.definition.id),
+          brain,
         );
+        continue;
       }
+
+      const actualZone = life.currentZone || 'world';
+      const desiredZone = brain?.zone ?? 'world';
+
+      if (actualZone === 'world') {
+        npc.syncWorldPresence(true);
+
+        if (desiredZone === 'world') {
+          npc.updateRoutine(
+            this.timeSystem.minuteOfDay,
+            simulationDt,
+            elapsedSeconds,
+            residenceDoor,
+            brain,
+          );
+          continue;
+        }
+
+        const destinationDoor = this.doorForZone(desiredZone);
+        if (!destinationDoor) {
+          npc.updateRoutine(
+            this.timeSystem.minuteOfDay,
+            simulationDt,
+            elapsedSeconds,
+            residenceDoor,
+            brain,
+          );
+          continue;
+        }
+
+        const destinationName =
+          destinationDoor.label.replace('Entrar em ', '');
+        const remaining = npc.moveToward(
+          destinationDoor.returnPoint,
+          simulationDt,
+          '👣 indo para ' + destinationName,
+          58,
+        );
+
+        if (remaining <= 8) {
+          life.currentZone = desiredZone;
+          npc.syncWorldPresence(false);
+        }
+
+        continue;
+      }
+
+      if (desiredZone === actualZone) {
+        npc.syncWorldPresence(false);
+        continue;
+      }
+
+      // Leaving an interior is represented by the NPC emerging at that
+      // building's door. From there, normal world movement takes over.
+      const originDoor = this.doorForZone(actualZone);
+      life.currentZone = 'world';
+      npc.syncWorldPresence(
+        true,
+        originDoor?.returnPoint ?? residenceDoor,
+      );
     }
 
     this.relationshipSystem.update(
@@ -288,6 +349,23 @@ export class VillageScene extends Phaser.Scene {
       return Phaser.Math.Distance.Between(x, y, nearestX, nearestY) < radius;
     });
   };
+
+  private doorForZone(zoneId: string): DoorDefinition | undefined {
+    const staticDoor = doors.find(
+      (door) => door.buildingId === zoneId,
+    );
+    if (staticDoor) return staticDoor;
+
+    const dynamicBuilding =
+      this.save.snapshot.settlementBuildings.find(
+        (building) =>
+          building.residenceId === zoneId,
+      );
+
+    return dynamicBuilding
+      ? settlementDoor(dynamicBuilding)
+      : undefined;
+  }
 
   private nearestInteraction(): InteractionTarget | null {
     let best: InteractionTarget | null = null;

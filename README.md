@@ -2,9 +2,9 @@
 
 RPG 2D top-down para navegador com foco em **mundo vivo, memória, relações, família, decisões autônomas, diálogo por escolhas e uma economia simulada**.
 
-## Estado atual — v0.7.0 Economy & Settlement
+## Estado atual — v0.7.1 Dialogue & Movement Hotfix
 
-A vila agora possui uma economia persistente ligada ao comportamento dos NPCs.
+A v0.7.1 mantém toda a economia da v0.7 e corrige dois problemas visíveis: respostas corrompidas no diálogo e teleporte de NPCs entre zonas. NPCs agora caminham até portas antes de entrar, saem pelas portas correspondentes e se deslocam até cama/pontos internos em vez de surgir neles.
 
 ### Trabalho e renda
 
