@@ -16,7 +16,7 @@ export class VillageScene extends Phaser.Scene {
   private save!: SaveSystem;
   private timeSystem!: TimeSystem;
   private dialogue!: DialogueSystem;
-  private events!: EventSystem;
+  private eventSystem!: EventSystem;
   private hud!: Hud;
 
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -39,7 +39,7 @@ export class VillageScene extends Phaser.Scene {
       this.save.snapshot.gameMinutes,
     );
     this.dialogue = new DialogueSystem();
-    this.events = new EventSystem(this.save);
+    this.eventSystem = new EventSystem(this.save);
     this.hud = new Hud();
 
     new WorldRenderer(this).create();
@@ -67,7 +67,7 @@ export class VillageScene extends Phaser.Scene {
       .setDepth(100000);
 
     this.scale.on('resize', this.resizeOverlay, this);
-    this.events.riverEchoActive && this.hud.setRiverQuest();
+    this.eventSystem.riverEchoActive && this.hud.setRiverQuest();
     this.hud.showToast('🌿 Bem-vindo à Vila de Aster. Fale com os moradores.');
     this.syncHud();
   }
@@ -182,14 +182,14 @@ export class VillageScene extends Phaser.Scene {
 
     lines.push(`Agora estou ${schedule.label}. A vila muda bastante dependendo da hora.`);
 
-    if (this.events.shouldTriggerRiverEcho()) {
-      this.events.triggerRiverEcho();
+    if (this.eventSystem.shouldTriggerRiverEcho()) {
+      this.eventSystem.triggerRiverEcho();
       lines.push(
         '...Você também sentiu? Um tremor leve. Veio da direção do rio. Isso não acontecia há anos.',
       );
       this.hud.setRiverQuest();
       this.hud.showToast('⚠️ Evento do mundo desbloqueado: “O Eco Sob o Rio”');
-    } else if (this.events.riverEchoActive) {
+    } else if (this.eventSystem.riverEchoActive) {
       lines.push(
         'Desde aquele tremor, ninguém está totalmente tranquilo. Cada morador parece saber um pedaço diferente da história.',
       );
