@@ -2,77 +2,76 @@
 
 ## Versão atual
 
-**v0.5.0 — NPC Brain**
+**v0.6.0 — Generative NPC**
 
-## O que mudou
+## Mudança central
 
-A Vila de Aster deixou de depender apenas de agendas fixas.
+NPCs agora possuem duas formas de conversa:
 
-Cada NPC possui agora:
+1. diálogo local, rápido e determinístico;
+2. conversa livre generativa.
 
+A IA generativa foi colocada **por cima** do NPC Brain, e não no lugar dele.
+
+## Contexto enviado ao modelo
+
+A função recebe somente:
+
+- identidade e profissão do NPC;
 - personalidade;
-- energia;
-- fome;
-- necessidade social;
-- segurança;
-- propósito;
-- curiosidade;
-- ação atual;
-- destino atual;
-- motivos da decisão;
-- ranking persistente de decisões recentes.
+- atividade/decisão atual;
+- dia, horário e localização;
+- estado familiar;
+- até 12 fatos conhecidos pelo NPC;
+- resumo persistente da conversa;
+- últimas 8 falas;
+- mensagem atual do jogador.
 
-## Personalidades iniciais
+O modelo não recebe o save completo.
 
-- Elena: curiosa, empática e orientada à família.
-- Bram: altamente disciplinado e corajoso, porém menos sociável.
-- Mira: sociável, disciplinada e curiosa.
-- Theo: equilibrado, curioso e ligado à família.
-- Luma: extremamente sociável e empática.
+## Memória de conversa
 
-## Arquitetura
+Cada NPC mantém:
 
-A agenda permanece como fallback.
+- até 8 turnos recentes;
+- resumo persistente de longo prazo;
+- fatos novos explicitamente ditos pelo jogador.
 
-Fluxo:
+A resposta generativa devolve:
+
+- fala do NPC;
+- possível fato de memória;
+- resumo atualizado.
+
+## Segurança de arquitetura
+
+- `OPENAI_API_KEY` fica somente no backend;
+- função Vercel valida payload e limites;
+- rate limit básico por origem/IP;
+- mensagens do jogador têm limite;
+- respostas usam schema estruturado;
+- chamadas usam `store: false`;
+- IA não pode alterar estado canônico;
+- sem API, o jogo usa fallback local.
+
+## Responsabilidades
 
 ```text
-Life Simulation
-      ↓
-necessidades
-      ↓
-Utility AI
-      ↓
-decisão + motivos
-      ↓
-intenção
-      ↓
-corpo do NPC
+Life Simulation → o que existe na vida
+NPC Brain       → o que o NPC decide fazer
+Generative NPC  → como o NPC conversa sobre o que sabe
 ```
-
-A IA generativa ainda não participa desse processo.
-
-## Debug
-
-Pressionar **B** exibe as decisões recentes no jogo.
-
-Cada registro contém:
-
-- NPC;
-- ação escolhida;
-- score;
-- principal motivo.
-
-O save mantém também os candidatos avaliados para análise posterior.
 
 ## Próximo alvo
 
-**v0.6.0 — Generative NPC**
+**v0.7.0 — Economy & Settlement**
 
-- backend de IA;
-- prompt de personalidade/lore por NPC;
-- diálogo livre com limites de conhecimento;
-- memória curta e longa;
-- resumo automático de conversas;
-- fallback sem IA;
-- integração com decisões de alto nível sem substituir a Utility AI local.
+- dinheiro por NPC;
+- renda;
+- despesas;
+- estoque e recursos;
+- trabalho afetando produção;
+- consumo;
+- necessidade de moradia;
+- construção de casas;
+- expansão orgânica da vila.

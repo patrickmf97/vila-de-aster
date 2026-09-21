@@ -12,7 +12,7 @@
 
     <div id="top-left" class="hud glass">
       <div class="brand">🌿 Vila de Aster</div>
-      <div class="sub">v0.5 • NPC Brain</div>
+      <div class="sub">v0.6 • Generative NPC</div>
     </div>
 
     <div id="top-right" class="hud glass stats">
@@ -23,7 +23,7 @@
 
     <div id="quest" class="hud glass quest">
       <strong>Objetivo atual</strong>
-      <span>Observe os moradores tomando decisões próprias com base em necessidades, personalidade e memória.</span>
+      <span>Converse livremente com os moradores. Cada um responde usando apenas aquilo que sabe.</span>
     </div>
 
     <aside id="brainDebug" class="brain-debug glass hidden" aria-live="polite">
@@ -35,6 +35,29 @@
         Aguardando decisões...
       </div>
     </aside>
+
+    <section id="npcChat" class="npc-chat glass hidden" aria-live="polite">
+      <div class="npc-chat-header">
+        <div>
+          <strong id="npcChatName">NPC • conversa livre</strong>
+          <span id="npcChatStatus">Modo local</span>
+        </div>
+        <button id="npcChatClose" type="button" aria-label="Fechar conversa">×</button>
+      </div>
+
+      <div id="npcChatMessages" class="npc-chat-messages"></div>
+
+      <div class="npc-chat-compose">
+        <input
+          id="npcChatInput"
+          type="text"
+          maxlength="320"
+          autocomplete="off"
+          placeholder="Fale livremente com este morador..."
+        />
+        <button id="npcChatSend" type="button">Enviar</button>
+      </div>
+    </section>
 
     <div id="hint" class="hint hidden">Pressione <kbd>E</kbd> para interagir</div>
 
@@ -51,7 +74,8 @@
 
     <div id="help" class="help glass">
       <span><kbd>WASD</kbd>/<kbd>↑↓←→</kbd> mover</span>
-      <span><kbd>E</kbd> interagir</span>
+      <span><kbd>E</kbd> diálogo local</span>
+      <span><kbd>F</kbd> conversa livre</span>
       <span><kbd>B</kbd> cérebro</span>
       <span><kbd>R</kbd> reiniciar simulação</span>
     </div>

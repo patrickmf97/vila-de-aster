@@ -104,6 +104,18 @@ export interface NpcMemory {
   facts: MemoryFact[];
 }
 
+export interface ConversationTurn {
+  role: 'player' | 'npc';
+  text: string;
+  day: number;
+  minute: number;
+}
+
+export interface NpcConversationState {
+  summary: string;
+  turns: ConversationTurn[];
+}
+
 export interface NpcRelationship {
   score: number;
   interactions: number;
@@ -195,6 +207,7 @@ export interface SaveData {
   life: Record<string, NpcLifeState>;
   brains: Record<string, NpcBrainState>;
   brainLogs: BrainDecisionLog[];
+  conversations: Record<string, NpcConversationState>;
   generatedNpcs: GeneratedNpcData[];
   lifeEvents: LifeEvent[];
   eventTriggered: boolean;

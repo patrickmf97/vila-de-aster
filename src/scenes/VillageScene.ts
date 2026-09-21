@@ -11,6 +11,7 @@ import { EventSystem } from '../systems/EventSystem';
 import { RelationshipSystem } from '../systems/RelationshipSystem';
 import { LifeSimulationSystem } from '../systems/LifeSimulationSystem';
 import { NpcBrainSystem } from '../systems/NpcBrainSystem';
+import { GenerativeDialogueSystem } from '../systems/GenerativeDialogueSystem';
 import { Hud } from '../ui/Hud';
 import type { DoorDefinition, LifeEvent, Point } from '../types';
 
@@ -33,6 +34,7 @@ export class VillageScene extends Phaser.Scene {
   private relationshipSystem!: RelationshipSystem;
   private lifeSystem!: LifeSimulationSystem;
   private brainSystem!: NpcBrainSystem;
+  private generativeDialogue!: GenerativeDialogueSystem;
   private hud!: Hud;
   private spawnOverride?: Point;
   private fromInterior = false;
@@ -43,6 +45,7 @@ export class VillageScene extends Phaser.Scene {
   private enterKey!: Phaser.Input.Keyboard.Key;
   private resetKey!: Phaser.Input.Keyboard.Key;
   private brainKey!: Phaser.Input.Keyboard.Key;
+  private freeChatKey!: Phaser.Input.Keyboard.Key;
 
   private nightOverlay!: Phaser.GameObjects.Rectangle;
   private persistAccumulator = 0;
@@ -67,6 +70,7 @@ export class VillageScene extends Phaser.Scene {
     this.relationshipSystem = new RelationshipSystem(this.save);
     this.lifeSystem = new LifeSimulationSystem(this.save, npcDefinitions);
     this.brainSystem = new NpcBrainSystem(this.save, this.lifeSystem);
+    this.generativeDialogue = new GenerativeDialogueSystem(this.save);
     this.hud = new Hud();
 
     new WorldRenderer(this).create();
@@ -84,6 +88,7 @@ export class VillageScene extends Phaser.Scene {
     this.enterKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
     this.resetKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.R);
     this.brainKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.B);
+    this.freeChatKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.F);
 
     this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
     this.cameras.main.startFollow(this.player, true, 0.09, 0.09);
@@ -110,8 +115,10 @@ export class VillageScene extends Phaser.Scene {
 
   update(_time: number, delta: number): void {
     const dt = Math.min(delta / 1000, 0.033);
+    const simulationDt =
+      this.dialogue.isOpen || this.generativeDialogue.isOpen ? 0 : dt;
 
-    if (!this.dialogue.isOpen) {
+    if (!this.dialogue.isOpen && !this.generativeDialogue.isOpen) {
       this.player.updateMovement(
         {
           up: this.cursors.up.isDown || this.wasd.W.isDown,
@@ -136,7 +143,7 @@ export class VillageScene extends Phaser.Scene {
     const lifeEvents = this.lifeSystem.update(
       this.timeSystem.day,
       this.timeSystem.minuteOfDay,
-      dt,
+      simulationDt,
     );
     this.showLifeEvents(lifeEvents);
     this.syncNpcRoster();
@@ -144,7 +151,7 @@ export class VillageScene extends Phaser.Scene {
     this.brainSystem.update(
       this.timeSystem.day,
       this.timeSystem.minuteOfDay,
-      dt,
+      simulationDt,
     );
 
     const elapsedSeconds = this.time.now / 1000;
@@ -157,7 +164,7 @@ export class VillageScene extends Phaser.Scene {
       if (inWorld) {
         npc.updateRoutine(
           this.timeSystem.minuteOfDay,
-          dt,
+          simulationDt,
           elapsedSeconds,
           residenceDoor,
           this.brainSystem.getBrain(npc.definition.id),
@@ -167,21 +174,22 @@ export class VillageScene extends Phaser.Scene {
 
     this.relationshipSystem.update(
       this.npcs.filter((npc) => npc.visible),
-      dt,
+      simulationDt,
       this.timeSystem.day,
     );
 
     const target = this.nearestInteraction();
     this.hud.setInteractionHint(
-      !this.dialogue.isOpen && target !== null,
+      !this.dialogue.isOpen && !this.generativeDialogue.isOpen && target !== null,
       target?.type === 'door'
         ? 'entrar em ' + target.door.label.replace('Entrar em ', '')
         : 'conversar',
     );
 
     if (
-      Phaser.Input.Keyboard.JustDown(this.interactKey) ||
-      Phaser.Input.Keyboard.JustDown(this.enterKey)
+      !this.generativeDialogue.isOpen &&
+      (Phaser.Input.Keyboard.JustDown(this.interactKey) ||
+      Phaser.Input.Keyboard.JustDown(this.enterKey))
     ) {
       if (this.dialogue.isOpen) {
         this.dialogue.advance();
@@ -192,7 +200,16 @@ export class VillageScene extends Phaser.Scene {
       }
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.brainKey)) {
+    if (
+      !this.dialogue.isOpen &&
+      !this.generativeDialogue.isOpen &&
+      Phaser.Input.Keyboard.JustDown(this.freeChatKey) &&
+      target?.type === 'npc'
+    ) {
+      this.openGenerativeChat(target.npc);
+    }
+
+    if (!this.generativeDialogue.isOpen && Phaser.Input.Keyboard.JustDown(this.brainKey)) {
       this.hud.toggleBrainDebug();
     }
 
@@ -281,6 +298,24 @@ export class VillageScene extends Phaser.Scene {
         buildingId: door.buildingId,
         returnPoint: door.returnPoint,
       });
+    });
+  }
+
+  private openGenerativeChat(npc: Npc): void {
+    const definition = npc.definition;
+    const definitions = this.lifeSystem.getAllDefinitions();
+    const life = this.lifeSystem.getState(definition.id);
+    const brain = this.brainSystem.getBrain(definition.id);
+
+    this.generativeDialogue.open({
+      definition,
+      life,
+      brain,
+      definitions,
+      day: this.timeSystem.day,
+      minute: this.timeSystem.minuteOfDay,
+      time: this.timeSystem.formatted,
+      location: 'ruas da Vila de Aster',
     });
   }
 

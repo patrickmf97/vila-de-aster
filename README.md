@@ -1,74 +1,95 @@
 # Vila de Aster
 
-RPG 2D top-down para navegador com foco em **mundo vivo, memória, relações, família e NPCs capazes de decidir o que fazer**.
+RPG 2D top-down para navegador com foco em **mundo vivo, memória, relações, família, decisões autônomas e diálogo generativo**.
 
-## Estado atual — v0.5.0 NPC Brain
+## Estado atual — v0.6.0 Generative NPC
 
-A agenda dos NPCs agora é um plano padrão, não uma ordem absoluta.
+Os moradores agora podem conversar livremente com o jogador sem abandonar a arquitetura local do jogo.
 
-Cada morador possui:
+### O que existe nesta versão
 
-- necessidades dinâmicas;
-- personalidade própria;
-- Utility AI;
-- decisões explicáveis;
-- memória persistente;
-- residência e família;
-- capacidade de desviar da rotina quando outra ação é mais importante.
-
-Ações avaliadas atualmente:
-
-- seguir agenda;
-- dormir;
-- comer;
-- descansar;
-- socializar;
-- passar tempo com a família;
-- trabalhar;
-- pescar;
-- investigar o rio.
-
-Pressione **B** durante o jogo para abrir o painel de diagnóstico e observar decisões recentes com score e motivo dominante.
+- tecla **E** mantém o diálogo rápido/local;
+- tecla **F** abre conversa livre com o NPC;
+- backend seguro em `/api/npc-chat`;
+- chave da OpenAI permanece apenas no servidor;
+- contexto limitado à personalidade, estado, relações e fatos que o NPC realmente conhece;
+- histórico curto por NPC;
+- resumo persistente da relação/conversa;
+- fatos explícitos ditos pelo jogador podem entrar na memória do NPC;
+- resposta estruturada;
+- `store: false` nas chamadas da Responses API;
+- fallback local se a IA, rede ou configuração estiver indisponível;
+- Utility AI continua controlando comportamento, e não o modelo generativo.
 
 ## Como rodar
 
+Instalação:
+
 ```bash
 npm install
+```
+
+Frontend local com fallback de diálogo:
+
+```bash
 npm run dev
 ```
 
-Build:
+Para testar também as funções `/api` localmente, use um ambiente Vercel ligado ao projeto:
+
+```bash
+vercel dev
+```
+
+Build completo, incluindo typecheck da função de IA:
 
 ```bash
 npm run build
-npm run preview
 ```
+
+## Variáveis de ambiente
+
+Copie `.env.example` como referência.
+
+No Vercel, configure como variáveis **server-side**:
+
+```text
+OPENAI_API_KEY=...
+OPENAI_MODEL=gpt-5
+```
+
+Nunca use prefixo `VITE_` para a chave.
 
 ## Controles
 
 - WASD / setas: mover
-- E / Enter: interagir
-- B: abrir/fechar painel NPC Brain
+- E / Enter: diálogo local
+- F: conversa livre com IA
+- B: painel NPC Brain
 - R: reiniciar memória e simulação
 
-## Sistemas principais
+## Arquitetura
 
 ```text
-src/systems/
-├── DialogueSystem.ts
-├── EventSystem.ts
-├── LifeSimulationSystem.ts
-├── NpcBrainSystem.ts
-├── RelationshipSystem.ts
-├── SaveSystem.ts
-└── TimeSystem.ts
+Phaser / navegador
+      ↓
+GenerativeDialogueSystem
+      ↓
+POST /api/npc-chat
+      ↓
+Vercel Function
+      ↓
+OpenAI Responses API
 ```
+
+O modelo generativo não altera diretamente quests, inventário, casamento, filhos ou estado canônico.
 
 Documentação técnica:
 
 - `docs/LIFE_SIMULATION.md`
 - `docs/NPC_BRAIN.md`
+- `docs/GENERATIVE_NPC.md`
 
 ## Próximo marco
 
-**v0.6.0 — Generative NPC**: backend, diálogo generativo controlado por lore, memória resumida e integração da IA com o cérebro local sem entregar o controle de cada frame ao modelo.
+**v0.7.0 — Economy & Settlement**: dinheiro por NPC, produção/consumo, recursos, custo de vida, construção de novas casas e expansão física da vila.

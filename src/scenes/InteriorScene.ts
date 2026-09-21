@@ -16,6 +16,7 @@ import { SaveSystem } from '../systems/SaveSystem';
 import { TimeSystem } from '../systems/TimeSystem';
 import { LifeSimulationSystem } from '../systems/LifeSimulationSystem';
 import { NpcBrainSystem } from '../systems/NpcBrainSystem';
+import { GenerativeDialogueSystem } from '../systems/GenerativeDialogueSystem';
 import { Hud } from '../ui/Hud';
 
 interface InteriorSceneData {
@@ -39,6 +40,7 @@ export class InteriorScene extends Phaser.Scene {
   private timeSystem!: TimeSystem;
   private lifeSystem!: LifeSimulationSystem;
   private brainSystem!: NpcBrainSystem;
+  private generativeDialogue!: GenerativeDialogueSystem;
   private hud!: Hud;
 
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -46,6 +48,7 @@ export class InteriorScene extends Phaser.Scene {
   private interactKey!: Phaser.Input.Keyboard.Key;
   private enterKey!: Phaser.Input.Keyboard.Key;
   private brainKey!: Phaser.Input.Keyboard.Key;
+  private freeChatKey!: Phaser.Input.Keyboard.Key;
   private persistAccumulator = 0;
 
   constructor() {
@@ -65,6 +68,7 @@ export class InteriorScene extends Phaser.Scene {
     );
     this.lifeSystem = new LifeSimulationSystem(this.save, npcDefinitions);
     this.brainSystem = new NpcBrainSystem(this.save, this.lifeSystem);
+    this.generativeDialogue = new GenerativeDialogueSystem(this.save);
     this.dialogue = new DialogueSystem();
     this.hud = new Hud();
 
@@ -89,6 +93,7 @@ export class InteriorScene extends Phaser.Scene {
     this.interactKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.E);
     this.enterKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
     this.brainKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.B);
+    this.freeChatKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.F);
 
     this.cameras.main.setBounds(0, 0, INTERIOR_SIZE.width, INTERIOR_SIZE.height);
     this.cameras.main.centerOn(INTERIOR_SIZE.width / 2, INTERIOR_SIZE.height / 2);
@@ -105,8 +110,10 @@ export class InteriorScene extends Phaser.Scene {
 
   update(_time: number, delta: number): void {
     const dt = Math.min(delta / 1000, 0.033);
+    const simulationDt =
+      this.dialogue.isOpen || this.generativeDialogue.isOpen ? 0 : dt;
 
-    if (!this.dialogue.isOpen) {
+    if (!this.dialogue.isOpen && !this.generativeDialogue.isOpen) {
       this.player.updateMovement(
         {
           up: this.cursors.up.isDown || this.wasd.W.isDown,
@@ -131,26 +138,27 @@ export class InteriorScene extends Phaser.Scene {
     const events = this.lifeSystem.update(
       this.timeSystem.day,
       this.timeSystem.minuteOfDay,
-      dt,
+      simulationDt,
     );
     this.showLifeEvents(events);
     this.brainSystem.update(
       this.timeSystem.day,
       this.timeSystem.minuteOfDay,
-      dt,
+      simulationDt,
     );
     this.syncResidentRoster();
     this.syncResidents();
 
     const target = this.getInteractionTarget();
     this.hud.setInteractionHint(
-      !this.dialogue.isOpen && target !== null,
+      !this.dialogue.isOpen && !this.generativeDialogue.isOpen && target !== null,
       target?.label ?? 'interagir',
     );
 
     if (
-      Phaser.Input.Keyboard.JustDown(this.interactKey) ||
-      Phaser.Input.Keyboard.JustDown(this.enterKey)
+      !this.generativeDialogue.isOpen &&
+      (Phaser.Input.Keyboard.JustDown(this.interactKey) ||
+      Phaser.Input.Keyboard.JustDown(this.enterKey))
     ) {
       if (this.dialogue.isOpen) {
         this.dialogue.advance();
@@ -163,7 +171,17 @@ export class InteriorScene extends Phaser.Scene {
       }
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.brainKey)) {
+    if (
+      !this.dialogue.isOpen &&
+      !this.generativeDialogue.isOpen &&
+      Phaser.Input.Keyboard.JustDown(this.freeChatKey) &&
+      target?.type === 'resident' &&
+      target.npc.currentActivity !== 'sleep'
+    ) {
+      this.openGenerativeChat(target.npc);
+    }
+
+    if (!this.generativeDialogue.isOpen && Phaser.Input.Keyboard.JustDown(this.brainKey)) {
       this.hud.toggleBrainDebug();
     }
 
@@ -290,6 +308,22 @@ export class InteriorScene extends Phaser.Scene {
     }
 
     return best;
+  }
+
+  private openGenerativeChat(npc: Npc): void {
+    const definition = npc.definition;
+    const definitions = this.lifeSystem.getAllDefinitions();
+
+    this.generativeDialogue.open({
+      definition,
+      life: this.lifeSystem.getState(definition.id),
+      brain: this.brainSystem.getBrain(definition.id),
+      definitions,
+      day: this.timeSystem.day,
+      minute: this.timeSystem.minuteOfDay,
+      time: this.timeSystem.formatted,
+      location: this.definition.name,
+    });
   }
 
   private talkToResident(npc: Npc): void {
