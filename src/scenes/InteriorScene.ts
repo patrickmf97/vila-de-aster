@@ -1,11 +1,20 @@
 import Phaser from 'phaser';
 import { Player } from '../entities/Player';
+import { Npc } from '../entities/Npc';
+import { npcDefinitions } from '../data/npcs';
 import { interiors, INTERIOR_SIZE } from '../data/interiors';
-import type { InteriorDefinition, InteriorObjectDefinition, Point, Rect } from '../types';
+import type {
+  InteriorDefinition,
+  InteriorObjectDefinition,
+  LifeEvent,
+  Point,
+  Rect,
+} from '../types';
 import { InteriorRenderer } from '../world/InteriorRenderer';
 import { DialogueSystem } from '../systems/DialogueSystem';
 import { SaveSystem } from '../systems/SaveSystem';
 import { TimeSystem } from '../systems/TimeSystem';
+import { LifeSimulationSystem } from '../systems/LifeSimulationSystem';
 import { Hud } from '../ui/Hud';
 
 interface InteriorSceneData {
@@ -13,14 +22,21 @@ interface InteriorSceneData {
   returnPoint: Point;
 }
 
+type InteriorTarget =
+  | { type: 'exit'; label: string; distance: number }
+  | { type: 'object'; label: string; object: InteriorObjectDefinition; distance: number }
+  | { type: 'resident'; label: string; npc: Npc; distance: number };
+
 export class InteriorScene extends Phaser.Scene {
   private definition!: InteriorDefinition;
   private returnPoint!: Point;
   private player!: Player;
+  private residents: Npc[] = [];
   private interiorRenderer!: InteriorRenderer;
   private dialogue!: DialogueSystem;
   private save!: SaveSystem;
   private timeSystem!: TimeSystem;
+  private lifeSystem!: LifeSimulationSystem;
   private hud!: Hud;
 
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -44,6 +60,7 @@ export class InteriorScene extends Phaser.Scene {
       this.save.snapshot.day,
       this.save.snapshot.gameMinutes,
     );
+    this.lifeSystem = new LifeSimulationSystem(this.save, npcDefinitions);
     this.dialogue = new DialogueSystem();
     this.hud = new Hud();
 
@@ -56,6 +73,9 @@ export class InteriorScene extends Phaser.Scene {
       this.definition.spawn.y,
     );
     this.player.face('up');
+
+    this.syncResidentRoster();
+    this.syncResidents();
 
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.wasd = this.input.keyboard!.addKeys('W,A,S,D') as Record<
@@ -73,8 +93,8 @@ export class InteriorScene extends Phaser.Scene {
     ));
 
     this.scale.on('resize', this.resizeCamera, this);
-    this.hud.setQuest(`Explore ${this.definition.name} e examine os objetos.`);
-    this.hud.showToast(`🚪 Você entrou em ${this.definition.name}.`);
+    this.hud.setQuest('Explore ' + this.definition.name + ' e observe quem realmente vive aqui.');
+    this.hud.showToast('🚪 Você entrou em ' + this.definition.name + '.');
     this.syncHud();
   }
 
@@ -98,6 +118,20 @@ export class InteriorScene extends Phaser.Scene {
       }
     }
 
+    this.save.patch({
+      day: this.timeSystem.day,
+      gameMinutes: this.timeSystem.minutes,
+    });
+
+    const events = this.lifeSystem.update(
+      this.timeSystem.day,
+      this.timeSystem.minuteOfDay,
+      dt,
+    );
+    this.showLifeEvents(events);
+    this.syncResidentRoster();
+    this.syncResidents();
+
     const target = this.getInteractionTarget();
     this.hud.setInteractionHint(
       !this.dialogue.isOpen && target !== null,
@@ -114,6 +148,8 @@ export class InteriorScene extends Phaser.Scene {
         this.leaveInterior();
       } else if (target?.type === 'object') {
         this.inspectObject(target.object);
+      } else if (target?.type === 'resident') {
+        this.talkToResident(target.npc);
       }
     }
 
@@ -124,6 +160,48 @@ export class InteriorScene extends Phaser.Scene {
     }
 
     this.syncHud();
+  }
+
+  private syncResidentRoster(): void {
+    const definitions = this.lifeSystem.getAllDefinitions();
+    const existing = new Set(this.residents.map((npc) => npc.definition.id));
+
+    for (const definition of definitions) {
+      if (existing.has(definition.id)) continue;
+      const npc = new Npc(this, definition);
+      npc.setVisible(false);
+      npc.setActive(false);
+      this.residents.push(npc);
+      existing.add(definition.id);
+    }
+  }
+
+  private syncResidents(): void {
+    const visibleResidents = this.residents.filter((npc) => {
+      const life = this.lifeSystem.getState(npc.definition.id);
+      return life?.currentZone === this.definition.id;
+    });
+
+    const sleepSpots =
+      this.definition.sleepSpots ?? [{ x: 610, y: 365 }];
+    const residentSpots =
+      this.definition.residentSpots ?? [{ x: 560, y: 350 }];
+
+    for (const npc of this.residents) {
+      const life = this.lifeSystem.getState(npc.definition.id);
+      const visible = life?.currentZone === this.definition.id;
+      npc.syncWorldPresence(visible);
+
+      if (!visible || !life) continue;
+
+      const index = visibleResidents.indexOf(npc);
+      const spots = life.currentActivity === 'sleep' ? sleepSpots : residentSpots;
+      const spot = spots[index % spots.length];
+
+      npc.setPosition(spot.x, spot.y);
+      npc.setInteriorActivity(life.currentActivity);
+      npc.setDepth(Math.round(spot.y));
+    }
   }
 
   private readonly canMove = (x: number, y: number, radius: number): boolean => {
@@ -141,10 +219,7 @@ export class InteriorScene extends Phaser.Scene {
     );
   };
 
-  private getInteractionTarget():
-    | { type: 'exit'; label: string }
-    | { type: 'object'; label: string; object: InteriorObjectDefinition }
-    | null {
+  private getInteractionTarget(): InteriorTarget | null {
     const exitDistance = Phaser.Math.Distance.Between(
       this.player.x,
       this.player.y,
@@ -152,7 +227,28 @@ export class InteriorScene extends Phaser.Scene {
       this.definition.exit.y,
     );
 
-    let bestObject: { object: InteriorObjectDefinition; distance: number } | null = null;
+    let best: InteriorTarget | null =
+      exitDistance <= 76
+        ? { type: 'exit', label: 'sair', distance: exitDistance }
+        : null;
+
+    for (const npc of this.residents) {
+      if (!npc.visible) continue;
+      const distance = Phaser.Math.Distance.Between(
+        this.player.x,
+        this.player.y,
+        npc.x,
+        npc.y,
+      );
+      if (distance <= 76 && (!best || distance < best.distance)) {
+        best = {
+          type: 'resident',
+          label: npc.currentActivity === 'sleep' ? 'observar' : 'conversar',
+          npc,
+          distance,
+        };
+      }
+    }
 
     for (const object of this.definition.objects) {
       const centerX = object.x + object.w / 2;
@@ -165,24 +261,65 @@ export class InteriorScene extends Phaser.Scene {
       );
 
       const threshold = Math.max(72, Math.min(115, Math.max(object.w, object.h) * 0.72));
-      if (distance <= threshold && (!bestObject || distance < bestObject.distance)) {
-        bestObject = { object, distance };
+      if (
+        distance <= threshold &&
+        (!best || distance < best.distance)
+      ) {
+        best = {
+          type: 'object',
+          label: 'examinar ' + object.label.toLowerCase(),
+          object,
+          distance,
+        };
       }
     }
 
-    if (bestObject && (exitDistance > 76 || bestObject.distance < exitDistance)) {
-      return {
-        type: 'object',
-        label: `examinar ${bestObject.object.label.toLowerCase()}`,
-        object: bestObject.object,
-      };
+    return best;
+  }
+
+  private talkToResident(npc: Npc): void {
+    const definition = npc.definition;
+    const life = this.lifeSystem.getState(definition.id);
+    if (!life) return;
+
+    if (life.currentActivity === 'sleep') {
+      this.dialogue.open({
+        name: definition.name,
+        role: 'Dormindo em casa',
+        portrait: '💤',
+        lines: [
+          definition.name + ' está dormindo profundamente.',
+          'A rotina continua mesmo quando ninguém está olhando.',
+        ],
+      });
+      return;
     }
 
-    if (exitDistance <= 76) {
-      return { type: 'exit', label: 'sair' };
+    const definitions = this.lifeSystem.getAllDefinitions();
+    const lines = ['Você encontrou ' + definition.name + ' em casa.'];
+
+    if (life.partnerId) {
+      const partner = definitions.find((entry) => entry.id === life.partnerId);
+      if (partner && life.relationshipStatus === 'married') {
+        lines.push('Aqui é onde eu e ' + partner.name + ' estamos construindo nossa vida.');
+      }
     }
 
-    return null;
+    if (life.children.length) {
+      const children = life.children
+        .map((id) => definitions.find((entry) => entry.id === id)?.name)
+        .filter((name): name is string => !!name);
+      if (children.length) {
+        lines.push('A casa ficou bem mais movimentada desde que ' + children.join(', ') + ' chegou.');
+      }
+    }
+
+    this.dialogue.open({
+      name: definition.name,
+      role: definition.role,
+      portrait: definition.emoji,
+      lines,
+    });
   }
 
   private inspectObject(object: InteriorObjectDefinition): void {
@@ -201,6 +338,19 @@ export class InteriorScene extends Phaser.Scene {
       spawn: this.returnPoint,
       fromInterior: true,
     });
+  }
+
+  private showLifeEvents(events: LifeEvent[]): void {
+    if (!events.length) return;
+    const event = events[events.length - 1];
+    const icon = {
+      dating: '💞',
+      marriage: '💍',
+      'expecting-child': '🍼',
+      'child-born': '👶',
+      'moved-home': '🏠',
+    }[event.type];
+    this.hud.showToast(icon + ' ' + event.text);
   }
 
   private persistTime(): void {
