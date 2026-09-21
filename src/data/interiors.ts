@@ -95,7 +95,7 @@ export const interiors: Record<string, InteriorDefinition> = {
       { id:'table', label:'Mesa', emoji:'🐟', text:'Um caderno registra tamanho, espécie e local de cada peixe capturado. As últimas páginas têm muitos pontos de interrogação.', x:335,y:250,w:150,h:95, solid:true },
       { id:'chest', label:'Baú', emoji:'🧰', text:'Boias, anzóis e lembranças antigas de viagens rio acima.', x:590,y:335,w:120,h:80, solid:true },
     ],
-  },,
+  },
   'settlement-home': {
     id: 'settlement-home',
     name: 'Nova Casa',
