@@ -1,16 +1,25 @@
 import type {
+  BrainDecisionLog,
+  ConstructionProject,
+  ConversationTurn,
+  EconomyEvent,
   GeneratedNpcData,
   LifeEvent,
-  BrainDecisionLog,
-  ConversationTurn,
   MemoryFact,
   NpcBrainState,
   NpcConversationState,
+  NpcEconomyState,
   NpcLifeState,
   NpcMemory,
   NpcRelationship,
   SaveData,
+  SettlementBuilding,
+  VillageEconomyState,
 } from '../types';
+import {
+  BASE_RESOURCE_PRICES,
+  INITIAL_RESOURCES,
+} from '../data/economy';
 
 const SAVE_KEY = 'vila-aster-memory-v2';
 
@@ -31,6 +40,11 @@ export class SaveSystem {
       conversations: {},
       generatedNpcs: [],
       lifeEvents: [],
+      economy: {},
+      villageEconomy: createInitialVillageEconomy(1),
+      economyEvents: [],
+      constructionProjects: [],
+      settlementBuildings: [],
       eventTriggered: false,
       day: 1,
       gameMinutes: 8 * 60,
@@ -52,6 +66,8 @@ export class SaveSystem {
         };
       }
 
+      const day = parsed.day ?? 1;
+
       return {
         npcs,
         relationships: parsed.relationships ?? {},
@@ -61,8 +77,20 @@ export class SaveSystem {
         conversations: parsed.conversations ?? {},
         generatedNpcs: Array.isArray(parsed.generatedNpcs) ? parsed.generatedNpcs : [],
         lifeEvents: Array.isArray(parsed.lifeEvents) ? parsed.lifeEvents : [],
+        economy: parsed.economy ?? {},
+        villageEconomy:
+          parsed.villageEconomy ?? createInitialVillageEconomy(day),
+        economyEvents: Array.isArray(parsed.economyEvents)
+          ? parsed.economyEvents
+          : [],
+        constructionProjects: Array.isArray(parsed.constructionProjects)
+          ? parsed.constructionProjects
+          : [],
+        settlementBuildings: Array.isArray(parsed.settlementBuildings)
+          ? parsed.settlementBuildings
+          : [],
         eventTriggered: parsed.eventTriggered ?? false,
-        day: parsed.day ?? 1,
+        day,
         gameMinutes: parsed.gameMinutes ?? 8 * 60,
         player: parsed.player,
       };
@@ -141,6 +169,34 @@ export class SaveSystem {
     this.data.lifeEvents = this.data.lifeEvents.slice(-120);
   }
 
+  economyFor(id: string): NpcEconomyState | undefined {
+    return this.data.economy[id];
+  }
+
+  setEconomy(id: string, state: NpcEconomyState): void {
+    this.data.economy[id] = state;
+  }
+
+  get villageEconomy(): VillageEconomyState {
+    return this.data.villageEconomy;
+  }
+
+  addEconomyEvent(event: EconomyEvent): void {
+    if (this.data.economyEvents.some((existing) => existing.id === event.id)) return;
+    this.data.economyEvents.push(event);
+    this.data.economyEvents = this.data.economyEvents.slice(-120);
+  }
+
+  addConstructionProject(project: ConstructionProject): void {
+    if (this.data.constructionProjects.some((existing) => existing.id === project.id)) return;
+    this.data.constructionProjects.push(project);
+  }
+
+  addSettlementBuilding(building: SettlementBuilding): void {
+    if (this.data.settlementBuildings.some((existing) => existing.id === building.id)) return;
+    this.data.settlementBuildings.push(building);
+  }
+
   addFact(npcId: string, fact: MemoryFact): boolean {
     const memory = this.memoryFor(npcId);
     if (memory.facts.some((existing) => existing.id === fact.id)) return false;
@@ -204,4 +260,14 @@ export class SaveSystem {
 
 export function relationshipKey(a: string, b: string): string {
   return [a, b].sort().join('::');
+}
+
+function createInitialVillageEconomy(day: number): VillageEconomyState {
+  return {
+    resources: { ...INITIAL_RESOURCES },
+    prices: { ...BASE_RESOURCE_PRICES },
+    treasury: 110,
+    prosperity: 50,
+    lastProcessedDay: day,
+  };
 }
