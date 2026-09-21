@@ -82,10 +82,10 @@ export const residenceCapacity: Record<string, number> = {
 };
 
 export const settlementLots: SettlementLot[] = [
-  { id: 'south-meadow-1', label: 'Prado Sul I', x: 835, y: 930, w: 250, h: 190 },
-  { id: 'south-meadow-2', label: 'Prado Sul II', x: 1370, y: 1015, w: 250, h: 175 },
-  { id: 'west-grove-1', label: 'Bosque Oeste', x: 35, y: 1030, w: 235, h: 170 },
-  { id: 'east-bank-1', label: 'Margem Leste', x: 1625, y: 1035, w: 235, h: 165 },
+  { id: 'northwest-1', label: 'Clareira Noroeste', x: 20, y: 260, w: 220, h: 160 },
+  { id: 'forge-lane-1', label: 'Rua da Forja', x: 900, y: 400, w: 230, h: 160 },
+  { id: 'south-meadow-1', label: 'Prado Sul I', x: 850, y: 770, w: 240, h: 170 },
+  { id: 'south-meadow-2', label: 'Prado Sul II', x: 850, y: 1000, w: 230, h: 150 },
 ];
 
 export const HOUSE_COST = {
