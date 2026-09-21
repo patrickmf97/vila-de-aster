@@ -30,35 +30,24 @@ export class LifeSimulationSystem {
   update(
     day: number,
     minuteOfDay: number,
-    deltaSeconds: number,
+    _deltaSeconds: number,
   ): LifeEvent[] {
     this.ensureAllProfiles();
 
-    const definitions = this.getAllDefinitions();
-
-    for (const definition of definitions) {
+    // The schedule remains the safe baseline. NpcBrainSystem is layered on top
+    // and can override currentActivity/currentZone after this update.
+    for (const definition of this.getAllDefinitions()) {
       const state = this.save.lifeFor(definition.id);
       if (!state) continue;
 
       const schedule = scheduleAt(definition, minuteOfDay);
       const activity = schedule.activity ?? inferActivity(schedule.label);
+
       state.currentActivity = activity;
       state.currentZone =
         schedule.zone === 'home' || activity === 'sleep'
           ? state.residenceId
           : schedule.zone ?? 'world';
-
-      if (activity === 'sleep') {
-        state.energy = Math.min(100, state.energy + deltaSeconds * 3.5);
-      } else {
-        state.energy = Math.max(0, state.energy - deltaSeconds * 0.18);
-      }
-
-      if (activity === 'socialize' || activity === 'family') {
-        state.socialNeed = Math.max(0, state.socialNeed - deltaSeconds * 1.1);
-      } else {
-        state.socialNeed = Math.min(100, state.socialNeed + deltaSeconds * 0.05);
-      }
     }
 
     this.processDaysUntil(day);
