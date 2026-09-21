@@ -110,6 +110,8 @@ export class InteriorScene extends Phaser.Scene {
 
   update(_time: number, delta: number): void {
     const dt = Math.min(delta / 1000, 0.033);
+    const simulationDt =
+      this.dialogue.isOpen || this.generativeDialogue.isOpen ? 0 : dt;
 
     if (!this.dialogue.isOpen && !this.generativeDialogue.isOpen) {
       this.player.updateMovement(
@@ -136,13 +138,13 @@ export class InteriorScene extends Phaser.Scene {
     const events = this.lifeSystem.update(
       this.timeSystem.day,
       this.timeSystem.minuteOfDay,
-      dt,
+      simulationDt,
     );
     this.showLifeEvents(events);
     this.brainSystem.update(
       this.timeSystem.day,
       this.timeSystem.minuteOfDay,
-      dt,
+      simulationDt,
     );
     this.syncResidentRoster();
     this.syncResidents();
