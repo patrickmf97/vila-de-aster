@@ -18,30 +18,34 @@
 - Utility AI;
 - agenda como fallback;
 - decisões dinâmicas;
-- investigação do rio baseada em conhecimento;
-- decisões familiares;
-- logs explicáveis;
-- painel de debug com B.
+- logs explicáveis.
 
-## v0.6.0 — Generative NPC
-- backend;
-- diálogo generativo;
-- lore restrito;
-- memória curta + longa;
-- resumo de conversas;
+## ✅ v0.6.0 — Generative NPC
+- Vercel Function para IA;
+- Responses API;
+- conversa livre com F;
+- contexto limitado ao conhecimento individual;
+- memória curta;
+- resumo persistente;
+- extração de fatos explícitos do jogador;
 - fallback local;
-- custo e latência controlados.
+- rate limit básico;
+- chave somente no backend;
+- IA sem autoridade sobre estado canônico.
 
 ## v0.7.0 — Economy & Settlement
-- dinheiro real por NPC;
-- trabalho e consumo;
+- dinheiro individual;
+- trabalho e renda;
+- produção e consumo;
 - recursos;
-- novas casas;
-- expansão da vila;
-- profissões e herança.
+- mercado;
+- custo de moradia;
+- construção de novas casas;
+- expansão física da vila.
 
 ## v0.8+ — Generations & RPG
 - envelhecimento completo;
+- profissões e herança;
 - morte e legado;
 - múltiplas gerações;
 - inventário;
