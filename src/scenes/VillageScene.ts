@@ -9,8 +9,9 @@ import { TimeSystem } from '../systems/TimeSystem';
 import { DialogueSystem } from '../systems/DialogueSystem';
 import { EventSystem } from '../systems/EventSystem';
 import { RelationshipSystem } from '../systems/RelationshipSystem';
+import { LifeSimulationSystem } from '../systems/LifeSimulationSystem';
 import { Hud } from '../ui/Hud';
-import type { DoorDefinition, Point } from '../types';
+import type { DoorDefinition, LifeEvent, Point } from '../types';
 
 interface VillageSceneData {
   spawn?: Point;
@@ -29,6 +30,7 @@ export class VillageScene extends Phaser.Scene {
   private dialogue!: DialogueSystem;
   private eventSystem!: EventSystem;
   private relationshipSystem!: RelationshipSystem;
+  private lifeSystem!: LifeSimulationSystem;
   private hud!: Hud;
   private spawnOverride?: Point;
   private fromInterior = false;
@@ -60,13 +62,14 @@ export class VillageScene extends Phaser.Scene {
     this.dialogue = new DialogueSystem();
     this.eventSystem = new EventSystem(this.save);
     this.relationshipSystem = new RelationshipSystem(this.save);
+    this.lifeSystem = new LifeSimulationSystem(this.save, npcDefinitions);
     this.hud = new Hud();
 
     new WorldRenderer(this).create();
 
     const start = this.spawnOverride ?? this.save.snapshot.player ?? { x: 930, y: 790 };
     this.player = new Player(this, start.x, start.y);
-    this.npcs = npcDefinitions.map((definition) => new Npc(this, definition));
+    this.syncNpcRoster();
 
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.wasd = this.input.keyboard!.addKeys('W,A,S,D') as Record<
@@ -92,7 +95,7 @@ export class VillageScene extends Phaser.Scene {
     if (this.fromInterior) {
       this.hud.showToast('🌿 Você voltou para as ruas da vila.');
     } else {
-      this.hud.showToast('🌿 Bem-vindo à Vila de Aster. Fale com os moradores.');
+      this.hud.showToast('🌿 A vila agora continua vivendo mesmo quando você não está olhando.');
     }
 
     this.spawnOverride = undefined;
@@ -120,22 +123,47 @@ export class VillageScene extends Phaser.Scene {
       }
     }
 
-    const elapsedSeconds = this.time.now / 1000;
-    this.npcs.forEach((npc) =>
-      npc.updateRoutine(this.timeSystem.minuteOfDay, dt, elapsedSeconds),
-    );
-
     this.save.patch({
       day: this.timeSystem.day,
       gameMinutes: this.timeSystem.minutes,
     });
-    this.relationshipSystem.update(this.npcs, dt, this.timeSystem.day);
+
+    const lifeEvents = this.lifeSystem.update(
+      this.timeSystem.day,
+      this.timeSystem.minuteOfDay,
+      dt,
+    );
+    this.showLifeEvents(lifeEvents);
+    this.syncNpcRoster();
+
+    const elapsedSeconds = this.time.now / 1000;
+    for (const npc of this.npcs) {
+      const life = this.lifeSystem.getState(npc.definition.id);
+      const residenceDoor = this.lifeSystem.getResidenceDoor(npc.definition.id);
+      const inWorld = !life || life.currentZone === 'world';
+
+      npc.syncWorldPresence(inWorld, residenceDoor);
+      if (inWorld) {
+        npc.updateRoutine(
+          this.timeSystem.minuteOfDay,
+          dt,
+          elapsedSeconds,
+          residenceDoor,
+        );
+      }
+    }
+
+    this.relationshipSystem.update(
+      this.npcs.filter((npc) => npc.visible),
+      dt,
+      this.timeSystem.day,
+    );
 
     const target = this.nearestInteraction();
     this.hud.setInteractionHint(
       !this.dialogue.isOpen && target !== null,
       target?.type === 'door'
-        ? `entrar em ${target.door.label.replace('Entrar em ', '')}`
+        ? 'entrar em ' + target.door.label.replace('Entrar em ', '')
         : 'conversar',
     );
 
@@ -153,7 +181,7 @@ export class VillageScene extends Phaser.Scene {
     }
 
     if (Phaser.Input.Keyboard.JustDown(this.resetKey)) {
-      if (window.confirm('Apagar a memória dos NPCs e reiniciar o protótipo?')) {
+      if (window.confirm('Apagar memória, famílias e progresso da simulação?')) {
         this.save.reset();
         window.location.reload();
       }
@@ -167,6 +195,17 @@ export class VillageScene extends Phaser.Scene {
 
     this.nightOverlay.setAlpha(this.timeSystem.darkness);
     this.syncHud();
+  }
+
+  private syncNpcRoster(): void {
+    const definitions = this.lifeSystem.getAllDefinitions();
+    const existing = new Set(this.npcs.map((npc) => npc.definition.id));
+
+    for (const definition of definitions) {
+      if (existing.has(definition.id)) continue;
+      this.npcs.push(new Npc(this, definition));
+      existing.add(definition.id);
+    }
   }
 
   private readonly canMove = (x: number, y: number, radius: number): boolean => {
@@ -190,6 +229,8 @@ export class VillageScene extends Phaser.Scene {
     let best: InteractionTarget | null = null;
 
     for (const npc of this.npcs) {
+      if (!npc.visible) continue;
+
       const distance = Phaser.Math.Distance.Between(
         this.player.x,
         this.player.y,
@@ -230,6 +271,8 @@ export class VillageScene extends Phaser.Scene {
   private startNpcDialogue(npc: Npc): void {
     const definition = npc.definition;
     const memory = this.save.memoryFor(definition.id);
+    const life = this.lifeSystem.getState(definition.id);
+    const definitions = this.lifeSystem.getAllDefinitions();
 
     memory.talks += 1;
     memory.affinity = Math.min(100, memory.affinity + 8);
@@ -251,18 +294,39 @@ export class VillageScene extends Phaser.Scene {
     if (memory.talks >= 2) lines.push(definition.topic);
     if (memory.talks >= 3) {
       lines.push(
-        `Eu lembro das nossas ${memory.talks} conversas. Já não considero você exatamente um estranho.`,
+        'Eu lembro das nossas ' + memory.talks + ' conversas. Já não considero você exatamente um estranho.',
       );
     }
 
-    lines.push(`Agora estou ${schedule.label}. A vila muda bastante dependendo da hora.`);
+    if (life?.relationshipStatus === 'dating' && life.partnerId) {
+      const partner = definitions.find((entry) => entry.id === life.partnerId);
+      if (partner) lines.push('Tenho passado bastante tempo com ' + partner.name + ' ultimamente.');
+    }
+
+    if (life?.relationshipStatus === 'married' && life.partnerId) {
+      const partner = definitions.find((entry) => entry.id === life.partnerId);
+      if (partner) lines.push('Eu e ' + partner.name + ' estamos construindo nossa vida juntos.');
+    }
+
+    if (life?.children.length) {
+      const childNames = life.children
+        .map((id) => definitions.find((entry) => entry.id === id)?.name)
+        .filter((name): name is string => !!name);
+      if (childNames.length) {
+        lines.push('Minha família cresceu. ' + childNames.join(', ') + ' faz parte dela agora.');
+      }
+    }
+
+    lines.push('Agora estou ' + schedule.label + '. A vila muda bastante dependendo da hora.');
 
     const sharedFact = memory.facts.find(
       (fact) => fact.source !== 'player' && fact.source !== definition.id,
     );
     if (sharedFact) {
-      const sourceName = npcDefinitions.find((entry) => entry.id === sharedFact.source)?.name ?? 'outro morador';
-      lines.push(`Aliás, ${sourceName} me contou uma coisa: ${sharedFact.text}`);
+      const sourceName =
+        definitions.find((entry) => entry.id === sharedFact.source)?.name ??
+        'outro morador';
+      lines.push('Aliás, ' + sourceName + ' me contou uma coisa: ' + sharedFact.text);
     }
 
     if (this.eventSystem.shouldTriggerRiverEcho()) {
@@ -301,6 +365,21 @@ export class VillageScene extends Phaser.Scene {
     });
 
     this.save.persist();
+  }
+
+  private showLifeEvents(events: LifeEvent[]): void {
+    if (!events.length) return;
+
+    const event = events[events.length - 1];
+    const icon = {
+      dating: '💞',
+      marriage: '💍',
+      'expecting-child': '🍼',
+      'child-born': '👶',
+      'moved-home': '🏠',
+    }[event.type];
+
+    this.hud.showToast(icon + ' ' + event.text);
   }
 
   private syncHud(): void {
