@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import type { Facing, NpcActivity, NpcDefinition, ScheduleEntry } from '../types';
+import type { Facing, NpcActivity, NpcDefinition, Point, ScheduleEntry } from '../types';
 
 export class Npc extends Phaser.GameObjects.Container {
   readonly definition: NpcDefinition;
@@ -64,6 +64,7 @@ export class Npc extends Phaser.GameObjects.Container {
     ]);
 
     scene.add.existing(this);
+    if (definition.scale) this.setScale(definition.scale);
     this.setDepth(yToDepth(this.y));
   }
 
@@ -73,14 +74,22 @@ export class Npc extends Phaser.GameObjects.Container {
     ) ?? this.definition.schedule[0];
   }
 
-  updateRoutine(minuteOfDay: number, deltaSeconds: number, elapsedSeconds: number): void {
+  updateRoutine(
+    minuteOfDay: number,
+    deltaSeconds: number,
+    elapsedSeconds: number,
+    residenceTarget?: Point,
+  ): void {
     const schedule = this.scheduleAt(minuteOfDay);
     const activity = schedule.activity ?? inferActivity(schedule.label);
     this.currentActivity = activity;
 
     const micro = this.microOffset(activity, elapsedSeconds);
-    const targetX = schedule.x + micro.x;
-    const targetY = schedule.y + micro.y;
+    const baseTarget = schedule.homeTarget && residenceTarget
+      ? residenceTarget
+      : { x: schedule.x, y: schedule.y };
+    const targetX = baseTarget.x + micro.x;
+    const targetY = baseTarget.y + micro.y;
     const distance = Phaser.Math.Distance.Between(this.x, this.y, targetX, targetY);
 
     this.activityLabel.setText(activityText(activity));
@@ -115,6 +124,22 @@ export class Npc extends Phaser.GameObjects.Container {
     const sleeping = activity === 'sleep';
     this.setAlpha(sleeping ? 0.58 : 1);
     this.setDepth(yToDepth(this.y));
+  }
+
+  syncWorldPresence(visible: boolean, wakePoint?: Point): void {
+    const wasVisible = this.visible;
+    if (visible && !wasVisible && wakePoint) {
+      this.setPosition(wakePoint.x, wakePoint.y);
+    }
+    this.setVisible(visible);
+    this.setActive(visible);
+  }
+
+  setInteriorActivity(activity: NpcActivity): void {
+    this.currentActivity = activity;
+    this.activityLabel.setText(activityText(activity));
+    this.setAlpha(activity === 'sleep' ? 0.65 : 1);
+    this.setRotation(activity === 'sleep' ? -0.08 : 0);
   }
 
   private microOffset(activity: NpcActivity, elapsedSeconds: number): { x: number; y: number } {
