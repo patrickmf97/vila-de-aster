@@ -502,11 +502,15 @@ export class VillageScene extends Phaser.Scene {
 
     if (!important) return;
 
-    const icon = {
+    const iconByType: Partial<
+      Record<EconomyEvent['type'], string>
+    > = {
       shortage: '⚠️',
       'construction-start': '🏗️',
       'construction-complete': '🏠',
-    }[important.type] ?? '📊';
+    };
+    const icon =
+      iconByType[important.type] ?? '📊';
 
     this.hud.showToast(
       icon + ' ' + important.text,
