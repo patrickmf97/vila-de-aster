@@ -17,7 +17,7 @@ export class InteriorScene extends Phaser.Scene {
   private definition!: InteriorDefinition;
   private returnPoint!: Point;
   private player!: Player;
-  private renderer!: InteriorRenderer;
+  private interiorRenderer!: InteriorRenderer;
   private dialogue!: DialogueSystem;
   private save!: SaveSystem;
   private timeSystem!: TimeSystem;
@@ -47,8 +47,8 @@ export class InteriorScene extends Phaser.Scene {
     this.dialogue = new DialogueSystem();
     this.hud = new Hud();
 
-    this.renderer = new InteriorRenderer(this, this.definition);
-    this.renderer.create();
+    this.interiorRenderer = new InteriorRenderer(this, this.definition);
+    this.interiorRenderer.create();
 
     this.player = new Player(
       this,
@@ -136,7 +136,7 @@ export class InteriorScene extends Phaser.Scene {
       return false;
     }
 
-    return !this.renderer.collisionRects.some((rect) =>
+    return !this.interiorRenderer.collisionRects.some((rect) =>
       circleIntersectsRect(x, y, radius, rect),
     );
   };
