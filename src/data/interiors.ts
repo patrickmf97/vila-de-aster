@@ -96,4 +96,32 @@ export const interiors: Record<string, InteriorDefinition> = {
       { id:'chest', label:'Baú', emoji:'🧰', text:'Boias, anzóis e lembranças antigas de viagens rio acima.', x:590,y:335,w:120,h:80, solid:true },
     ],
   },
+  'settlement-home': {
+    id: 'settlement-home',
+    name: 'Nova Casa',
+    subtitle: 'Uma casa nova, construída pela própria evolução de Aster.',
+    wall: 0x6b604d,
+    floor: 0xd5c29a,
+    accent: 0x7b6b54,
+    spawn: { x: 410, y: 475 },
+    exit: { x: 410, y: 515 },
+    residentSpots: [
+      { x: 420, y: 330 },
+      { x: 510, y: 330 },
+      { x: 600, y: 330 },
+      { x: 680, y: 330 },
+    ],
+    sleepSpots: [
+      { x: 185, y: 170 },
+      { x: 245, y: 170 },
+      { x: 575, y: 365 },
+      { x: 640, y: 365 },
+    ],
+    objects: [
+      { id:'new-bed', label:'Camas', emoji:'🛏️', text:'Móveis simples, ainda com cheiro de madeira nova.', x:105,y:105,w:200,h:110, solid:true },
+      { id:'new-table', label:'Mesa da família', emoji:'🍞', text:'Uma mesa nova. As marcas do cotidiano ainda estão começando a aparecer.', x:330,y:250,w:165,h:100, solid:true },
+      { id:'new-chest', label:'Baú', emoji:'📦', text:'Ferramentas, mantimentos e algumas lembranças trazidas da casa anterior.', x:590,y:105,w:120,h:90, solid:true },
+      { id:'new-hearth', label:'Lareira', emoji:'🔥', text:'A lareira transforma a construção recente em um lugar que já começa a parecer lar.', x:600,y:325,w:120,h:95, solid:true },
+    ],
+  },
 };

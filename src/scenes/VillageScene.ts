@@ -3,6 +3,7 @@ import { Player } from '../entities/Player';
 import { Npc } from '../entities/Npc';
 import { npcDefinitions } from '../data/npcs';
 import { collisionRects, doors, WORLD } from '../data/world';
+import { settlementCollisionRect, settlementDoor } from '../data/economy';
 import { WorldRenderer } from '../world/WorldRenderer';
 import { SaveSystem } from '../systems/SaveSystem';
 import { TimeSystem } from '../systems/TimeSystem';
@@ -12,8 +13,9 @@ import { RelationshipSystem } from '../systems/RelationshipSystem';
 import { LifeSimulationSystem } from '../systems/LifeSimulationSystem';
 import { NpcBrainSystem } from '../systems/NpcBrainSystem';
 import { DynamicDialogueSystem } from '../systems/DynamicDialogueSystem';
+import { EconomySystem } from '../systems/EconomySystem';
 import { Hud } from '../ui/Hud';
-import type { DoorDefinition, LifeEvent, Point } from '../types';
+import type { DoorDefinition, EconomyEvent, LifeEvent, Point } from '../types';
 
 interface VillageSceneData {
   spawn?: Point;
@@ -35,6 +37,8 @@ export class VillageScene extends Phaser.Scene {
   private lifeSystem!: LifeSimulationSystem;
   private brainSystem!: NpcBrainSystem;
   private dynamicDialogue!: DynamicDialogueSystem;
+  private economySystem!: EconomySystem;
+  private worldRenderer!: WorldRenderer;
   private hud!: Hud;
   private spawnOverride?: Point;
   private fromInterior = false;
@@ -46,6 +50,7 @@ export class VillageScene extends Phaser.Scene {
   private resetKey!: Phaser.Input.Keyboard.Key;
   private brainKey!: Phaser.Input.Keyboard.Key;
   private freeChatKey!: Phaser.Input.Keyboard.Key;
+  private marketKey!: Phaser.Input.Keyboard.Key;
 
   private nightOverlay!: Phaser.GameObjects.Rectangle;
   private persistAccumulator = 0;
@@ -71,9 +76,14 @@ export class VillageScene extends Phaser.Scene {
     this.lifeSystem = new LifeSimulationSystem(this.save, npcDefinitions);
     this.brainSystem = new NpcBrainSystem(this.save, this.lifeSystem);
     this.dynamicDialogue = new DynamicDialogueSystem(this.save);
+    this.economySystem = new EconomySystem(this.save, this.lifeSystem);
     this.hud = new Hud();
 
-    new WorldRenderer(this).create();
+    this.worldRenderer = new WorldRenderer(this);
+    this.worldRenderer.create(
+      this.save.snapshot.settlementBuildings,
+      this.save.snapshot.constructionProjects,
+    );
 
     const start = this.spawnOverride ?? this.save.snapshot.player ?? { x: 930, y: 790 };
     this.player = new Player(this, start.x, start.y);
@@ -89,6 +99,7 @@ export class VillageScene extends Phaser.Scene {
     this.resetKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.R);
     this.brainKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.B);
     this.freeChatKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.F);
+    this.marketKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.M);
 
     this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
     this.cameras.main.startFollow(this.player, true, 0.09, 0.09);
@@ -154,6 +165,13 @@ export class VillageScene extends Phaser.Scene {
       simulationDt,
     );
 
+    const economyEvents = this.economySystem.update(
+      this.timeSystem.day,
+      this.timeSystem.minuteOfDay,
+      simulationDt,
+    );
+    this.showEconomyEvents(economyEvents);
+
     const elapsedSeconds = this.time.now / 1000;
     for (const npc of this.npcs) {
       const life = this.lifeSystem.getState(npc.definition.id);
@@ -213,6 +231,14 @@ export class VillageScene extends Phaser.Scene {
       this.hud.toggleBrainDebug();
     }
 
+    if (
+      !this.dialogue.isOpen &&
+      !this.dynamicDialogue.isOpen &&
+      Phaser.Input.Keyboard.JustDown(this.marketKey)
+    ) {
+      this.hud.toggleEconomyDebug();
+    }
+
     if (Phaser.Input.Keyboard.JustDown(this.resetKey)) {
       if (window.confirm('Apagar memória, famílias e progresso da simulação?')) {
         this.save.reset();
@@ -251,7 +277,12 @@ export class VillageScene extends Phaser.Scene {
       return false;
     }
 
-    return !collisionRects.some((rect) => {
+    const dynamicCollisions =
+      this.save.snapshot.settlementBuildings.map(
+        settlementCollisionRect,
+      );
+
+    return ![...collisionRects, ...dynamicCollisions].some((rect) => {
       const nearestX = Phaser.Math.Clamp(x, rect.x, rect.x + rect.w);
       const nearestY = Phaser.Math.Clamp(y, rect.y, rect.y + rect.h);
       return Phaser.Math.Distance.Between(x, y, nearestX, nearestY) < radius;
@@ -275,7 +306,12 @@ export class VillageScene extends Phaser.Scene {
       }
     }
 
-    for (const door of doors) {
+    const dynamicDoors =
+      this.save.snapshot.settlementBuildings.map(
+        settlementDoor,
+      );
+
+    for (const door of [...doors, ...dynamicDoors]) {
       const distance = Phaser.Math.Distance.Between(
         this.player.x,
         this.player.y,
@@ -439,6 +475,48 @@ export class VillageScene extends Phaser.Scene {
     this.hud.showToast(icon + ' ' + event.text);
   }
 
+  private showEconomyEvents(events: EconomyEvent[]): void {
+    if (!events.length) return;
+
+    if (
+      events.some((event) =>
+        event.type.startsWith('construction'),
+      )
+    ) {
+      this.worldRenderer.syncSettlement(
+        this.save.snapshot.settlementBuildings,
+        this.save.snapshot.constructionProjects,
+      );
+    }
+
+    const important = events
+      .slice()
+      .reverse()
+      .find((event) =>
+        [
+          'shortage',
+          'construction-start',
+          'construction-complete',
+        ].includes(event.type),
+      );
+
+    if (!important) return;
+
+    const iconByType: Partial<
+      Record<EconomyEvent['type'], string>
+    > = {
+      shortage: '⚠️',
+      'construction-start': '🏗️',
+      'construction-complete': '🏠',
+    };
+    const icon =
+      iconByType[important.type] ?? '📊';
+
+    this.hud.showToast(
+      icon + ' ' + important.text,
+    );
+  }
+
   private syncHud(): void {
     const names = new Map(
       this.lifeSystem.getAllDefinitions().map((definition) => [definition.id, definition.name]),
@@ -449,6 +527,9 @@ export class VillageScene extends Phaser.Scene {
       return name + ' → ' + log.label + ' [' + log.score + '] • ' + reason;
     });
     this.hud.setBrainDebug(brainLines.length ? brainLines : ['Aguardando decisões...']);
+    this.hud.setEconomyDebug(
+      this.economySystem.getSummaryLines(),
+    );
     this.hud.setPopulation(this.lifeSystem.getAllDefinitions().length);
     this.hud.setClock(
       this.timeSystem.formatted,

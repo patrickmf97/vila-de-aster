@@ -266,6 +266,116 @@ export class SemanticDialoguePlanner {
 
     if (
       matches(normalized, [
+        'suas financas',
+        'seu dinheiro',
+        'quantas moedas',
+        'como esta de dinheiro',
+        'como estao suas contas',
+      ])
+    ) {
+      const economy = this.save.economyFor(definition.id);
+      if (!economy) {
+        return result(
+          'finances',
+          0.99,
+          'Ainda não tenho muito o que dizer sobre minhas contas.',
+        );
+      }
+
+      const mood =
+        economy.coins < 15
+          ? 'As moedas estão curtas. Tenho pensado mais no trabalho e nos gastos.'
+          : economy.coins < 45
+            ? 'Estou conseguindo pagar as coisas, mas sem muita folga.'
+            : 'Tenho alguma reserva. Não é riqueza, mas dá tranquilidade.';
+
+      return result(
+        'finances',
+        0.99,
+        mood +
+          ' Hoje tenho ' +
+          Math.round(economy.coins) +
+          ' moedas guardadas.',
+      );
+    }
+
+    if (
+      matches(normalized, [
+        'economia da vila',
+        'como esta o mercado',
+        'como estao os precos',
+        'estoque da vila',
+        'mercado de aster',
+      ])
+    ) {
+      const village = this.save.villageEconomy;
+      const resources = Object.entries(village.resources)
+        .sort((a, b) => a[1] - b[1]);
+      const lowest = resources[0];
+
+      const health =
+        village.prosperity < 35
+          ? 'A economia está passando por uma fase difícil.'
+          : village.prosperity < 70
+            ? 'A economia está relativamente estável.'
+            : 'A vila está vivendo uma fase bem próspera.';
+
+      return result(
+        'market',
+        0.99,
+        health +
+          (lowest
+            ? ' O recurso mais apertado agora é ' +
+              resourceLabel(lowest[0]) +
+              '.'
+            : ''),
+      );
+    }
+
+    if (
+      matches(normalized, [
+        'construcao',
+        'casa nova',
+        'casas novas',
+        'moradia',
+        'terreno',
+        'expansao da vila',
+      ])
+    ) {
+      const active =
+        this.save.snapshot.constructionProjects.find(
+          (project) => project.status === 'building',
+        );
+
+      if (active) {
+        return result(
+          'construction',
+          0.99,
+          active.name +
+            ' está em construção. Pelo que vi, está em cerca de ' +
+            Math.round(active.progress) +
+            '% do trabalho.',
+        );
+      }
+
+      const built =
+        this.save.snapshot.settlementBuildings.length;
+
+      return result(
+        'construction',
+        0.99,
+        built
+          ? 'A vila já ganhou ' +
+              built +
+              ' nova' +
+              (built === 1 ? ' casa' : 's casas') +
+              ' desde que começou a crescer.'
+          : 'Ainda não há uma obra nova em andamento. Construir aqui exige dinheiro, material e uma família precisando de espaço.',
+      );
+    }
+
+    if (
+      matches(normalized, [
         'o que esta fazendo',
         'fazendo agora',
         'onde vai',
@@ -753,6 +863,16 @@ function compactSentence(value: string): string {
     .replace(/s+/g, ' ')
     .replace(/.s*./g, '.')
     .trim();
+}
+
+function resourceLabel(key: string): string {
+  return {
+    food: 'comida',
+    wood: 'madeira',
+    stone: 'pedra',
+    metal: 'metal',
+    goods: 'mercadorias',
+  }[key] ?? key;
 }
 
 function stableHash(value: string): number {

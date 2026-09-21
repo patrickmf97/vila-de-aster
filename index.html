@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0c1515" />
-  <meta name="aster-build" content="0.6.4-choice-dialogue" />
+  <meta name="aster-build" content="0.7.0-economy-settlement" />
   <title>Vila de Aster</title>
 </head>
 <body>
@@ -13,7 +13,7 @@
 
     <div id="top-left" class="hud glass">
       <div class="brand">🌿 Vila de Aster</div>
-      <div class="sub">v0.6.4 • Choice Dialogue</div>
+      <div class="sub">v0.7.0 • Economy & Settlement</div>
     </div>
 
     <div id="top-right" class="hud glass stats">
@@ -24,7 +24,7 @@
 
     <div id="quest" class="hud glass quest">
       <strong>Objetivo atual</strong>
-      <span>Converse com escolhas contextuais. Assuntos, relações, memórias e opções pessoais mudam conforme cada NPC.</span>
+      <span>Observe Aster produzir, consumir, negociar e crescer. O trabalho dos moradores agora move a economia da vila.</span>
     </div>
 
     <aside id="brainDebug" class="brain-debug glass hidden" aria-live="polite">
@@ -51,6 +51,16 @@
       <div id="npcChatChoices" class="npc-chat-choices" aria-label="Opções de diálogo"></div>
     </section>
 
+    <aside id="economyDebug" class="economy-debug glass hidden" aria-live="polite">
+      <div class="economy-debug-header">
+        <strong>📊 Economia de Aster</strong>
+        <span>M para fechar</span>
+      </div>
+      <div id="economyDebugContent" class="economy-debug-content">
+        Aguardando o primeiro fechamento econômico...
+      </div>
+    </aside>
+
     <div id="hint" class="hint hidden">Pressione <kbd>E</kbd> para interagir</div>
 
     <section id="dialogue" class="dialogue hidden" aria-live="polite">
@@ -69,6 +79,7 @@
       <span><kbd>E</kbd> diálogo local</span>
       <span><kbd>F</kbd> opções de diálogo</span>
       <span><kbd>B</kbd> cérebro</span>
+      <span><kbd>M</kbd> economia</span>
       <span><kbd>R</kbd> reiniciar simulação</span>
     </div>
   </main>

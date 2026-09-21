@@ -294,6 +294,10 @@ export class NpcBrainSystem {
     const scheduledActivity =
       schedule.activity ?? inferActivity(schedule.label);
     const child = lifeState.lifeStage === 'child';
+    const economy = this.save.economyFor(definition.id);
+    const moneyPressure = economy
+      ? Math.max(0, Math.min(34, 32 - economy.coins))
+      : 0;
     const night =
       minuteOfDay >= 1320 || minuteOfDay < 420;
     const evening =
@@ -418,6 +422,7 @@ export class NpcBrainSystem {
         18 +
         personality.discipline * 0.72 +
         brain.needs.purpose * 0.82 +
+        moneyPressure +
         (scheduledActivity === 'work' ||
         scheduledActivity === 'fish'
           ? 42
@@ -434,9 +439,11 @@ export class NpcBrainSystem {
             brain.needs.purpose >= 45
               ? 'quer sentir que o dia foi produtivo'
               : 'o trabalho mantém sua rotina',
-            personality.discipline >= 75
-              ? 'tem forte senso de responsabilidade'
-              : 'leva o trabalho a sério',
+            economy && economy.coins < 20
+              ? 'está com poucas moedas e precisa reforçar a renda'
+              : personality.discipline >= 75
+                ? 'tem forte senso de responsabilidade'
+                : 'leva o trabalho a sério',
           ],
         ),
       );

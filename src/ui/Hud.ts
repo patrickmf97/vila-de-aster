@@ -9,6 +9,9 @@ export class Hud {
   private brainDebug = document.getElementById('brainDebug')!;
   private brainDebugContent = document.getElementById('brainDebugContent')!;
   private brainDebugSignature = '';
+  private economyDebug = document.getElementById('economyDebug')!;
+  private economyDebugContent = document.getElementById('economyDebugContent')!;
+  private economyDebugSignature = '';
   private toastTimer: number | undefined;
 
   setClock(time: string, day: number, icon: string): void {
@@ -47,6 +50,25 @@ export class Hud {
       ...lines.map((line) => {
         const row = document.createElement('div');
         row.className = 'brain-debug-row';
+        row.textContent = line;
+        return row;
+      }),
+    );
+  }
+
+  toggleEconomyDebug(): void {
+    this.economyDebug.classList.toggle('hidden');
+  }
+
+  setEconomyDebug(lines: string[]): void {
+    const signature = lines.join('\n');
+    if (signature === this.economyDebugSignature) return;
+    this.economyDebugSignature = signature;
+
+    this.economyDebugContent.replaceChildren(
+      ...lines.map((line) => {
+        const row = document.createElement('div');
+        row.className = 'economy-debug-row';
         row.textContent = line;
         return row;
       }),

@@ -15,45 +15,40 @@
 ## ✅ v0.5.0 — NPC Brain
 - personalidade, necessidades, Utility AI e decisões explicáveis.
 
-## ✅ v0.6.0 — Experimental Generative NPC
-- protótipo de conversa livre.
-
-## ✅ v0.6.1 / v0.6.2 — Local Model Experiments
-- testes com modelos locais;
-- descartados por latência e coerência.
-
 ## ✅ v0.6.3 — Dynamic Dialogue
-- banco modular;
-- classificação de intenção;
-- contexto e memória;
-- zero dependências de IA.
+- banco modular e contexto sem IA externa.
 
 ## ✅ v0.6.4 — Choice Dialogue
 - árvore de escolhas;
-- submenus contextuais;
-- follow-ups;
-- perfis pessoais ricos;
-- afinidade alterada por assunto;
-- confidências desbloqueáveis;
-- opiniões sobre moradores;
-- opções baseadas em memórias reais.
+- perfis pessoais;
+- confidências;
+- relações e memória.
 
-## v0.7.0 — Economy & Settlement
+## ✅ v0.7.0 — Economy & Settlement
 - dinheiro individual;
-- renda;
+- trabalho e renda;
 - despesas;
-- produção e consumo;
-- estoque e recursos;
-- comércio;
-- custo de moradia;
-- construção de novas casas;
-- expansão física da vila.
+- famílias compartilhando custos;
+- produção por profissão;
+- comida/madeira/pedra/metal/mercadorias;
+- preços dinâmicos;
+- tesouro;
+- prosperidade;
+- escassez afetando fome;
+- pressão financeira afetando NPC Brain;
+- terrenos de expansão;
+- projetos de construção;
+- progresso de obra;
+- casas novas persistentes;
+- mudança de residência;
+- interior de casas construídas;
+- painel econômico com M;
+- diálogo sobre finanças e mercado.
 
-## v0.8+ — Generations & RPG
+## v0.8 — Generations & RPG Systems
 - envelhecimento completo;
 - profissão e herança;
 - morte e legado;
-- múltiplas gerações;
 - inventário;
 - quests;
 - combate;

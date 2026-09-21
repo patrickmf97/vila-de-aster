@@ -42,6 +42,24 @@ export type LifeEventType =
   | 'child-born'
   | 'moved-home';
 
+export type ResourceKey = 'food' | 'wood' | 'stone' | 'metal' | 'goods';
+
+export type ResourceStock = Record<ResourceKey, number>;
+
+export type EconomyEventType =
+  | 'income'
+  | 'expense'
+  | 'shortage'
+  | 'market'
+  | 'construction-start'
+  | 'construction-progress'
+  | 'construction-complete';
+
+export type ConstructionStatus =
+  | 'planned'
+  | 'building'
+  | 'completed';
+
 export interface ScheduleEntry extends Point {
   from: number;
   to: number;
@@ -200,6 +218,59 @@ export interface LifeEvent {
   text: string;
 }
 
+export interface NpcEconomyState {
+  npcId: string;
+  coins: number;
+  earnedTotal: number;
+  spentTotal: number;
+  workMinutesToday: number;
+  lastIncome: number;
+  lastExpenses: number;
+  lastProcessedDay: number;
+}
+
+export interface VillageEconomyState {
+  resources: ResourceStock;
+  prices: ResourceStock;
+  treasury: number;
+  prosperity: number;
+  lastProcessedDay: number;
+}
+
+export interface EconomyEvent {
+  id: string;
+  day: number;
+  type: EconomyEventType;
+  text: string;
+  npcIds?: string[];
+}
+
+export interface ConstructionProject {
+  id: string;
+  type: 'house';
+  lotId: string;
+  name: string;
+  ownerNpcIds: string[];
+  status: ConstructionStatus;
+  startedDay: number;
+  progress: number;
+  costCoins: number;
+  resourcesRequired: Partial<ResourceStock>;
+  completionDay?: number;
+}
+
+export interface SettlementBuilding extends Rect {
+  id: string;
+  residenceId: string;
+  lotId: string;
+  name: string;
+  ownerNpcIds: string[];
+  roof: number;
+  wall: number;
+  sign: string;
+  completedDay: number;
+}
+
 export interface SaveData {
   player?: Point;
   npcs: Record<string, NpcMemory>;
@@ -210,6 +281,11 @@ export interface SaveData {
   conversations: Record<string, NpcConversationState>;
   generatedNpcs: GeneratedNpcData[];
   lifeEvents: LifeEvent[];
+  economy: Record<string, NpcEconomyState>;
+  villageEconomy: VillageEconomyState;
+  economyEvents: EconomyEvent[];
+  constructionProjects: ConstructionProject[];
+  settlementBuildings: SettlementBuilding[];
   eventTriggered: boolean;
   day: number;
   gameMinutes: number;

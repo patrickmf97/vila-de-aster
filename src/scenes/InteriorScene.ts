@@ -17,6 +17,7 @@ import { TimeSystem } from '../systems/TimeSystem';
 import { LifeSimulationSystem } from '../systems/LifeSimulationSystem';
 import { NpcBrainSystem } from '../systems/NpcBrainSystem';
 import { DynamicDialogueSystem } from '../systems/DynamicDialogueSystem';
+import { EconomySystem } from '../systems/EconomySystem';
 import { Hud } from '../ui/Hud';
 
 interface InteriorSceneData {
@@ -31,6 +32,7 @@ type InteriorTarget =
 
 export class InteriorScene extends Phaser.Scene {
   private definition!: InteriorDefinition;
+  private buildingId!: string;
   private returnPoint!: Point;
   private player!: Player;
   private residents: Npc[] = [];
@@ -41,6 +43,7 @@ export class InteriorScene extends Phaser.Scene {
   private lifeSystem!: LifeSimulationSystem;
   private brainSystem!: NpcBrainSystem;
   private dynamicDialogue!: DynamicDialogueSystem;
+  private economySystem!: EconomySystem;
   private hud!: Hud;
 
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -49,6 +52,7 @@ export class InteriorScene extends Phaser.Scene {
   private enterKey!: Phaser.Input.Keyboard.Key;
   private brainKey!: Phaser.Input.Keyboard.Key;
   private freeChatKey!: Phaser.Input.Keyboard.Key;
+  private marketKey!: Phaser.Input.Keyboard.Key;
   private persistAccumulator = 0;
 
   constructor() {
@@ -56,7 +60,12 @@ export class InteriorScene extends Phaser.Scene {
   }
 
   init(data: InteriorSceneData): void {
-    this.definition = interiors[data.buildingId] ?? interiors.inn;
+    this.buildingId = data.buildingId;
+    this.definition =
+      interiors[data.buildingId] ??
+      (data.buildingId.startsWith('settlement-home:')
+        ? interiors['settlement-home']
+        : interiors.inn);
     this.returnPoint = data.returnPoint;
   }
 
@@ -67,8 +76,24 @@ export class InteriorScene extends Phaser.Scene {
       this.save.snapshot.gameMinutes,
     );
     this.lifeSystem = new LifeSimulationSystem(this.save, npcDefinitions);
+
+    const settlementBuilding =
+      this.save.snapshot.settlementBuildings.find(
+        (building) =>
+          building.residenceId === this.buildingId,
+      );
+    if (settlementBuilding) {
+      this.definition = {
+        ...this.definition,
+        name: settlementBuilding.name,
+        subtitle:
+          'Uma residência construída durante a expansão da Vila de Aster.',
+      };
+    }
+
     this.brainSystem = new NpcBrainSystem(this.save, this.lifeSystem);
     this.dynamicDialogue = new DynamicDialogueSystem(this.save);
+    this.economySystem = new EconomySystem(this.save, this.lifeSystem);
     this.dialogue = new DialogueSystem();
     this.hud = new Hud();
 
@@ -94,6 +119,7 @@ export class InteriorScene extends Phaser.Scene {
     this.enterKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
     this.brainKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.B);
     this.freeChatKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.F);
+    this.marketKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.M);
 
     this.cameras.main.setBounds(0, 0, INTERIOR_SIZE.width, INTERIOR_SIZE.height);
     this.cameras.main.centerOn(INTERIOR_SIZE.width / 2, INTERIOR_SIZE.height / 2);
@@ -146,6 +172,28 @@ export class InteriorScene extends Phaser.Scene {
       this.timeSystem.minuteOfDay,
       simulationDt,
     );
+
+    const economyEvents = this.economySystem.update(
+      this.timeSystem.day,
+      this.timeSystem.minuteOfDay,
+      simulationDt,
+    );
+    const importantEconomyEvent = economyEvents
+      .slice()
+      .reverse()
+      .find((event) =>
+        [
+          'shortage',
+          'construction-start',
+          'construction-complete',
+        ].includes(event.type),
+      );
+    if (importantEconomyEvent) {
+      this.hud.showToast(
+        '📊 ' + importantEconomyEvent.text,
+      );
+    }
+
     this.syncResidentRoster();
     this.syncResidents();
 
@@ -185,6 +233,14 @@ export class InteriorScene extends Phaser.Scene {
       this.hud.toggleBrainDebug();
     }
 
+    if (
+      !this.dialogue.isOpen &&
+      !this.dynamicDialogue.isOpen &&
+      Phaser.Input.Keyboard.JustDown(this.marketKey)
+    ) {
+      this.hud.toggleEconomyDebug();
+    }
+
     this.persistAccumulator += dt;
     if (this.persistAccumulator >= 3) {
       this.persistAccumulator = 0;
@@ -211,7 +267,7 @@ export class InteriorScene extends Phaser.Scene {
   private syncResidents(): void {
     const visibleResidents = this.residents.filter((npc) => {
       const life = this.lifeSystem.getState(npc.definition.id);
-      return life?.currentZone === this.definition.id;
+      return life?.currentZone === this.buildingId;
     });
 
     const sleepSpots =
@@ -221,7 +277,7 @@ export class InteriorScene extends Phaser.Scene {
 
     for (const npc of this.residents) {
       const life = this.lifeSystem.getState(npc.definition.id);
-      const visible = life?.currentZone === this.definition.id;
+      const visible = life?.currentZone === this.buildingId;
       npc.syncWorldPresence(visible);
 
       if (!visible || !life) continue;
@@ -428,6 +484,9 @@ export class InteriorScene extends Phaser.Scene {
       return name + ' → ' + log.label + ' [' + log.score + '] • ' + reason;
     });
     this.hud.setBrainDebug(brainLines.length ? brainLines : ['Aguardando decisões...']);
+    this.hud.setEconomyDebug(
+      this.economySystem.getSummaryLines(),
+    );
     this.hud.setPopulation(this.lifeSystem.getAllDefinitions().length);
     this.hud.setClock(
       this.timeSystem.formatted,
