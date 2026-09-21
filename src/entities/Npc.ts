@@ -136,9 +136,9 @@ export class Npc extends Phaser.GameObjects.Container {
     this.setActive(visible);
   }
 
-  setInteriorActivity(activity: NpcActivity): void {
+  setInteriorActivity(activity: NpcActivity, label?: string): void {
     this.currentActivity = activity;
-    this.activityLabel.setText(activityText(activity));
+    this.activityLabel.setText(label ?? activityText(activity));
     this.setAlpha(activity === 'sleep' ? 0.65 : 1);
     this.setRotation(activity === 'sleep' ? -0.08 : 0);
   }
