@@ -10,6 +10,9 @@ import {
   pickDialogue,
   type DialogueTone,
 } from '../data/dialogueBank';
+import {
+  dialogueProfileFor,
+} from '../data/npcDialogueProfiles';
 
 export interface SemanticDialogueContext {
   definition: NpcDefinition;
@@ -38,6 +41,7 @@ export class SemanticDialoguePlanner {
     const normalized = normalize(message);
     const definition = context.definition;
     const memory = this.save.memoryFor(definition.id);
+    const profile = dialogueProfileFor(definition.id);
     const life = context.life;
     const brain = context.brain;
     const tone = toneFor(definition);
@@ -104,6 +108,21 @@ export class SemanticDialoguePlanner {
 
     if (
       matches(normalized, [
+        'gosta do seu trabalho',
+        'gosta de trabalhar',
+        'como se sente sobre o trabalho',
+        'o que acha do seu trabalho',
+      ])
+    ) {
+      return result(
+        'work-feeling',
+        0.99,
+        pickDialogue(profile.workFeelings, seed),
+      );
+    }
+
+    if (
+      matches(normalized, [
         'o que voce faz',
         'trabalha com',
         'profissao',
@@ -123,6 +142,125 @@ export class SemanticDialoguePlanner {
           : 'Meu trabalho por aqui é ser ' +
               definition.role.toLowerCase() +
               '.',
+      );
+    }
+
+    if (
+      matches(normalized, [
+        'sua historia',
+        'seu passado',
+        'sua infancia',
+        'como chegou aqui',
+        'como veio parar aqui',
+        'como cresceu',
+      ])
+    ) {
+      return result(
+        'background',
+        0.99,
+        pickDialogue(profile.background, seed),
+      );
+    }
+
+    if (
+      matches(normalized, [
+        'seu sonho',
+        'seus sonhos',
+        'seu futuro',
+        'quer para o futuro',
+        'seu objetivo',
+        'seus objetivos',
+      ])
+    ) {
+      return result(
+        'dreams',
+        0.99,
+        pickDialogue(profile.dreams, seed),
+      );
+    }
+
+    if (
+      matches(normalized, [
+        'do que tem medo',
+        'o que te preocupa',
+        'sua maior preocupacao',
+        'o que preocupa voce',
+        'tem medo de que',
+      ])
+    ) {
+      return result(
+        'worries',
+        0.99,
+        pickDialogue(profile.worries, seed),
+      );
+    }
+
+    if (
+      matches(normalized, [
+        'tempo livre',
+        'quando nao trabalha',
+        'o que faz por diversao',
+        'o que faz para relaxar',
+        'seu lazer',
+      ])
+    ) {
+      return result(
+        'leisure',
+        0.99,
+        pickDialogue(profile.leisure, seed),
+      );
+    }
+
+    if (
+      matches(normalized, [
+        'lugar favorito',
+        'lugar que mais gosta',
+        'onde gosta de ficar',
+        'onde gosta de ir',
+      ])
+    ) {
+      return result(
+        'favorite-place',
+        0.99,
+        pickDialogue(profile.favoritePlaces, seed),
+      );
+    }
+
+    if (
+      matches(normalized, [
+        'o que e importante para voce',
+        'o que voce valoriza',
+        'no que voce acredita',
+        'seus valores',
+      ])
+    ) {
+      return result(
+        'values',
+        0.99,
+        pickDialogue(profile.values, seed),
+      );
+    }
+
+    if (
+      matches(normalized, [
+        'me conta um segredo',
+        'tem algum segredo',
+        'algo que nao conta para todo mundo',
+        'posso perguntar algo pessoal',
+      ])
+    ) {
+      if (memory.affinity < 55) {
+        return result(
+          'confession-locked',
+          0.99,
+          'Ainda não acho que a gente se conheça o bastante para eu falar disso. Talvez com o tempo.',
+        );
+      }
+
+      return result(
+        'confession',
+        0.99,
+        pickDialogue(profile.trustedConfessions, seed),
       );
     }
 
@@ -238,8 +376,7 @@ export class SemanticDialoguePlanner {
           'family',
           0.99,
           base +
-            ' ' +
-            'Aqui em casa, ' +
+            ' Aqui em casa, ' +
             naturalNames(childrenNames) +
             (childrenNames.length > 1
               ? ' fazem'
@@ -324,7 +461,7 @@ export class SemanticDialoguePlanner {
         return result(
           'player-memory',
           0.99,
-          'Ainda não sei muita coisa sobre você. Se quiser, pode me contar algo que eu deva lembrar.',
+          'Ainda não sei muita coisa sobre você. Algumas conversas ficam na memória quando realmente dizem algo sobre a pessoa.',
         );
       }
 

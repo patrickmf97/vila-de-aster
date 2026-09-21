@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0c1515" />
-  <meta name="aster-build" content="0.6.3-dynamic-dialogue" />
+  <meta name="aster-build" content="0.6.4-choice-dialogue" />
   <title>Vila de Aster</title>
 </head>
 <body>
@@ -13,7 +13,7 @@
 
     <div id="top-left" class="hud glass">
       <div class="brand">🌿 Vila de Aster</div>
-      <div class="sub">v0.6.3 • Dynamic Dialogue</div>
+      <div class="sub">v0.6.4 • Choice Dialogue</div>
     </div>
 
     <div id="top-right" class="hud glass stats">
@@ -24,7 +24,7 @@
 
     <div id="quest" class="hud glass quest">
       <strong>Objetivo atual</strong>
-      <span>Converse livremente com os moradores. O diálogo usa memória, personalidade, relações e um grande banco contextual.</span>
+      <span>Converse com escolhas contextuais. Assuntos, relações, memórias e opções pessoais mudam conforme cada NPC.</span>
     </div>
 
     <aside id="brainDebug" class="brain-debug glass hidden" aria-live="polite">
@@ -40,24 +40,15 @@
     <section id="npcChat" class="npc-chat glass hidden" aria-live="polite">
       <div class="npc-chat-header">
         <div>
-          <strong id="npcChatName">NPC • conversa dinâmica</strong>
-          <span id="npcChatStatus">Diálogo dinâmico</span>
+          <strong id="npcChatName">NPC • conversa</strong>
+          <span id="npcChatStatus">Escolha um assunto</span>
         </div>
         <button id="npcChatClose" type="button" aria-label="Fechar conversa">×</button>
       </div>
 
       <div id="npcChatMessages" class="npc-chat-messages"></div>
 
-      <div class="npc-chat-compose">
-        <input
-          id="npcChatInput"
-          type="text"
-          maxlength="320"
-          autocomplete="off"
-          placeholder="Fale livremente com este morador..."
-        />
-        <button id="npcChatSend" type="button">Enviar</button>
-      </div>
+      <div id="npcChatChoices" class="npc-chat-choices" aria-label="Opções de diálogo"></div>
     </section>
 
     <div id="hint" class="hint hidden">Pressione <kbd>E</kbd> para interagir</div>
@@ -76,7 +67,7 @@
     <div id="help" class="help glass">
       <span><kbd>WASD</kbd>/<kbd>↑↓←→</kbd> mover</span>
       <span><kbd>E</kbd> diálogo local</span>
-      <span><kbd>F</kbd> conversa dinâmica</span>
+      <span><kbd>F</kbd> opções de diálogo</span>
       <span><kbd>B</kbd> cérebro</span>
       <span><kbd>R</kbd> reiniciar simulação</span>
     </div>

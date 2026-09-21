@@ -293,36 +293,56 @@ kbd {
   border: 1px solid rgba(154,224,174,.16);
 }
 
-.npc-chat-compose {
+.npc-chat-choices {
   padding: 12px;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px;
   border-top: 1px solid rgba(255,255,255,.08);
+  display: grid;
+  gap: 7px;
+  max-height: 235px;
+  overflow-y: auto;
+  background: rgba(6, 15, 11, .32);
 }
 
-.npc-chat-compose input {
-  min-width: 0;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(0,0,0,.24);
-  color: #fff;
+.npc-dialogue-choice {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.065);
+  color: #edf8ef;
   border-radius: 10px;
-  padding: 10px 11px;
+  padding: 9px 11px;
+  text-align: left;
+  font-size: 11px;
+  line-height: 1.35;
+  cursor: pointer;
+  transition:
+    transform .12s ease,
+    background .12s ease,
+    border-color .12s ease;
+}
+
+.npc-dialogue-choice:hover,
+.npc-dialogue-choice:focus-visible {
+  transform: translateX(2px);
+  background: rgba(112, 172, 126, .18);
+  border-color: rgba(170, 233, 185, .32);
   outline: none;
 }
 
-.npc-chat-compose input:focus {
-  border-color: rgba(177,239,193,.5);
+.npc-dialogue-choice.choice-personal {
+  border-color: rgba(222, 182, 255, .22);
+  background: rgba(136, 93, 169, .12);
 }
 
-.npc-chat-compose button {
-  padding: 0 14px;
-  font-weight: 700;
+.npc-dialogue-choice.choice-back {
+  color: #b9c9bc;
+  background: rgba(255,255,255,.035);
 }
 
-.npc-chat-compose button:disabled {
-  opacity: .5;
-  cursor: default;
+.npc-dialogue-choice.choice-exit {
+  color: #c7d2c9;
+  border-color: rgba(255,255,255,.06);
+  background: rgba(0,0,0,.14);
 }
 
 @media (max-width: 720px) {
