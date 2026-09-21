@@ -13,6 +13,7 @@ export const npcDefinitions: NpcDefinition[] = [
     remembered: 'Você voltou! Eu sabia que aquele olhar curioso não era só de passagem.',
     topic: 'Ultimamente as flores perto do rio estão murchando rápido demais. Bram diz que é bobagem, mas eu acho estranho.',
     life: { ageYears: 27, residenceId: 'home', familyDesire: 82, sociability: 78 },
+    brain: { personality: { curiosity: 88, empathy: 92, discipline: 64, sociability: 78, family: 86, courage: 68 } },
     schedule: [
       { from: 0, to: 420, x: 300, y: 1088, label: 'dormindo em casa', activity: 'sleep', zone: 'home', interiorPosition: { x: 205, y: 175 } },
       { from: 420, to: 480, x: 300, y: 1088, label: 'saindo de casa', activity: 'walk', homeTarget: true },
@@ -35,6 +36,7 @@ export const npcDefinitions: NpcDefinition[] = [
     remembered: 'Ah, é você de novo. Já está começando a parecer morador.',
     topic: 'Ouvi um barulho vindo das pedras perto do rio ontem à noite. Metal raspando em pedra. Não gostei nada disso.',
     life: { ageYears: 34, residenceId: 'smith', familyDesire: 58, sociability: 46 },
+    brain: { personality: { curiosity: 48, empathy: 58, discipline: 94, sociability: 42, family: 62, courage: 86 } },
     schedule: [
       { from: 0, to: 420, x: 1010, y: 438, label: 'dormindo na forja', activity: 'sleep', zone: 'home', interiorPosition: { x: 655, y: 395 } },
       { from: 420, to: 480, x: 1010, y: 438, label: 'abrindo a forja', activity: 'walk', homeTarget: true },
@@ -56,6 +58,7 @@ export const npcDefinitions: NpcDefinition[] = [
     remembered: 'Olha só quem voltou. Já separo alguma coisa ou você veio caçar fofoca?',
     topic: 'Algumas entregas não chegaram esta semana. A estrada do norte anda estranha.',
     life: { ageYears: 31, residenceId: 'shop', familyDesire: 66, sociability: 88 },
+    brain: { personality: { curiosity: 76, empathy: 66, discipline: 84, sociability: 94, family: 64, courage: 72 } },
     schedule: [
       { from: 0, to: 420, x: 1520, y: 463, label: 'dormindo no empório', activity: 'sleep', zone: 'home', interiorPosition: { x: 650, y: 390 } },
       { from: 420, to: 450, x: 1520, y: 463, label: 'abrindo o empório', activity: 'walk', homeTarget: true },
@@ -77,6 +80,7 @@ export const npcDefinitions: NpcDefinition[] = [
     remembered: 'Você de novo! Pelo menos hoje os peixes já sabem que você faz barulho.',
     topic: 'A água mudou de gosto. Eu sei, eu sei... quem prova água do rio? Um pescador preocupado.',
     life: { ageYears: 29, residenceId: 'fisher-home', familyDesire: 76, sociability: 70 },
+    brain: { personality: { curiosity: 74, empathy: 72, discipline: 70, sociability: 68, family: 80, courage: 78 } },
     schedule: [
       { from: 0, to: 450, x: 1702, y: 1068, label: 'dormindo em casa', activity: 'sleep', zone: 'home', interiorPosition: { x: 190, y: 175 } },
       { from: 450, to: 540, x: 1702, y: 1068, label: 'indo para o rio', activity: 'walk', homeTarget: true },
@@ -98,6 +102,7 @@ export const npcDefinitions: NpcDefinition[] = [
     remembered: 'Ora, meu cliente favorito sem conta aberta voltou.',
     topic: 'Todo mundo anda falando do rio. Quando cinco pessoas contam versões diferentes da mesma coisa, normalmente existe uma sexta versão escondida.',
     life: { ageYears: 32, residenceId: 'inn', familyDesire: 62, sociability: 94 },
+    brain: { personality: { curiosity: 82, empathy: 86, discipline: 76, sociability: 98, family: 70, courage: 64 } },
     schedule: [
       { from: 0, to: 420, x: 415, y: 458, label: 'dormindo na taverna', activity: 'sleep', zone: 'home', interiorPosition: { x: 650, y: 385 } },
       { from: 420, to: 480, x: 415, y: 458, label: 'abrindo a taverna', activity: 'walk', homeTarget: true },
