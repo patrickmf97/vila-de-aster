@@ -10,10 +10,13 @@ export interface Rect extends Point {
   h: number;
 }
 
+export type NpcActivity = 'sleep' | 'work' | 'walk' | 'socialize' | 'rest' | 'fish';
+
 export interface ScheduleEntry extends Point {
   from: number;
   to: number;
   label: string;
+  activity?: NpcActivity;
 }
 
 export interface NpcDefinition extends Point {
@@ -40,4 +43,31 @@ export interface SaveData {
   eventTriggered: boolean;
   day: number;
   gameMinutes: number;
+}
+
+export interface DoorDefinition extends Point {
+  id: string;
+  buildingId: string;
+  label: string;
+  returnPoint: Point;
+}
+
+export interface InteriorObjectDefinition extends Rect {
+  id: string;
+  label: string;
+  emoji: string;
+  text: string;
+  solid?: boolean;
+}
+
+export interface InteriorDefinition {
+  id: string;
+  name: string;
+  subtitle: string;
+  wall: number;
+  floor: number;
+  accent: number;
+  spawn: Point;
+  exit: Point;
+  objects: InteriorObjectDefinition[];
 }
