@@ -16,8 +16,8 @@ export class Player extends Phaser.GameObjects.Container {
   private readonly rightEye: Phaser.GameObjects.Arc;
   private readonly leftArm: Phaser.GameObjects.Rectangle;
   private readonly rightArm: Phaser.GameObjects.Rectangle;
-  private readonly leftFoot: Phaser.GameObjects.Arc;
-  private readonly rightFoot: Phaser.GameObjects.Arc;
+  private readonly leftFoot: Phaser.GameObjects.Ellipse;
+  private readonly rightFoot: Phaser.GameObjects.Ellipse;
   private walkPhase = 0;
 
   speed = 210;
