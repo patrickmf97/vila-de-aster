@@ -8,6 +8,7 @@ export class Hud {
   private questText = document.querySelector('#quest span')!;
   private brainDebug = document.getElementById('brainDebug')!;
   private brainDebugContent = document.getElementById('brainDebugContent')!;
+  private brainDebugSignature = '';
   private toastTimer: number | undefined;
 
   setClock(time: string, day: number, icon: string): void {
@@ -38,6 +39,10 @@ export class Hud {
   }
 
   setBrainDebug(lines: string[]): void {
+    const signature = lines.join('\n');
+    if (signature === this.brainDebugSignature) return;
+    this.brainDebugSignature = signature;
+
     this.brainDebugContent.replaceChildren(
       ...lines.map((line) => {
         const row = document.createElement('div');
