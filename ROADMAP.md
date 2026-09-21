@@ -16,40 +16,42 @@
 - personalidade, necessidades, Utility AI e decisões explicáveis.
 
 ## ✅ v0.6.0 — Experimental Generative NPC
-- protótipo inicial de conversa livre.
+- protótipo de conversa livre.
 
 ## ✅ v0.6.1 / v0.6.2 — Local Model Experiments
-- testes WebGPU e CPU/WASM;
-- aprendizado: modelos pequenos locais apresentaram latência e coerência insuficientes para a experiência desejada.
+- testes com modelos locais;
+- descartados por latência e coerência.
 
 ## ✅ v0.6.3 — Dynamic Dialogue
-- remoção dos modelos generativos;
-- banco modular de diálogos;
+- banco modular;
 - classificação de intenção;
-- respostas contextuais;
-- personalidade;
-- profissão;
-- família;
-- relações;
-- memória;
-- recuperação de fatos;
-- conversa livre instantânea;
+- contexto e memória;
 - zero dependências de IA.
 
+## ✅ v0.6.4 — Choice Dialogue
+- árvore de escolhas;
+- submenus contextuais;
+- follow-ups;
+- perfis pessoais ricos;
+- afinidade alterada por assunto;
+- confidências desbloqueáveis;
+- opiniões sobre moradores;
+- opções baseadas em memórias reais.
+
 ## v0.7.0 — Economy & Settlement
-- dinheiro;
+- dinheiro individual;
 - renda;
-- produção;
-- consumo;
-- recursos;
-- mercado;
+- despesas;
+- produção e consumo;
+- estoque e recursos;
+- comércio;
 - custo de moradia;
 - construção de novas casas;
 - expansão física da vila.
 
 ## v0.8+ — Generations & RPG
 - envelhecimento completo;
-- profissões e herança;
+- profissão e herança;
 - morte e legado;
 - múltiplas gerações;
 - inventário;
