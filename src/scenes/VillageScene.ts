@@ -115,6 +115,8 @@ export class VillageScene extends Phaser.Scene {
 
   update(_time: number, delta: number): void {
     const dt = Math.min(delta / 1000, 0.033);
+    const simulationDt =
+      this.dialogue.isOpen || this.generativeDialogue.isOpen ? 0 : dt;
 
     if (!this.dialogue.isOpen && !this.generativeDialogue.isOpen) {
       this.player.updateMovement(
@@ -141,7 +143,7 @@ export class VillageScene extends Phaser.Scene {
     const lifeEvents = this.lifeSystem.update(
       this.timeSystem.day,
       this.timeSystem.minuteOfDay,
-      dt,
+      simulationDt,
     );
     this.showLifeEvents(lifeEvents);
     this.syncNpcRoster();
@@ -149,7 +151,7 @@ export class VillageScene extends Phaser.Scene {
     this.brainSystem.update(
       this.timeSystem.day,
       this.timeSystem.minuteOfDay,
-      dt,
+      simulationDt,
     );
 
     const elapsedSeconds = this.time.now / 1000;
@@ -162,7 +164,7 @@ export class VillageScene extends Phaser.Scene {
       if (inWorld) {
         npc.updateRoutine(
           this.timeSystem.minuteOfDay,
-          dt,
+          simulationDt,
           elapsedSeconds,
           residenceDoor,
           this.brainSystem.getBrain(npc.definition.id),
@@ -172,7 +174,7 @@ export class VillageScene extends Phaser.Scene {
 
     this.relationshipSystem.update(
       this.npcs.filter((npc) => npc.visible),
-      dt,
+      simulationDt,
       this.timeSystem.day,
     );
 
