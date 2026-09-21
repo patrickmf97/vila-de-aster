@@ -208,3 +208,129 @@ kbd {
     max-height: 38vh;
   }
 }
+
+
+.npc-chat {
+  position: absolute;
+  z-index: 40;
+  right: 18px;
+  bottom: 72px;
+  width: min(430px, calc(100vw - 36px));
+  height: min(520px, calc(100vh - 120px));
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+  color: #f8fff7;
+}
+
+.npc-chat-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.npc-chat-header > div {
+  display: grid;
+  gap: 3px;
+}
+
+.npc-chat-header strong {
+  color: #ffe9a6;
+  font-size: 13px;
+}
+
+.npc-chat-header span {
+  color: #9fb3a5;
+  font-size: 10px;
+}
+
+.npc-chat-header button,
+.npc-chat-compose button {
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.08);
+  color: #fff;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.npc-chat-header button {
+  width: 30px;
+  height: 30px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.npc-chat-messages {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.npc-chat-message {
+  max-width: 88%;
+  padding: 9px 11px;
+  border-radius: 12px;
+  line-height: 1.4;
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+
+.npc-chat-message.from-npc {
+  align-self: flex-start;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.npc-chat-message.from-player {
+  align-self: flex-end;
+  background: rgba(87,143,109,.28);
+  border: 1px solid rgba(154,224,174,.16);
+}
+
+.npc-chat-compose {
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+.npc-chat-compose input {
+  min-width: 0;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.24);
+  color: #fff;
+  border-radius: 10px;
+  padding: 10px 11px;
+  outline: none;
+}
+
+.npc-chat-compose input:focus {
+  border-color: rgba(177,239,193,.5);
+}
+
+.npc-chat-compose button {
+  padding: 0 14px;
+  font-weight: 700;
+}
+
+.npc-chat-compose button:disabled {
+  opacity: .5;
+  cursor: default;
+}
+
+@media (max-width: 720px) {
+  .npc-chat {
+    left: 10px;
+    right: 10px;
+    bottom: 72px;
+    width: auto;
+    height: min(58vh, 500px);
+  }
+}
