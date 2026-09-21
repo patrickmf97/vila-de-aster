@@ -1,5 +1,8 @@
 import type {
+  GeneratedNpcData,
+  LifeEvent,
   MemoryFact,
+  NpcLifeState,
   NpcMemory,
   NpcRelationship,
   SaveData,
@@ -18,6 +21,9 @@ export class SaveSystem {
     const fallback: SaveData = {
       npcs: {},
       relationships: {},
+      life: {},
+      generatedNpcs: [],
+      lifeEvents: [],
       eventTriggered: false,
       day: 1,
       gameMinutes: 8 * 60,
@@ -42,6 +48,9 @@ export class SaveSystem {
       return {
         npcs,
         relationships: parsed.relationships ?? {},
+        life: parsed.life ?? {},
+        generatedNpcs: Array.isArray(parsed.generatedNpcs) ? parsed.generatedNpcs : [],
+        lifeEvents: Array.isArray(parsed.lifeEvents) ? parsed.lifeEvents : [],
         eventTriggered: parsed.eventTriggered ?? false,
         day: parsed.day ?? 1,
         gameMinutes: parsed.gameMinutes ?? 8 * 60,
@@ -68,6 +77,25 @@ export class SaveSystem {
 
     this.pruneExpiredFacts(id);
     return this.data.npcs[id];
+  }
+
+  lifeFor(id: string): NpcLifeState | undefined {
+    return this.data.life[id];
+  }
+
+  setLife(id: string, state: NpcLifeState): void {
+    this.data.life[id] = state;
+  }
+
+  addGeneratedNpc(data: GeneratedNpcData): void {
+    if (this.data.generatedNpcs.some((npc) => npc.id === data.id)) return;
+    this.data.generatedNpcs.push(data);
+  }
+
+  addLifeEvent(event: LifeEvent): void {
+    if (this.data.lifeEvents.some((existing) => existing.id === event.id)) return;
+    this.data.lifeEvents.push(event);
+    this.data.lifeEvents = this.data.lifeEvents.slice(-120);
   }
 
   addFact(npcId: string, fact: MemoryFact): boolean {
