@@ -630,15 +630,29 @@ export class EconomySystem {
       if (
         ['smith', 'shop', 'inn'].includes(
           residenceId,
-        ) &&
-        members.length >= 2 &&
-        members.some(
-          (id) =>
-            this.life.getState(id)
-              ?.relationshipStatus === 'married',
         )
       ) {
-        return members;
+        const marriedHousehold =
+          members.length >= 2 &&
+          members.some(
+            (id) =>
+              this.life.getState(id)
+                ?.relationshipStatus === 'married',
+          );
+
+        const independentHomeGoal =
+          day >= 3 &&
+          members.some(
+            (id) =>
+              (this.save.economyFor(id)?.coins ?? 0) >= 45,
+          );
+
+        if (
+          marriedHousehold ||
+          independentHomeGoal
+        ) {
+          return members;
+        }
       }
     }
 
