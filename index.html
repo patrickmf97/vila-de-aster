@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vila de Aster — MVP</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="theme-color" content="#0c1515" />
+  <title>Vila de Aster</title>
 </head>
 <body>
-  <div id="game-shell">
-    <canvas id="game" width="1280" height="720" aria-label="Protótipo RPG 2D Vila de Aster"></canvas>
+  <main id="app">
+    <div id="game" aria-label="RPG 2D Vila de Aster"></div>
 
     <div id="top-left" class="hud glass">
       <div class="brand">🌿 Vila de Aster</div>
-      <div class="sub">MVP • Mundo vivo + memória</div>
+      <div class="sub">v0.2 • Mundo vivo + memória</div>
     </div>
 
     <div id="top-right" class="hud glass stats">
@@ -21,30 +21,30 @@
     </div>
 
     <div id="quest" class="hud glass quest">
-      <strong>Objetivo do protótipo</strong>
+      <strong>Objetivo atual</strong>
       <span>Converse com os moradores e descubra o que está acontecendo na vila.</span>
     </div>
 
     <div id="hint" class="hint hidden">Pressione <kbd>E</kbd> para conversar</div>
 
-    <div id="dialogue" class="dialogue hidden">
+    <section id="dialogue" class="dialogue hidden" aria-live="polite">
       <div class="portrait" id="portrait">🙂</div>
       <div class="dialogue-content">
         <div class="dialogue-name" id="dialogueName">NPC</div>
         <div class="dialogue-text" id="dialogueText"></div>
         <div class="dialogue-footer">E / Enter para continuar</div>
       </div>
-    </div>
+    </section>
 
-    <div id="toast" class="toast hidden"></div>
+    <div id="toast" class="toast hidden" aria-live="polite"></div>
 
     <div id="help" class="help glass">
       <span><kbd>WASD</kbd>/<kbd>↑↓←→</kbd> mover</span>
       <span><kbd>E</kbd> interagir</span>
       <span><kbd>R</kbd> reiniciar memória</span>
     </div>
-  </div>
+  </main>
 
-  <script src="game.js"></script>
+  <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
