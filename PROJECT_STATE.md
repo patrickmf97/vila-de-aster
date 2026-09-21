@@ -2,7 +2,7 @@
 
 ## Versão atual
 
-**v0.7.0 — Economy & Settlement**
+**v0.7.1 — Dialogue & Movement Hotfix**
 
 ## Sistemas ativos
 
@@ -105,3 +105,16 @@ prosperidade
 - quests;
 - combate;
 - regiões externas.
+
+
+## Hotfix v0.7.1
+
+- regexes do SemanticDialoguePlanner restaurados;
+- proteção contra resposta vazia/corrompida;
+- histórico antigo composto apenas por pontuação é removido automaticamente;
+- `brain.zone` agora representa destino desejado;
+- `life.currentZone` representa localização física real;
+- NPC caminha até a porta antes de entrar;
+- NPC sai pela porta da zona anterior;
+- entrada/saída em interiores é animada;
+- deslocamento até cama e pontos internos substitui teleporte.
