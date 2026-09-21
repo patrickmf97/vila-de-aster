@@ -1,20 +1,23 @@
 # Vila de Aster
 
-RPG 2D top-down para navegador com foco em **mundo vivo, memória e NPCs inteligentes**.
+RPG 2D top-down para navegador com foco em **mundo vivo, memória, relações e NPCs que continuam vivendo sem depender do jogador**.
 
-## Estado atual — v0.3.0 Living Village
+## Estado atual — v0.4.0 Life Simulation
 
-A vila agora possui uma camada de simulação mais rica sobre a fundação Phaser + TypeScript + Vite:
+A vila agora possui uma simulação persistente de vida:
 
-- animação procedural direcional do personagem;
-- NPCs com atividade visível e microcomportamentos;
-- quatro interiores exploráveis;
-- portas e objetos interativos;
-- pistas narrativas espalhadas no cenário;
-- memória v2 baseada em fatos;
-- relações NPC ↔ NPC;
-- propagação de conhecimento entre moradores próximos;
-- ciclo dia/noite, afinidade e evento **O Eco Sob o Rio** preservados.
+- cada NPC possui residência real;
+- moradores entram em casa à noite e desaparecem do mapa externo;
+- ao entrar na residência, o jogador encontra os moradores dentro;
+- NPCs dormem, acordam e reaparecem na porta da residência atual;
+- casamento pode fazer o casal compartilhar residência;
+- relacionamentos podem evoluir de solteiro → namoro → casamento;
+- casais podem formar família;
+- crianças são geradas como novos moradores persistentes;
+- filhos possuem pais, casa, rotina infantil, visual menor e entram na população;
+- eventos familiares ficam registrados no histórico da vila;
+- população aparece no HUD e cresce dinamicamente;
+- memória v2 e relações NPC ↔ NPC continuam funcionando.
 
 ## Como rodar
 
@@ -34,7 +37,7 @@ npm run preview
 
 - WASD / setas: mover
 - E / Enter: interagir, conversar, entrar, sair ou examinar
-- R: apagar a memória local e reiniciar
+- R: apagar memória, famílias e reiniciar a simulação
 
 ## Arquitetura
 
@@ -53,6 +56,7 @@ src/
 ├── systems/
 │   ├── DialogueSystem.ts
 │   ├── EventSystem.ts
+│   ├── LifeSimulationSystem.ts
 │   ├── RelationshipSystem.ts
 │   ├── SaveSystem.ts
 │   └── TimeSystem.ts
@@ -68,4 +72,4 @@ src/
 
 ## Próximo marco
 
-**v0.4.0 — NPC Brain**: necessidades, personalidade, valores, objetivos, Utility AI e decisões explicáveis.
+**v0.5.0 — NPC Brain**: necessidades, personalidade, valores, objetivos, Utility AI e decisões capazes de substituir parte da agenda fixa.
