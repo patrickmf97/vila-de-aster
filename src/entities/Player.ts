@@ -26,6 +26,7 @@ export class Player extends Phaser.GameObjects.Container {
   private readonly scarf: Phaser.GameObjects.Rectangle;
   private readonly backpack: Phaser.GameObjects.Rectangle;
   private walkPhase = 0;
+  private sprite?: Phaser.GameObjects.Image;
 
   speed = 210;
   radius = 18;
@@ -284,6 +285,18 @@ export class Player extends Phaser.GameObjects.Container {
     return true;
   }
 
+  useTexture(textureKey: string): void {
+    if (this.sprite) this.sprite.destroy();
+
+    this.sprite = this.scene.add
+      .image(0, -4, textureKey)
+      .setDisplaySize(52, 65)
+      .setOrigin(0.5, 0.62);
+
+    this.visualRoot.setVisible(false);
+    this.addAt(this.sprite, 1);
+  }
+
   face(
     facing: Facing,
   ): void {
@@ -309,6 +322,11 @@ export class Player extends Phaser.GameObjects.Container {
             this.scene.time.now /
               780,
           ) * 0.22;
+
+    if (this.sprite) {
+      this.sprite.y = -4 + bob;
+      this.sprite.rotation = moving ? Math.sin(phase * 0.5) * 0.016 : 0;
+    }
 
     this.visualRoot.y = bob;
     this.visualRoot.rotation =
