@@ -1,136 +1,98 @@
 # Vila de Aster
 
-RPG 2D top-down para navegador com foco em **mundo vivo, memória, relações, família, decisões autônomas, diálogo por escolhas e uma economia simulada**.
+RPG 2D top-down para navegador com foco em **mundo vivo, memória, relações, família, decisões autônomas, diálogo por escolhas, economia simulada e ambientação cozy fantasy**.
 
-## Estado atual — v0.7.1 Dialogue & Movement Hotfix
+## Estado atual — v0.8.0 Art Direction & Atmosphere
 
-A v0.7.1 mantém toda a economia da v0.7 e corrige dois problemas visíveis: respostas corrompidas no diálogo e teleporte de NPCs entre zonas. NPCs agora caminham até portas antes de entrar, saem pelas portas correspondentes e se deslocam até cama/pontos internos em vez de surgir neles.
+A v0.8.0 é o primeiro grande overhaul visual da Vila de Aster.
 
-### Trabalho e renda
+Ela mantém toda a lógica da v0.7.1, mas substitui a aparência de protótipo por uma direção de arte mais consistente e atmosférica.
 
-O NPC Brain continua decidindo se um morador vai trabalhar, descansar, socializar, cuidar da família etc.
+### Novidades visuais
 
-Quando ele realmente trabalha ou pesca, o EconomySystem acumula tempo produtivo.
+- nova paleta oficial;
+- grama com variação de tom e textura;
+- caminhos mais orgânicos;
+- praça central redesenhada;
+- fonte mais detalhada;
+- bancos e postes;
+- água com profundidade e animação;
+- margem com pedras e vegetação;
+- ponte refinada;
+- árvores em camadas;
+- flores, cercas, pedras e detalhes ambientais;
+- prédios com identidade visual própria;
+- HUD dark cozy glass;
+- iluminação variável por horário;
+- manhã, tarde, entardecer e noite com identidade própria;
+- vaga-lumes à noite;
+- brilho especial no rio quando o Eco está ativo.
 
-No fechamento do dia:
+### Identidade dos prédios
 
-- tempo trabalhado vira renda;
-- profissão define produção;
-- impostos alimentam o tesouro da vila;
-- famílias pagam despesas;
-- a vila consome comida e mercadorias;
-- estoques alteram preços;
-- escassez afeta fome e prosperidade.
+- **Taverna Lua Cheia** → terracota, lanternas, bancos e calor;
+- **Forja do Bram** → azul ardósia, chaminé, metal e fumaça;
+- **Empório da Mira** → verde oliva, toldo e caixas;
+- **Casa da Elena** → flores e tons suaves;
+- **Casa do Theo** → detalhes ligados à pesca.
 
-### Profissões
+As casas criadas pelo Settlement System continuam compatíveis com a nova linguagem visual.
 
-- Elena / Jardineira → comida + pequenas mercadorias;
-- Bram / Ferreiro → metal + mercadorias;
-- Mira / Comerciante → mercadorias + importação de madeira/pedra;
-- Theo / Pescador → comida;
-- Luma / Taverneira → comida + mercadorias;
-- Crianças → não possuem renda.
+## Sistemas preservados
 
-### Mercado
+A atualização visual não altera a lógica de:
 
-Recursos atuais:
-
-- comida;
-- madeira;
-- pedra;
-- metal;
-- mercadorias.
-
-Os preços variam automaticamente conforme estoque/população.
-
-Pressione **M** para abrir o painel econômico.
-
-### Famílias e despesas
-
-Moradores da mesma residência dividem o custo de vida.
-
-Se a família não consegue pagar suas despesas:
-
-- a prosperidade cai;
-- a fome aumenta;
-- um evento econômico é registrado.
-
-### Construção e expansão
-
-A vila possui terrenos disponíveis.
-
-Uma nova casa pode ser iniciada quando:
-
-- existe necessidade/desejo de moradia;
-- a família/tesouro possui dinheiro;
-- a vila possui madeira, pedra e mercadorias suficientes;
-- não existe outra obra ativa.
-
-Moradores que vivem dentro do próprio comércio também podem buscar uma residência independente.
-
-Durante a obra:
-
-- o canteiro aparece fisicamente no mapa;
-- o progresso avança diariamente;
-- Bram trabalhando acelera a construção.
-
-Quando termina:
-
-- surge uma casa real;
-- a família muda de residência;
-- o novo lar possui porta, colisão e interior;
-- dormir/acordar passa a usar a nova casa;
-- o evento entra na memória.
-
-## Diálogo
-
-A v0.6.4 continua presente.
-
-Com **F**, o jogador usa uma árvore completa de escolhas e agora também pode perguntar sobre:
-
-- finanças pessoais;
-- mercado/preços;
-- estoques;
-- expansão;
-- casas em construção.
+- Life Simulation;
+- NPC Brain;
+- Choice Dialogue;
+- Economy & Settlement;
+- memória;
+- relações;
+- famílias;
+- construções;
+- interiores;
+- movimento sem teleporte.
 
 ## Controles
 
 - WASD / setas: mover
 - E / Enter: diálogo rápido / interagir
-- F: diálogo completo por escolhas
+- F: diálogo por escolhas
 - B: painel NPC Brain
 - M: economia / mercado
 - R: reiniciar memória e simulação
 
-## Arquitetura
+## Arquitetura visual
 
 ```text
-Life Simulation
-      ↓
-NPC Brain
-      ↓
-Economy System
-├── trabalho → renda
-├── produção → estoque
-├── consumo → preços
-├── família → despesas
-├── escassez → necessidades
-└── pressão por moradia
-          ↓
-     Construction
-          ↓
-   Settlement growth
+VillageScene
+├── WorldRenderer
+│   ├── terreno
+│   ├── caminhos
+│   ├── praça
+│   ├── água
+│   ├── vegetação
+│   ├── prédios
+│   └── settlement
+│
+└── AtmosphereRenderer
+    ├── iluminação por horário
+    ├── vaga-lumes
+    ├── tint atmosférico
+    └── efeitos do Eco
 ```
 
 Documentação:
 
+- `docs/ART_DIRECTION.md`
+- `docs/VISUAL_OVERHAUL.md`
 - `docs/LIFE_SIMULATION.md`
 - `docs/NPC_BRAIN.md`
-- `docs/DYNAMIC_DIALOGUE.md`
 - `docs/CHOICE_DIALOGUE.md`
 - `docs/ECONOMY_SETTLEMENT.md`
 
-## Próximo marco
+## Próximo marco visual
 
-**v0.8 — Generations & RPG Systems**.
+**v0.8.1 — Characters & Animation Polish**
+
+Depois disso, os sistemas de gerações/RPG passam para a linha **v0.9**.
