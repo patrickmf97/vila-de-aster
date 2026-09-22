@@ -1,10 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 300">
+<svg xmlns="http://www.w3.org/2000/svg" width="430" height="300" viewBox="0 0 430 300">
 <defs>
   <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#d5b477"/><stop offset="1" stop-color="#b98955"/></linearGradient>
-  <linearGradient id="roof" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#597d50"/><stop offset="1" stop-color="#335a3c"/></linearGradient>
-  <filter id="s"><feDropShadow dx="0" dy="10" stdDeviation="7" flood-color="#263322" flood-opacity=".28"/></filter>
-</defs>
-<g filter="url(#s)">
+  <linearGradient id="roof" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#597d50"/><stop offset="1" stop-color="#335a3c"/></linearGradient></defs>
+<g>
   <ellipse cx="215" cy="274" rx="181" ry="18" fill="#263d2a" opacity=".22"/>
   <rect x="70" y="112" width="290" height="145" rx="13" fill="url(#wall)" stroke="#5c412d" stroke-width="5"/>
   <path d="M45 128 213 34l172 94-23 21-149-70-145 70z" fill="url(#roof)" stroke="#2f5036" stroke-width="6"/>
