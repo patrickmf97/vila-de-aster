@@ -14,6 +14,7 @@ export class AtmosphereRenderer {
   private vignette: Phaser.GameObjects.Graphics;
   private fireflies: Firefly[] = [];
   private riverGlow: Phaser.GameObjects.Graphics;
+  private lastUpdate = -Infinity;
 
   constructor(private readonly scene: Phaser.Scene) {
     this.tint = scene.add
@@ -47,6 +48,9 @@ export class AtmosphereRenderer {
     elapsedSeconds: number,
     riverEchoActive: boolean,
   ): void {
+    if (elapsedSeconds - this.lastUpdate < 1 / 15) return;
+    this.lastUpdate = elapsedSeconds;
+
     const phase = dayPhase(minuteOfDay);
     this.tint.setFillStyle(phase.color, 1);
     this.tint.setAlpha(phase.alpha);
@@ -99,9 +103,8 @@ export class AtmosphereRenderer {
 
   private createFireflies(): void {
     const positions = [
-      [525, 520], [585, 850], [1010, 560], [1110, 760],
-      [1460, 640], [1540, 1080], [355, 1110], [770, 1040],
-      [1320, 990], [1760, 720], [430, 420], [1210, 430],
+      [525, 520], [585, 850], [1010, 560], [1460, 640],
+      [1540, 1080], [355, 1110], [1320, 990], [1760, 720],
     ];
 
     positions.forEach(([x, y], index) => {
