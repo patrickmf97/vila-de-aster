@@ -54,6 +54,9 @@ export class InteriorScene extends Phaser.Scene {
   private freeChatKey!: Phaser.Input.Keyboard.Key;
   private marketKey!: Phaser.Input.Keyboard.Key;
   private persistAccumulator = 0;
+  private simulationAccumulator = 0;
+  private hudAccumulator = 0;
+  private rosterAccumulator = 0;
 
   constructor() {
     super('InteriorScene');
@@ -161,40 +164,55 @@ export class InteriorScene extends Phaser.Scene {
       gameMinutes: this.timeSystem.minutes,
     });
 
-    const events = this.lifeSystem.update(
-      this.timeSystem.day,
-      this.timeSystem.minuteOfDay,
-      simulationDt,
-    );
-    this.showLifeEvents(events);
-    this.brainSystem.update(
-      this.timeSystem.day,
-      this.timeSystem.minuteOfDay,
-      simulationDt,
-    );
+    this.simulationAccumulator += simulationDt;
+    this.rosterAccumulator += dt;
 
-    const economyEvents = this.economySystem.update(
-      this.timeSystem.day,
-      this.timeSystem.minuteOfDay,
-      simulationDt,
-    );
-    const importantEconomyEvent = economyEvents
-      .slice()
-      .reverse()
-      .find((event) =>
-        [
-          'shortage',
-          'construction-start',
-          'construction-complete',
-        ].includes(event.type),
+    if (this.simulationAccumulator >= 0.1) {
+      const step = Math.min(this.simulationAccumulator, 0.25);
+      this.simulationAccumulator = 0;
+
+      const events = this.lifeSystem.update(
+        this.timeSystem.day,
+        this.timeSystem.minuteOfDay,
+        step,
       );
-    if (importantEconomyEvent) {
-      this.hud.showToast(
-        '📊 ' + importantEconomyEvent.text,
+      this.showLifeEvents(events);
+
+      this.brainSystem.update(
+        this.timeSystem.day,
+        this.timeSystem.minuteOfDay,
+        step,
       );
+
+      const economyEvents = this.economySystem.update(
+        this.timeSystem.day,
+        this.timeSystem.minuteOfDay,
+        step,
+      );
+
+      const importantEconomyEvent = economyEvents
+        .slice()
+        .reverse()
+        .find((event) =>
+          [
+            'shortage',
+            'construction-start',
+            'construction-complete',
+          ].includes(event.type),
+        );
+
+      if (importantEconomyEvent) {
+        this.hud.showToast(
+          '📊 ' + importantEconomyEvent.text,
+        );
+      }
     }
 
-    this.syncResidentRoster();
+    if (this.rosterAccumulator >= 1) {
+      this.rosterAccumulator = 0;
+      this.syncResidentRoster();
+    }
+
     this.syncResidents(simulationDt);
 
     const target = this.getInteractionTarget();
@@ -247,7 +265,11 @@ export class InteriorScene extends Phaser.Scene {
       this.persistTime();
     }
 
-    this.syncHud();
+    this.hudAccumulator += dt;
+    if (this.hudAccumulator >= 0.25) {
+      this.hudAccumulator = 0;
+      this.syncHud();
+    }
   }
 
   private syncResidentRoster(): void {
