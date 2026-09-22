@@ -511,3 +511,79 @@ kbd {
     );
   border-color: rgba(241,206,120,.18);
 }
+
+
+/* v0.8.1 character & dialogue polish */
+.portrait {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(241,206,120,.16), transparent 55%),
+    linear-gradient(145deg, rgba(93,128,89,.24), rgba(255,255,255,.04));
+  border-color: rgba(241,206,120,.16);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+.portrait::after {
+  content: "";
+  position: absolute;
+  inset: auto 12px 10px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(241,206,120,.4), transparent);
+}
+
+.dialogue-name {
+  letter-spacing: .12px;
+}
+
+.dialogue-text {
+  color: #f6f3e8;
+}
+
+.npc-chat-header {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(241,206,120,.045),
+      rgba(255,255,255,0)
+    );
+}
+
+.npc-chat-header strong {
+  letter-spacing: .12px;
+}
+
+.npc-chat-header span {
+  color: #b7c9ba;
+}
+
+.npc-dialogue-choice {
+  position: relative;
+  overflow: hidden;
+}
+
+.npc-dialogue-choice::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 7px;
+  bottom: 7px;
+  width: 2px;
+  border-radius: 2px;
+  background: rgba(241,206,120,.12);
+}
+
+.npc-dialogue-choice.choice-personal::before {
+  background: rgba(167,154,232,.48);
+}
+
+.hint {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(18,30,22,.94),
+      rgba(10,19,15,.9)
+    );
+  border-color: rgba(241,206,120,.16);
+  box-shadow: 0 10px 28px rgba(0,0,0,.28);
+}
