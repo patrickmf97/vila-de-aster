@@ -76,6 +76,7 @@ export class InteriorRenderer {
     this.drawFloor(g);
     this.drawWindows(g);
     this.drawRug(g);
+    this.drawDecor(g);
     this.drawDoorway(g);
     this.drawHeader();
 
@@ -491,6 +492,117 @@ export class InteriorRenderer {
       478,
       267,
     );
+  }
+
+  private drawDecor(
+    g: Phaser.GameObjects.Graphics,
+  ): void {
+    // warm wall lamps
+    const lamps = [150, INTERIOR_SIZE.width - 150];
+    for (const x of lamps) {
+      g.fillStyle(0x4f3d2e, 1);
+      g.fillRoundedRect(x - 4, 128, 8, 32, 3);
+      g.fillStyle(0xf0c96b, 1);
+      g.fillCircle(x, 126, 7);
+      g.fillStyle(0xf0c96b, 0.08);
+      g.fillCircle(x, 126, 31);
+    }
+
+    // wall tapestry / emblem
+    g.fillStyle(this.definition.accent, 0.9);
+    g.fillRoundedRect(
+      INTERIOR_SIZE.width / 2 - 42,
+      47,
+      84,
+      58,
+      8,
+    );
+    g.fillStyle(0xf1deb0, 0.78);
+    g.fillCircle(
+      INTERIOR_SIZE.width / 2,
+      73,
+      12,
+    );
+    g.lineStyle(3, 0xf1deb0, 0.55);
+    g.strokeCircle(
+      INTERIOR_SIZE.width / 2,
+      73,
+      21,
+    );
+
+    // plants soften corners
+    const plantXs = [72, INTERIOR_SIZE.width - 72];
+    for (const x of plantXs) {
+      g.fillStyle(0x765438, 1);
+      g.fillRoundedRect(
+        x - 15,
+        INTERIOR_SIZE.height - 105,
+        30,
+        25,
+        5,
+      );
+      g.fillStyle(0x4d8a4f, 1);
+      g.fillCircle(
+        x - 8,
+        INTERIOR_SIZE.height - 112,
+        13,
+      );
+      g.fillCircle(
+        x + 7,
+        INTERIOR_SIZE.height - 118,
+        15,
+      );
+      g.fillStyle(0x6faa62, 0.75);
+      g.fillCircle(
+        x,
+        INTERIOR_SIZE.height - 130,
+        11,
+      );
+    }
+
+    // building-specific visual identity
+    if (this.definition.id === 'inn') {
+      g.fillStyle(0x8b5f3d, 1);
+      g.fillRoundedRect(72, 188, 90, 30, 6);
+      g.fillRoundedRect(
+        INTERIOR_SIZE.width - 162,
+        188,
+        90,
+        30,
+        6,
+      );
+      g.fillStyle(0xe0b65b, 0.78);
+      g.fillCircle(105, 184, 5);
+      g.fillCircle(INTERIOR_SIZE.width - 105, 184, 5);
+    } else if (this.definition.id === 'smith') {
+      g.fillStyle(0x424a4c, 1);
+      g.fillRoundedRect(72, 188, 110, 32, 5);
+      g.fillStyle(0xe78345, 0.72);
+      g.fillCircle(115, 181, 10);
+    } else if (this.definition.id === 'shop') {
+      g.fillStyle(0xa97b4b, 1);
+      g.fillRoundedRect(65, 180, 105, 42, 5);
+      g.fillStyle(0xd7b969, 0.92);
+      for (let i = 0; i < 4; i += 1) {
+        g.fillCircle(88 + i * 22, 174, 6);
+      }
+    } else if (
+      this.definition.id === 'home' ||
+      this.definition.id === 'settlement-home'
+    ) {
+      g.fillStyle(0xc37d8f, 0.55);
+      g.fillRoundedRect(70, 184, 96, 28, 6);
+      g.fillStyle(0xf2d36e, 0.95);
+      g.fillCircle(92, 179, 6);
+      g.fillCircle(118, 176, 6);
+      g.fillCircle(144, 180, 6);
+    } else if (this.definition.id === 'fisher-home') {
+      g.lineStyle(3, 0x6d6c59, 0.75);
+      g.strokeCircle(118, 190, 24);
+      g.lineStyle(1, 0xd8d1ba, 0.55);
+      g.lineBetween(99, 173, 137, 207);
+      g.lineBetween(99, 205, 137, 173);
+    }
   }
 
   private drawDoorway(
