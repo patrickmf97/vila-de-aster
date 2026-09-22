@@ -73,6 +73,14 @@ export class VillageScene extends Phaser.Scene {
   }
 
   preload(): void {
+    this.load.on('loaderror', (file: Phaser.Loader.File) => {
+      console.warn(
+        '[Aster] Falha ao carregar asset:',
+        file.key,
+        file.url,
+      );
+    });
+
     if (!this.textures.exists(VILLAGE_ENVIRONMENT_KEY)) {
       this.load.svg(
         VILLAGE_ENVIRONMENT_KEY,
@@ -96,6 +104,19 @@ export class VillageScene extends Phaser.Scene {
         },
       );
     }
+
+    this.load.once('complete', () => {
+      const missing = Object.values(BUILDING_VISUALS)
+        .filter((visual) => !this.textures.exists(visual.key))
+        .map((visual) => visual.key);
+
+      if (missing.length) {
+        console.warn(
+          '[Aster] Prédios opcionais não carregados:',
+          missing,
+        );
+      }
+    });
   }
 
   create(): void {
