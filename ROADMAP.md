@@ -25,27 +25,40 @@
 - relações e memória.
 
 ## ✅ v0.7.0 — Economy & Settlement
-- dinheiro individual;
-- trabalho e renda;
-- despesas;
-- famílias compartilhando custos;
-- produção por profissão;
-- comida/madeira/pedra/metal/mercadorias;
-- preços dinâmicos;
-- tesouro;
+- dinheiro;
+- produção;
+- consumo;
+- preços;
 - prosperidade;
-- escassez afetando fome;
-- pressão financeira afetando NPC Brain;
-- terrenos de expansão;
-- projetos de construção;
-- progresso de obra;
-- casas novas persistentes;
-- mudança de residência;
-- interior de casas construídas;
-- painel econômico com M;
-- diálogo sobre finanças e mercado.
+- construção;
+- expansão da vila.
 
-## v0.8 — Generations & RPG Systems
+## ✅ v0.7.1 — Dialogue & Movement Hotfix
+- correção dos diálogos corrompidos;
+- transições físicas de NPCs entre zonas.
+
+## ✅ v0.8.0 — Art Direction & Atmosphere
+- direção de arte oficial;
+- nova paleta;
+- terreno texturizado;
+- caminhos orgânicos;
+- praça redesenhada;
+- água animada;
+- vegetação refinada;
+- identidade visual dos prédios;
+- atmosfera dinâmica;
+- vaga-lumes;
+- efeitos visuais do Eco;
+- HUD cozy glass.
+
+## v0.8.1 — Characters & Animation Polish
+- redesign de personagens;
+- animações mais ricas;
+- idle por profissão;
+- interiores refinados;
+- UI final.
+
+## v0.9 — Generations & RPG Systems
 - envelhecimento completo;
 - profissão e herança;
 - morte e legado;

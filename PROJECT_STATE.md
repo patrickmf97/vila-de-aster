@@ -2,119 +2,80 @@
 
 ## Versão atual
 
-**v0.7.1 — Dialogue & Movement Hotfix**
+**v0.8.0 — Art Direction & Atmosphere**
 
-## Sistemas ativos
+## Objetivo da versão
 
-### Life Simulation
+Transformar a vila de um protótipo funcional em um RPG cozy fantasy com identidade visual própria, sem reescrever os sistemas de simulação já existentes.
 
-- casas;
-- sono;
-- relações;
-- namoro;
-- casamento;
-- filhos;
-- envelhecimento experimental.
+## Renderização
 
-### NPC Brain
+### WorldRenderer
 
-- necessidades;
-- personalidade;
-- Utility AI;
-- decisões explicáveis.
+Responsável por:
 
-### Choice Dialogue
+- terreno;
+- textura de grama;
+- caminhos;
+- praça;
+- fonte;
+- lago/ponte;
+- vegetação;
+- decoração;
+- prédios estáticos;
+- construções e casas de settlement;
+- animação da água.
 
-- menus e submenus;
-- perfis pessoais;
-- memória;
-- afinidade;
-- confidências.
+### AtmosphereRenderer
 
-### Economy
+Responsável por:
 
-Cada NPC possui:
+- tint global por horário;
+- manhã;
+- entardecer;
+- noite;
+- vaga-lumes;
+- glow narrativo do rio;
+- limpeza automática ao trocar de cena.
 
-- moedas;
-- renda acumulada;
-- gastos acumulados;
-- tempo produtivo do dia;
-- última renda;
-- última despesa.
-
-A vila possui:
-
-- estoque;
-- preços;
-- tesouro;
-- prosperidade;
-- histórico econômico.
-
-### Settlement
-
-- 4 lotes de expansão;
-- custos de construção;
-- projetos persistentes;
-- progresso diário;
-- casas persistentes;
-- residência dinâmica;
-- interiores para casas novas.
-
-## Ciclo econômico diário
+## Paleta principal
 
 ```text
-trabalho real do NPC
-        ↓
-renda + produção
-        ↓
-impostos
-        ↓
-despesas familiares
-        ↓
-consumo da vila
-        ↓
-ajuste de preços
-        ↓
-obra em andamento
-        ↓
-nova necessidade de moradia?
-        ↓
-possível nova construção
-        ↓
-prosperidade
+grama clara      #91C96F
+grama média      #72AD5C
+vegetação escura #456F42
+caminho           #D4BD8D
+terra             #B58C60
+madeira           #89603F
+madeira escura    #5A3D2A
+parede creme      #DDD0A9
+água clara        #62B2D8
+água profunda     #438AB7
+terracota         #AA604C
+azul telhado      #58789B
+verde telhado     #718558
+luz quente        #F1CE78
+lilás dos Ecos    #A79AE8
+ciano mágico      #76DCE7
 ```
 
-## Integrações
+## Sistemas preservados
 
-- pouco dinheiro aumenta utilidade de trabalhar;
-- falta de comida aumenta fome;
-- construção depende de produção/importação;
-- nova casa muda a rotina de sono;
-- economia e construção aparecem no diálogo;
-- painel M permite observar a simulação.
+- v0.7.1 Dialogue & Movement Hotfix;
+- Economy & Settlement;
+- Choice Dialogue;
+- NPC Brain;
+- Life Simulation;
+- interiores;
+- construções dinâmicas.
 
-## Próximo alvo
+## Próxima etapa
 
-**v0.8 — Generations & RPG Systems**
+**v0.8.1 — Characters & Animation Polish**
 
-- crescimento de crianças;
-- profissões herdadas/aprendidas;
-- morte e legado;
-- herança financeira;
-- inventário;
-- quests;
-- combate;
-- regiões externas.
-
-
-## Hotfix v0.7.1
-
-- regexes do SemanticDialoguePlanner restaurados;
-- proteção contra resposta vazia/corrompida;
-- histórico antigo composto apenas por pontuação é removido automaticamente;
-- `brain.zone` agora representa destino desejado;
-- `life.currentZone` representa localização física real;
-- NPC caminha até a porta antes de entrar;
-- NPC sai pela porta da zona anterior;
-- entrada/saída em interiores é animada;
-- deslocamento até cama e pontos internos substitui teleporte.
+- redesign visual dos NPCs;
+- silhuetas mais distintas;
+- microanimações;
+- idle por profissão;
+- refinamento visual de interiores;
+- polimento final da HUD.
