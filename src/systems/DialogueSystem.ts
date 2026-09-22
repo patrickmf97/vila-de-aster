@@ -1,8 +1,11 @@
+import { portraitForName } from '../data/portraits';
+
 export interface DialoguePayload {
   name: string;
   role: string;
   portrait: string;
   lines: string[];
+  portraitUrl?: string;
   onClose?: () => void;
 }
 
@@ -10,7 +13,8 @@ export class DialogueSystem {
   private root = document.getElementById('dialogue')!;
   private name = document.getElementById('dialogueName')!;
   private text = document.getElementById('dialogueText')!;
-  private portrait = document.getElementById('portrait')!;
+  private portraitFallback = document.getElementById('portrait')!;
+  private portraitImage = document.getElementById('portraitImage') as HTMLImageElement;
   private current: DialoguePayload | null = null;
   private index = 0;
 
@@ -27,6 +31,7 @@ export class DialogueSystem {
   advance(): void {
     if (!this.current) return;
     this.index += 1;
+
     if (this.index >= this.current.lines.length) {
       const onClose = this.current.onClose;
       this.current = null;
@@ -34,14 +39,35 @@ export class DialogueSystem {
       onClose?.();
       return;
     }
+
     this.render();
   }
 
   private render(): void {
     if (!this.current) return;
-    this.name.textContent = `${this.current.name} • ${this.current.role}`;
-    this.text.textContent = this.current.lines[this.index];
-    this.portrait.textContent = this.current.portrait;
+
+    this.name.textContent =
+      this.current.name + ' • ' + this.current.role;
+    this.text.textContent =
+      this.current.lines[this.index];
+
+    const portraitUrl =
+      this.current.portraitUrl ??
+      portraitForName(this.current.name);
+
+    if (portraitUrl) {
+      this.portraitImage.src = portraitUrl;
+      this.portraitImage.alt =
+        'Retrato de ' + this.current.name;
+      this.portraitImage.classList.remove('hidden');
+      this.portraitFallback.classList.add('hidden');
+    } else {
+      this.portraitFallback.textContent =
+        this.current.portrait;
+      this.portraitFallback.classList.remove('hidden');
+      this.portraitImage.classList.add('hidden');
+    }
+
     this.root.classList.remove('hidden');
   }
 }
