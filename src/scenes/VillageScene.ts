@@ -5,6 +5,7 @@ import { npcDefinitions } from '../data/npcs';
 import { collisionRects, doors, WORLD } from '../data/world';
 import { settlementCollisionRect, settlementDoor } from '../data/economy';
 import { WorldRenderer } from '../world/WorldRenderer';
+import { AtmosphereRenderer } from '../world/AtmosphereRenderer';
 import { SaveSystem } from '../systems/SaveSystem';
 import { TimeSystem } from '../systems/TimeSystem';
 import { DialogueSystem } from '../systems/DialogueSystem';
@@ -39,6 +40,7 @@ export class VillageScene extends Phaser.Scene {
   private dynamicDialogue!: DynamicDialogueSystem;
   private economySystem!: EconomySystem;
   private worldRenderer!: WorldRenderer;
+  private atmosphereRenderer!: AtmosphereRenderer;
   private hud!: Hud;
   private spawnOverride?: Point;
   private fromInterior = false;
@@ -52,7 +54,6 @@ export class VillageScene extends Phaser.Scene {
   private freeChatKey!: Phaser.Input.Keyboard.Key;
   private marketKey!: Phaser.Input.Keyboard.Key;
 
-  private nightOverlay!: Phaser.GameObjects.Rectangle;
   private persistAccumulator = 0;
 
   constructor() {
@@ -84,6 +85,7 @@ export class VillageScene extends Phaser.Scene {
       this.save.snapshot.settlementBuildings,
       this.save.snapshot.constructionProjects,
     );
+    this.atmosphereRenderer = new AtmosphereRenderer(this);
 
     const start = this.spawnOverride ?? this.save.snapshot.player ?? { x: 930, y: 790 };
     this.player = new Player(this, start.x, start.y);
@@ -104,13 +106,6 @@ export class VillageScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
     this.cameras.main.startFollow(this.player, true, 0.09, 0.09);
 
-    this.nightOverlay = this.add
-      .rectangle(0, 0, this.scale.width, this.scale.height, 0x151f46, 0)
-      .setOrigin(0)
-      .setScrollFactor(0)
-      .setDepth(100000);
-
-    this.scale.on('resize', this.resizeOverlay, this);
     this.eventSystem.riverEchoActive && this.hud.setRiverQuest();
 
     if (this.fromInterior) {
@@ -313,7 +308,20 @@ export class VillageScene extends Phaser.Scene {
       this.persist();
     }
 
-    this.nightOverlay.setAlpha(this.timeSystem.darkness);
+    const nightStrength = Phaser.Math.Clamp(
+      this.timeSystem.darkness / 0.42,
+      0,
+      1,
+    );
+    this.worldRenderer.update(
+      elapsedSeconds,
+      nightStrength,
+    );
+    this.atmosphereRenderer.update(
+      this.timeSystem.minuteOfDay,
+      elapsedSeconds,
+      this.eventSystem.riverEchoActive,
+    );
     this.syncHud();
   }
 
@@ -625,7 +633,4 @@ export class VillageScene extends Phaser.Scene {
     this.save.persist();
   }
 
-  private resizeOverlay(gameSize: Phaser.Structs.Size): void {
-    this.nightOverlay.setDisplaySize(gameSize.width, gameSize.height);
-  }
 }
