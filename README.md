@@ -2,90 +2,69 @@
 
 RPG 2D top-down para navegador com foco em **mundo vivo, memória, relações, família, economia simulada e direção de arte cozy fantasy**.
 
-## Estado atual — v0.8.3 Full Art Integration
+## Estado atual — v0.8.4 Buildings Match
 
-A v0.8.3 integra de forma completa a direção visual aprovada no concept art, preservando a arquitetura leve da v0.8.2.
+A v0.8.4 inicia a **Fase B do asset pack final**: os cinco prédios principais deixam de depender da arte simplificada do mapa-base e passam a existir como assets independentes, inspirados diretamente no sheet visual aprovado.
 
-### Mundo
+### Construções integradas
 
-- mapa ilustrado SVG pré-renderizado;
-- caminhos de pedra;
-- praça e fonte refinadas;
-- rio com reflexos, pedras e vida;
-- ponte de madeira;
-- vegetação densa;
-- árvores verdes, rosadas e douradas;
-- flores, arbustos e cercas;
-- banners;
-- postes;
-- placas;
-- caixas e barris;
-- jardim;
-- detalhes específicos dos prédios.
+- **Taverna Lua Cheia**
+  - telhado de terracota;
+  - chaminé e fumaça;
+  - janelas quentes;
+  - emblema da lua;
+  - barris e flores.
 
-### Personagens
+- **Forja do Bram**
+  - telhado de ardósia;
+  - grande chaminé;
+  - fachada de pedra;
+  - fogo da forja;
+  - bigornas e barris.
 
-- sistema chibi modular;
-- retratos ilustrados em SVG para:
-  - Patrick;
-  - Elena;
-  - Bram;
-  - Mira;
-  - Theo;
-  - Luma;
-- retratos usados em diálogos e compêndio;
-- animações e props profissionais preservados.
+- **Empório da Mira**
+  - telhado verde;
+  - toldo vermelho/creme;
+  - caixas de produtos;
+  - cestas;
+  - fachada de comércio.
 
-### Interface
+- **Casa da Elena**
+  - telhado vermelho;
+  - flores integradas à fachada;
+  - cerca branca;
+  - jardim;
+  - leitura visual delicada.
 
-A HUD agora segue o concept:
+- **Casa do Theo**
+  - telhado azul;
+  - píer;
+  - bandeira de peixe;
+  - redes;
+  - barris;
+  - barco e água.
 
-- painel azul-escuro da marca;
-- subtítulo narrativo;
-- cartão de dia/hora em pergaminho;
-- hotbar inferior;
-- medalhão do protagonista;
-- barras visuais;
-- atalhos de inventário;
-- menu rápido;
-- diálogo com retrato;
-- conversa por escolhas com retrato;
-- painel verde/madeira/pergaminho.
+### Integração técnica
 
-### Compêndio
+Os prédios são carregados como SVGs separados e renderizados por cima do ambiente estático.
 
-Novo painel navegável com:
+Isso permite:
 
-- personagens principais;
-- construções;
-- ciclo de dia/noite;
-- mapa do mundo.
+- trocar/refinar cada prédio sem reconstruir o mapa;
+- profundidade por Y;
+- personagem andando atrás/na frente;
+- iluminação noturna própria;
+- colisões e portas preservadas;
+- custo de renderização muito baixo.
 
-O compêndio pausa movimento e simulação enquanto está aberto.
+## Performance preservada
 
-### Interiores
-
-- piso de madeira;
-- janelas;
-- tapetes;
-- luminárias;
-- plantas;
-- tapeçaria;
-- decoração específica de cada prédio.
-
-## Performance
-
-A base da v0.8.2 foi preservada:
-
-- mapa estático rasterizado uma vez;
-- simulação em 10 Hz;
-- atmosfera em 15 Hz;
-- água em 12 Hz;
-- HUD em 4 Hz;
-- roster em 1 Hz;
-- labels e textos cacheados;
-- sem backdrop blur;
-- SVGs leves.
+- mapa-base continua pré-renderizado;
+- somente 5 imagens estáticas adicionais;
+- glows atualizados na frequência ambiental já reduzida;
+- nenhuma biblioteca nova;
+- sem filtros CSS pesados;
+- Life/NPC Brain/Economy continuam throttled.
 
 ## Controles
 
@@ -94,9 +73,12 @@ A base da v0.8.2 foi preservada:
 - F: diálogo por escolhas
 - B: NPC Brain
 - M: economia
-- 1–8: selecionar slot visual
+- 1–8: hotbar
 - Esc: fechar compêndio
 
-## Próximo marco
+## Próxima etapa da Fase B
 
-**v0.9 — Generations & RPG Systems**
+- acabamento de posicionamento e escala após validação visual;
+- variantes de construção para settlement;
+- props específicos ao redor dos prédios;
+- integração dos demais assets ambientais do pack.
