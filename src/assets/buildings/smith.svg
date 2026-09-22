@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 300">
+<defs>
+  <linearGradient id="stone" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#84786e"/><stop offset="1" stop-color="#59524d"/></linearGradient>
+  <linearGradient id="roof" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#5d6d79"/><stop offset="1" stop-color="#34454f"/></linearGradient>
+  <filter id="s"><feDropShadow dx="0" dy="10" stdDeviation="7" flood-color="#263322" flood-opacity=".28"/></filter>
+</defs>
+<g filter="url(#s)">
+  <ellipse cx="210" cy="274" rx="177" ry="18" fill="#263d2a" opacity=".23"/>
+  <rect x="68" y="114" width="285" height="142" rx="13" fill="#b98c58" stroke="#5c412d" stroke-width="5"/>
+  <path d="M39 127 205 25l176 102-25 22-151-76-145 76z" fill="url(#roof)" stroke="#2f3c43" stroke-width="6"/>
+  <g stroke="#8ea0aa" stroke-width="3" opacity=".35"><path d="M69 117 205 42 349 118"/><path d="M98 110 205 55 322 111"/><path d="M124 103 205 69 297 104"/></g>
+  <rect x="285" y="20" width="39" height="91" rx="4" fill="#72513b" stroke="#413227" stroke-width="5"/>
+  <rect x="279" y="16" width="51" height="24" rx="4" fill="#3d3f3e"/>
+  <path d="M304 12c-23-24 13-31-2-55 35 17 7 34 20 56" fill="#b7bec0" opacity=".65"/>
+  <path d="M112 256v-75c0-29 22-52 49-52h99c27 0 49 23 49 52v75" fill="url(#stone)" stroke="#403835" stroke-width="6"/>
+  <path d="M139 245v-47c0-22 15-39 34-39h74c19 0 34 17 34 39v47z" fill="#261d18" stroke="#4b3930" stroke-width="5"/>
+  <path d="M158 235c4-34 26-56 50-56s46 22 50 56c-29-15-66-15-100 0z" fill="#ff7a24"/>
+  <path d="M177 232c1-24 14-36 31-49 13 15 24 27 28 49" fill="#ffd352"/>
+  <g fill="#5a514c" stroke="#35312f" stroke-width="4">
+    <path d="M47 234h62l-14 19H61z"/><rect x="57" y="250" width="10" height="24"/>
+    <path d="M311 232h60l-13 18h-34z"/><rect x="329" y="248" width="10" height="27"/>
+  </g>
+  <g fill="#74492d"><ellipse cx="79" cy="217" rx="21" ry="27"/><ellipse cx="355" cy="217" rx="21" ry="27"/></g>
+  <g stroke="#b37b45" stroke-width="4"><path d="M60 207h38M60 223h38M336 207h38M336 223h38"/></g>
+  <g transform="translate(29 127)">
+    <rect width="72" height="52" rx="6" fill="#4b3323" stroke="#291d16" stroke-width="5"/>
+    <path d="M23 14l25 25M48 14 23 39" stroke="#e1bb67" stroke-width="7" stroke-linecap="round"/>
+    <path d="M72 14h24v7H72z" fill="#4e321e"/>
+  </g>
+  <g fill="#3d4447"><rect x="93" y="155" width="28" height="70" rx="4"/><rect x="304" y="155" width="28" height="70" rx="4"/></g>
+  <g fill="#ed9a3c"><circle cx="107" cy="169" r="8"/><circle cx="318" cy="169" r="8"/></g>
+</g>
+</svg>
