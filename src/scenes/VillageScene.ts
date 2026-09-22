@@ -182,10 +182,10 @@ export class VillageScene extends Phaser.Scene {
     if (!this.dialogue.isOpen && !this.dynamicDialogue.isOpen && !this.hud.isModalOpen) {
       this.player.updateMovement(
         {
-          up: this.cursors.up.isDown || this.wasd.W.isDown,
-          down: this.cursors.down.isDown || this.wasd.S.isDown,
-          left: this.cursors.left.isDown || this.wasd.A.isDown,
-          right: this.cursors.right.isDown || this.wasd.D.isDown,
+          up: this.cursors.up.isDown || this.wasd.W.isDown || !!window.asterMobile?.up,
+          down: this.cursors.down.isDown || this.wasd.S.isDown || !!window.asterMobile?.down,
+          left: this.cursors.left.isDown || this.wasd.A.isDown || !!window.asterMobile?.left,
+          right: this.cursors.right.isDown || this.wasd.D.isDown || !!window.asterMobile?.right,
         },
         dt,
         this.canMove,
@@ -341,7 +341,8 @@ export class VillageScene extends Phaser.Scene {
     if (
       !this.dynamicDialogue.isOpen &&
       (Phaser.Input.Keyboard.JustDown(this.interactKey) ||
-      Phaser.Input.Keyboard.JustDown(this.enterKey))
+      Phaser.Input.Keyboard.JustDown(this.enterKey) ||
+      this.consumeMobileAction('interact'))
     ) {
       if (this.dialogue.isOpen) {
         this.dialogue.advance();
@@ -355,7 +356,8 @@ export class VillageScene extends Phaser.Scene {
     if (
       !this.dialogue.isOpen &&
       !this.dynamicDialogue.isOpen &&
-      Phaser.Input.Keyboard.JustDown(this.freeChatKey) &&
+      (Phaser.Input.Keyboard.JustDown(this.freeChatKey) ||
+      this.consumeMobileAction('chat')) &&
       target?.type === 'npc'
     ) {
       this.openGenerativeChat(target.npc);
@@ -417,6 +419,13 @@ export class VillageScene extends Phaser.Scene {
       this.npcs.push(new Npc(this, definition));
       existing.add(definition.id);
     }
+  }
+
+  private consumeMobileAction(action: 'interact' | 'chat'): boolean {
+    const controls = window.asterMobile;
+    if (!controls?.[action]) return false;
+    controls[action] = false;
+    return true;
   }
 
   private readonly canMove = (x: number, y: number, radius: number): boolean => {
