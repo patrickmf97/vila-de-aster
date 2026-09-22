@@ -32,6 +32,10 @@ export class Hud {
     this.setupConceptUi();
   }
 
+  get isModalOpen(): boolean {
+    return !this.codex.classList.contains('hidden');
+  }
+
   setClock(time: string, day: number, icon: string): void {
     if (time !== this.lastClock) {
       this.lastClock = time;
