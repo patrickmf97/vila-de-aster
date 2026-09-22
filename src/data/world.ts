@@ -180,3 +180,40 @@ export const zones = {
   theoDock: { x: 1590, y: 860, w: 380, h: 380 },
   southMeadow: { x: 690, y: 1010, w: 520, h: 300 },
 };
+
+
+export function navigationWaypoint(
+  from: { x: number; y: number },
+  target: { x: number; y: number },
+): { x: number; y: number } {
+  const westEdge = pond.x - 42;
+  const eastEdge = pond.x + pond.w + 42;
+  const bridgeY = bridgeRect.y + bridgeRect.h / 2;
+
+  const fromWest = from.x < pond.x;
+  const fromEast = from.x > pond.x + pond.w;
+  const targetWest = target.x < pond.x;
+  const targetEast = target.x > pond.x + pond.w;
+
+  if (fromWest && targetEast) {
+    if (Math.abs(from.y - bridgeY) > 34) {
+      return { x: westEdge, y: bridgeY };
+    }
+
+    if (from.x < eastEdge - 20) {
+      return { x: eastEdge, y: bridgeY };
+    }
+  }
+
+  if (fromEast && targetWest) {
+    if (Math.abs(from.y - bridgeY) > 34) {
+      return { x: eastEdge, y: bridgeY };
+    }
+
+    if (from.x > westEdge + 20) {
+      return { x: westEdge, y: bridgeY };
+    }
+  }
+
+  return target;
+}
