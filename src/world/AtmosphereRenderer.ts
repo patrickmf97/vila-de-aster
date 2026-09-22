@@ -35,6 +35,11 @@ export class AtmosphereRenderer {
     this.resize();
 
     scene.scale.on('resize', this.resize, this);
+    scene.events.once(
+      Phaser.Scenes.Events.SHUTDOWN,
+      this.destroy,
+      this,
+    );
   }
 
   update(
