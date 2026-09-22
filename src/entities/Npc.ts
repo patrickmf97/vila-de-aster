@@ -41,6 +41,7 @@ export class Npc extends Phaser.GameObjects.Container {
   private walkPhase = 0;
   private readonly wanderSeed: number;
   private readonly style: CharacterVisualStyle;
+  private sprite?: Phaser.GameObjects.Image;
 
   constructor(
     scene: Phaser.Scene,
@@ -261,6 +262,18 @@ export class Npc extends Phaser.GameObjects.Container {
     this.applyHairStyle(style.hairStyle);
     this.applyFacing();
     this.setDepth(yToDepth(this.y));
+  }
+
+  useTexture(textureKey: string): void {
+    if (this.sprite) this.sprite.destroy();
+
+    this.sprite = this.scene.add
+      .image(0, -4, textureKey)
+      .setDisplaySize(50, 63)
+      .setOrigin(0.5, 0.62);
+
+    this.visualRoot.setVisible(false);
+    this.addAt(this.sprite, 1);
   }
 
   scheduleAt(
@@ -488,6 +501,11 @@ export class Npc extends Phaser.GameObjects.Container {
     const wave = Math.sin(phase);
     const bob = Math.abs(wave) * -1.15;
 
+    if (this.sprite) {
+      this.sprite.y = -4 + bob;
+      this.sprite.rotation = Math.sin(phase * 0.5) * 0.018;
+    }
+
     this.visualRoot.y = bob;
     this.visualRoot.rotation =
       Math.sin(phase * 0.5) * 0.018;
@@ -519,6 +537,10 @@ export class Npc extends Phaser.GameObjects.Container {
     const breathe = Math.sin(phase) * 0.45;
 
     this.resetPose();
+    if (this.sprite) {
+      this.sprite.y = -4 + breathe * 0.18;
+      this.sprite.rotation = 0;
+    }
     this.visualRoot.y = breathe * 0.42;
     this.shadow.scaleX =
       1 + breathe * 0.006;
