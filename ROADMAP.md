@@ -38,25 +38,24 @@
 - transições físicas de NPCs entre zonas.
 
 ## ✅ v0.8.0 — Art Direction & Atmosphere
-- direção de arte oficial;
-- nova paleta;
-- terreno texturizado;
-- caminhos orgânicos;
-- praça redesenhada;
-- água animada;
-- vegetação refinada;
-- identidade visual dos prédios;
-- atmosfera dinâmica;
-- vaga-lumes;
-- efeitos visuais do Eco;
-- HUD cozy glass.
+- direção de arte;
+- mundo redesenhado;
+- atmosfera;
+- água;
+- vegetação;
+- prédios;
+- HUD.
 
-## v0.8.1 — Characters & Animation Polish
-- redesign de personagens;
-- animações mais ricas;
-- idle por profissão;
+## ✅ v0.8.1 — Characters & Animation Polish
+- perfis visuais individuais;
+- chibi modular;
+- cabelo/roupa/acessórios;
+- caminhada refinada;
+- idle e microanimações;
+- animações por atividade;
+- jogador redesenhado;
 - interiores refinados;
-- UI final.
+- diálogo/UI final.
 
 ## v0.9 — Generations & RPG Systems
 - envelhecimento completo;
