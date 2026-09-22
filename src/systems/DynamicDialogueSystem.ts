@@ -67,7 +67,8 @@ export class DynamicDialogueSystem {
       context.definition.emoji +
       ' ' +
       context.definition.name +
-      ' • conversa';
+      ' • ' +
+      context.definition.role;
 
     this.messages.replaceChildren();
     this.renderSavedConversation(context.definition.id);
