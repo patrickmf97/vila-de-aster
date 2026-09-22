@@ -4,8 +4,15 @@ import { Npc } from '../entities/Npc';
 import { npcDefinitions } from '../data/npcs';
 import { collisionRects, doors, WORLD } from '../data/world';
 import { settlementCollisionRect, settlementDoor } from '../data/economy';
-import { WorldRenderer, VILLAGE_ENVIRONMENT_KEY } from '../world/WorldRenderer';
+import { WorldRenderer } from '../world/WorldRenderer';
 import { BUILDING_VISUALS } from '../data/buildingAssets';
+import {
+  CHARACTER_ASSETS,
+  CHARACTER_FRAME_HEIGHT,
+  CHARACTER_FRAME_WIDTH,
+  ENVIRONMENT_ASSETS,
+  PROP_ASSETS,
+} from '../data/productionAssets';
 import { AtmosphereRenderer } from '../world/AtmosphereRenderer';
 import { SaveSystem } from '../systems/SaveSystem';
 import { TimeSystem } from '../systems/TimeSystem';
@@ -18,17 +25,6 @@ import { DynamicDialogueSystem } from '../systems/DynamicDialogueSystem';
 import { EconomySystem } from '../systems/EconomySystem';
 import { Hud } from '../ui/Hud';
 import type { DoorDefinition, EconomyEvent, LifeEvent, Point, Rect } from '../types';
-
-const VILLAGE_ENVIRONMENT_URL = new URL('../assets/villageEnvironment.svg', import.meta.url).href;
-
-const CHARACTER_ASSETS = {
-  patrick: new URL('../assets/characters/patrick.svg', import.meta.url).href,
-  elena: new URL('../assets/characters/elena.svg', import.meta.url).href,
-  bram: new URL('../assets/characters/bram.svg', import.meta.url).href,
-  mira: new URL('../assets/characters/mira.svg', import.meta.url).href,
-  theo: new URL('../assets/characters/theo.svg', import.meta.url).href,
-  luma: new URL('../assets/characters/luma.svg', import.meta.url).href,
-} as const;
 
 interface VillageSceneData {
   spawn?: Point;
@@ -90,44 +86,58 @@ export class VillageScene extends Phaser.Scene {
       );
     });
 
-    if (!this.textures.exists(VILLAGE_ENVIRONMENT_KEY)) {
-      this.load.svg(
-        VILLAGE_ENVIRONMENT_KEY,
-        VILLAGE_ENVIRONMENT_URL,
-        {
-          width: WORLD.width,
-          height: WORLD.height,
-        },
-      );
+    for (const [id, assetUrl] of Object.entries(ENVIRONMENT_ASSETS)) {
+      const key = 'env-' + id;
+      if (!this.textures.exists(key)) {
+        this.load.image(key, assetUrl);
+      }
+    }
+
+    for (const [id, assetUrl] of Object.entries(PROP_ASSETS)) {
+      const key = 'prop-' + id;
+      if (!this.textures.exists(key)) {
+        this.load.image(key, assetUrl);
+      }
     }
 
     for (const [id, assetUrl] of Object.entries(CHARACTER_ASSETS)) {
       const key = 'character-' + id;
       if (this.textures.exists(key)) continue;
-      this.load.svg(key, assetUrl, { width: 64, height: 80 });
-    }
 
-    for (const visual of Object.values(BUILDING_VISUALS)) {
-      if (this.textures.exists(visual.key)) continue;
-
-      this.load.svg(
-        visual.key,
-        visual.assetUrl,
+      this.load.spritesheet(
+        key,
+        assetUrl,
         {
-          width: visual.width,
-          height: visual.height,
+          frameWidth: CHARACTER_FRAME_WIDTH,
+          frameHeight: CHARACTER_FRAME_HEIGHT,
         },
       );
     }
 
+    for (const visual of Object.values(BUILDING_VISUALS)) {
+      if (!this.textures.exists(visual.key)) {
+        this.load.image(visual.key, visual.assetUrl);
+      }
+    }
+
     this.load.once('complete', () => {
-      const missing = Object.values(BUILDING_VISUALS)
-        .filter((visual) => !this.textures.exists(visual.key))
-        .map((visual) => visual.key);
+      const required = [
+        'env-grass',
+        'env-stone',
+        'env-water',
+        'prop-fountain',
+        'prop-bridge',
+        'character-patrick',
+        ...Object.values(BUILDING_VISUALS).map((visual) => visual.key),
+      ];
+
+      const missing = required.filter(
+        (key) => !this.textures.exists(key),
+      );
 
       if (missing.length) {
         console.warn(
-          '[Aster] Prédios opcionais não carregados:',
+          '[Aster] Assets de produção ausentes:',
           missing,
         );
       }

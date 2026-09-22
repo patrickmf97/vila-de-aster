@@ -1,84 +1,80 @@
 # Vila de Aster
 
-RPG 2D top-down para navegador com foco em **mundo vivo, memória, relações, família, economia simulada e direção de arte cozy fantasy**.
+RPG 2D top-down para navegador com mundo vivo, memória, relações, famílias, economia e direção de arte cozy fantasy.
 
-## Estado atual — v0.8.4 Buildings Match
+## v0.8.6 — Production Assets
 
-A v0.8.4 inicia a **Fase B do asset pack final**: os cinco prédios principais deixam de depender da arte simplificada do mapa-base e passam a existir como assets independentes, inspirados diretamente no sheet visual aprovado.
+Esta versão substitui os principais placeholders visuais por **assets derivados diretamente dos quatro sheets aprovados**.
 
-### Construções integradas
+### Assets realmente integrados
 
-- **Taverna Lua Cheia**
-  - telhado de terracota;
-  - chaminé e fumaça;
-  - janelas quentes;
-  - emblema da lua;
-  - barris e flores.
+**Terreno**
+- grama ilustrada;
+- pavimento de pedra;
+- água ilustrada.
 
-- **Forja do Bram**
-  - telhado de ardósia;
-  - grande chaminé;
-  - fachada de pedra;
-  - fogo da forja;
-  - bigornas e barris.
+**Cenário**
+- fonte;
+- ponte;
+- cerca;
+- postes;
+- árvores verdes;
+- árvores rosadas;
+- árvores douradas;
+- arbustos;
+- prop de mercado.
 
-- **Empório da Mira**
-  - telhado verde;
-  - toldo vermelho/creme;
-  - caixas de produtos;
-  - cestas;
-  - fachada de comércio.
+**Construções**
+- Taverna Lua Cheia;
+- Forja do Bram;
+- Empório da Mira;
+- Casa da Elena;
+- Casa do Theo.
 
-- **Casa da Elena**
-  - telhado vermelho;
-  - flores integradas à fachada;
-  - cerca branca;
-  - jardim;
-  - leitura visual delicada.
+Os cinco prédios agora usam recortes WebP reais do sheet de construções, não SVGs redesenhados.
 
-- **Casa do Theo**
-  - telhado azul;
-  - píer;
-  - bandeira de peixe;
-  - redes;
-  - barris;
-  - barco e água.
+**Personagens**
+- Patrick;
+- Elena;
+- Bram;
+- Mira;
+- Theo;
+- Luma.
 
-### Integração técnica
+Cada personagem usa um spritesheet real de 8 frames derivado do sheet aprovado:
+1. frente;
+2. costas;
+3. esquerda;
+4. direita;
+5. andar esquerda 1;
+6. andar direita 1;
+7. andar esquerda 2;
+8. andar direita 2.
 
-Os prédios são carregados como SVGs separados e renderizados por cima do ambiente estático.
+NPCs gerados continuam usando o fallback procedural.
 
-Isso permite:
+### Mobile
 
-- trocar/refinar cada prédio sem reconstruir o mapa;
-- profundidade por Y;
-- personagem andando atrás/na frente;
-- iluminação noturna própria;
-- colisões e portas preservadas;
-- custo de renderização muito baixo.
+A interface touch continua ativa automaticamente em dispositivos móveis:
+- D-pad;
+- Falar;
+- Interagir;
+- multitouch;
+- funciona dentro e fora dos prédios.
 
-## Performance preservada
+### Performance
 
-- mapa-base continua pré-renderizado;
-- somente 5 imagens estáticas adicionais;
-- glows atualizados na frequência ambiental já reduzida;
-- nenhuma biblioteca nova;
-- sem filtros CSS pesados;
-- Life/NPC Brain/Economy continuam throttled.
+Os recortes foram convertidos para WebP e empacotados no projeto:
+- nenhuma dependência externa;
+- nenhum download de IA;
+- nenhuma imagem gigante do concept durante gameplay;
+- simulação continua throttled;
+- assets são carregados uma vez pelo Phaser.
 
-## Controles
+## Próximo passo
 
-- WASD / setas: mover
-- E / Enter: interagir
-- F: diálogo por escolhas
-- B: NPC Brain
-- M: economia
-- 1–8: hotbar
-- Esc: fechar compêndio
-
-## Próxima etapa da Fase B
-
-- acabamento de posicionamento e escala após validação visual;
-- variantes de construção para settlement;
-- props específicos ao redor dos prédios;
-- integração dos demais assets ambientais do pack.
+Após validação visual da v0.8.6:
+- ajustar escala/posição dos assets reais;
+- ampliar uso de props do catálogo;
+- refinar interiores com o pack;
+- criar variações de settlement com a mesma linguagem visual.

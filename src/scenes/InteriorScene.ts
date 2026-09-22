@@ -108,6 +108,9 @@ export class InteriorScene extends Phaser.Scene {
       this.definition.spawn.x,
       this.definition.spawn.y,
     );
+    if (this.textures.exists('character-patrick')) {
+      this.player.useTexture('character-patrick');
+    }
     this.player.face('up');
 
     this.syncResidentRoster();
@@ -145,10 +148,10 @@ export class InteriorScene extends Phaser.Scene {
     if (!this.dialogue.isOpen && !this.dynamicDialogue.isOpen && !this.hud.isModalOpen) {
       this.player.updateMovement(
         {
-          up: this.cursors.up.isDown || this.wasd.W.isDown,
-          down: this.cursors.down.isDown || this.wasd.S.isDown,
-          left: this.cursors.left.isDown || this.wasd.A.isDown,
-          right: this.cursors.right.isDown || this.wasd.D.isDown,
+          up: this.cursors.up.isDown || this.wasd.W.isDown || !!window.asterMobile?.up,
+          down: this.cursors.down.isDown || this.wasd.S.isDown || !!window.asterMobile?.down,
+          left: this.cursors.left.isDown || this.wasd.A.isDown || !!window.asterMobile?.left,
+          right: this.cursors.right.isDown || this.wasd.D.isDown || !!window.asterMobile?.right,
         },
         dt,
         this.canMove,
@@ -224,7 +227,8 @@ export class InteriorScene extends Phaser.Scene {
     if (
       !this.dynamicDialogue.isOpen &&
       (Phaser.Input.Keyboard.JustDown(this.interactKey) ||
-      Phaser.Input.Keyboard.JustDown(this.enterKey))
+      Phaser.Input.Keyboard.JustDown(this.enterKey) ||
+      this.consumeMobileAction('interact'))
     ) {
       if (this.dialogue.isOpen) {
         this.dialogue.advance();
@@ -240,7 +244,8 @@ export class InteriorScene extends Phaser.Scene {
     if (
       !this.dialogue.isOpen &&
       !this.dynamicDialogue.isOpen &&
-      Phaser.Input.Keyboard.JustDown(this.freeChatKey) &&
+      (Phaser.Input.Keyboard.JustDown(this.freeChatKey) ||
+      this.consumeMobileAction('chat')) &&
       target?.type === 'resident' &&
       target.npc.currentActivity !== 'sleep'
     ) {
@@ -272,6 +277,13 @@ export class InteriorScene extends Phaser.Scene {
     }
   }
 
+  private consumeMobileAction(action: 'interact' | 'chat'): boolean {
+    const controls = window.asterMobile;
+    if (!controls?.[action]) return false;
+    controls[action] = false;
+    return true;
+  }
+
   private syncResidentRoster(): void {
     const definitions = this.lifeSystem.getAllDefinitions();
     const existing = new Set(this.residents.map((npc) => npc.definition.id));
@@ -279,6 +291,10 @@ export class InteriorScene extends Phaser.Scene {
     for (const definition of definitions) {
       if (existing.has(definition.id)) continue;
       const npc = new Npc(this, definition);
+      const assetKey = 'character-' + definition.id;
+      if (this.textures.exists(assetKey)) {
+        npc.useTexture(assetKey);
+      }
       npc.setVisible(false);
       npc.setActive(false);
       this.residents.push(npc);

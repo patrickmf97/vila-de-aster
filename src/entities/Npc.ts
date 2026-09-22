@@ -41,7 +41,7 @@ export class Npc extends Phaser.GameObjects.Container {
   private walkPhase = 0;
   private readonly wanderSeed: number;
   private readonly style: CharacterVisualStyle;
-  private sprite?: Phaser.GameObjects.Image;
+  private sprite?: Phaser.GameObjects.Sprite;
 
   constructor(
     scene: Phaser.Scene,
@@ -268,9 +268,9 @@ export class Npc extends Phaser.GameObjects.Container {
     if (this.sprite) this.sprite.destroy();
 
     this.sprite = this.scene.add
-      .image(0, -4, textureKey)
-      .setDisplaySize(50, 63)
-      .setOrigin(0.5, 0.62);
+      .sprite(0, -3, textureKey, 0)
+      .setDisplaySize(56, 62)
+      .setOrigin(0.5, 0.78);
 
     this.visualRoot.setVisible(false);
     this.addAt(this.sprite, 1);
@@ -502,8 +502,24 @@ export class Npc extends Phaser.GameObjects.Container {
     const bob = Math.abs(wave) * -1.15;
 
     if (this.sprite) {
-      this.sprite.y = -4 + bob;
-      this.sprite.rotation = Math.sin(phase * 0.5) * 0.018;
+      const alternate =
+        Math.floor(phase / Math.PI) % 2 === 0;
+
+      const frame =
+        this.facing === 'left'
+          ? alternate ? 4 : 6
+          : this.facing === 'right'
+            ? alternate ? 5 : 7
+            : this.facing === 'up'
+              ? 1
+              : 0;
+
+      this.sprite
+        .setFrame(frame)
+        .setPosition(0, -3 + bob)
+        .setRotation(
+          Math.sin(phase * 0.5) * 0.012,
+        );
     }
 
     this.visualRoot.y = bob;
@@ -538,8 +554,22 @@ export class Npc extends Phaser.GameObjects.Container {
 
     this.resetPose();
     if (this.sprite) {
-      this.sprite.y = -4 + breathe * 0.18;
-      this.sprite.rotation = 0;
+      const frame =
+        this.facing === 'left'
+          ? 2
+          : this.facing === 'right'
+            ? 3
+            : this.facing === 'up'
+              ? 1
+              : 0;
+
+      this.sprite
+        .setFrame(frame)
+        .setPosition(
+          0,
+          -3 + breathe * 0.18,
+        )
+        .setRotation(0);
     }
     this.visualRoot.y = breathe * 0.42;
     this.shadow.scaleX =
@@ -752,6 +782,19 @@ export class Npc extends Phaser.GameObjects.Container {
 
     const lookingAway =
       this.facing === 'up';
+
+    if (this.sprite) {
+      const frame =
+        this.facing === 'left'
+          ? 2
+          : this.facing === 'right'
+            ? 3
+            : this.facing === 'up'
+              ? 1
+              : 0;
+
+      this.sprite.setFrame(frame);
+    }
 
     this.leftEye.setVisible(!lookingAway);
     this.rightEye.setVisible(!lookingAway);

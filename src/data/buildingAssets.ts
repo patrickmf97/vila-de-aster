@@ -1,3 +1,5 @@
+import { BUILDING_IMAGE_ASSETS } from './productionAssets';
+
 export type LandmarkBuildingId =
   | 'inn'
   | 'smith'
@@ -26,75 +28,57 @@ export const BUILDING_VISUALS: Record<
 > = {
   inn: {
     key: 'building-tavern',
-    assetUrl: new URL(
-      '../assets/buildings/tavern.svg',
-      import.meta.url,
-    ).href,
+    assetUrl: BUILDING_IMAGE_ASSETS.inn,
     width: 420,
-    height: 300,
-    offsetY: 18,
+    height: 342,
+    offsetY: 20,
     glow: [
-      { x: -88, y: -78, radius: 30, color: 0xf1b85b },
-      { x: 88, y: -78, radius: 30, color: 0xf1b85b },
-      { x: 0, y: -77, radius: 38, color: 0xffa33d },
+      { x: -88, y: -74, radius: 28, color: 0xf1b85b },
+      { x: 82, y: -74, radius: 28, color: 0xf1b85b },
     ],
   },
   smith: {
     key: 'building-smith',
-    assetUrl: new URL(
-      '../assets/buildings/smith.svg',
-      import.meta.url,
-    ).href,
-    width: 420,
-    height: 300,
-    offsetY: 17,
+    assetUrl: BUILDING_IMAGE_ASSETS.smith,
+    width: 405,
+    height: 358,
+    offsetY: 18,
     glow: [
-      { x: 0, y: -58, radius: 52, color: 0xff7a24 },
-      { x: -103, y: -86, radius: 20, color: 0xf0a13f },
-      { x: 103, y: -86, radius: 20, color: 0xf0a13f },
+      { x: 0, y: -70, radius: 48, color: 0xff7a24 },
     ],
   },
   shop: {
     key: 'building-shop',
-    assetUrl: new URL(
-      '../assets/buildings/shop.svg',
-      import.meta.url,
-    ).href,
-    width: 430,
-    height: 300,
+    assetUrl: BUILDING_IMAGE_ASSETS.shop,
+    width: 420,
+    height: 350,
     offsetY: 18,
     glow: [
-      { x: -84, y: -64, radius: 26, color: 0xf2bd61 },
-      { x: 84, y: -64, radius: 26, color: 0xf2bd61 },
+      { x: -75, y: -72, radius: 26, color: 0xf2bd61 },
+      { x: 72, y: -72, radius: 26, color: 0xf2bd61 },
     ],
   },
   home: {
     key: 'building-elena',
-    assetUrl: new URL(
-      '../assets/buildings/elena.svg',
-      import.meta.url,
-    ).href,
-    width: 430,
-    height: 270,
-    offsetY: 16,
+    assetUrl: BUILDING_IMAGE_ASSETS.home,
+    width: 455,
+    height: 275,
+    offsetY: 14,
     glow: [
-      { x: -71, y: -60, radius: 24, color: 0xf3c66f },
-      { x: 71, y: -60, radius: 24, color: 0xf3c66f },
+      { x: -66, y: -58, radius: 22, color: 0xf3c66f },
+      { x: 66, y: -58, radius: 22, color: 0xf3c66f },
     ],
   },
   'fisher-home': {
     key: 'building-theo',
-    assetUrl: new URL(
-      '../assets/buildings/theo.svg',
-      import.meta.url,
-    ).href,
-    width: 450,
-    height: 275,
-    offsetX: 18,
-    offsetY: 20,
+    assetUrl: BUILDING_IMAGE_ASSETS['fisher-home'],
+    width: 485,
+    height: 285,
+    offsetX: 20,
+    offsetY: 18,
     glow: [
-      { x: -88, y: -58, radius: 23, color: 0xf2c86c },
-      { x: 47, y: -58, radius: 23, color: 0xf2c86c },
+      { x: -72, y: -62, radius: 22, color: 0xf2c86c },
+      { x: 44, y: -62, radius: 22, color: 0xf2c86c },
     ],
   },
 };

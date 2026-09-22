@@ -1,14 +1,11 @@
 import Phaser from 'phaser';
-import { buildings, pond, WORLD } from '../data/world';
+import { buildings, pond, trees, WORLD } from '../data/world';
 import { BUILDING_VISUALS, isLandmarkBuildingId } from '../data/buildingAssets';
 import { settlementLots } from '../data/economy';
 import type {
   ConstructionProject,
   SettlementBuilding,
 } from '../types';
-
-export const VILLAGE_ENVIRONMENT_KEY =
-  'village-environment';
 
 export class WorldRenderer {
   private settlementObjects: Phaser.GameObjects.GameObject[] = [];
@@ -37,19 +34,8 @@ export class WorldRenderer {
       WORLD.height,
     );
 
-    this.scene.add
-      .image(
-        0,
-        0,
-        VILLAGE_ENVIRONMENT_KEY,
-      )
-      .setOrigin(0)
-      .setDepth(-1000)
-      .setDisplaySize(
-        WORLD.width,
-        WORLD.height,
-      );
-
+    this.createProductionTerrain();
+    this.createEnvironmentProps();
     this.createLandmarkBuildings();
     this.createNightLanterns();
 
@@ -205,6 +191,173 @@ export class WorldRenderer {
     }
   }
 
+  private createProductionTerrain(): void {
+    this.scene.add
+      .tileSprite(
+        WORLD.width / 2,
+        WORLD.height / 2,
+        WORLD.width,
+        WORLD.height,
+        'env-grass',
+      )
+      .setDepth(-1000);
+
+    const roadDepth = -940;
+
+    const roads = [
+      { x: 700, y: 625, w: 190, h: 1250 },
+      { x: 950, y: 660, w: 1900, h: 175 },
+      { x: 1270, y: 885, w: 190, h: 730 },
+      { x: 1680, y: 945, w: 315, h: 105 },
+    ];
+
+    for (const road of roads) {
+      this.scene.add
+        .tileSprite(
+          road.x,
+          road.y,
+          road.w,
+          road.h,
+          'env-stone',
+        )
+        .setDepth(roadDepth);
+    }
+
+    const plazaMaskShape = this.scene.add
+      .graphics()
+      .fillStyle(0xffffff)
+      .fillCircle(700, 650, 176)
+      .setVisible(false);
+
+    const plaza = this.scene.add
+      .tileSprite(
+        700,
+        650,
+        360,
+        360,
+        'env-stone',
+      )
+      .setDepth(-930);
+
+    plaza.setMask(
+      plazaMaskShape.createGeometryMask(),
+    );
+
+    const pondMaskShape = this.scene.add
+      .graphics()
+      .fillStyle(0xffffff)
+      .fillRoundedRect(
+        pond.x,
+        pond.y,
+        pond.w,
+        pond.h,
+        48,
+      )
+      .setVisible(false);
+
+    const water = this.scene.add
+      .tileSprite(
+        pond.x + pond.w / 2,
+        pond.y + pond.h / 2,
+        pond.w,
+        pond.h,
+        'env-water',
+      )
+      .setDepth(-925);
+
+    water.setMask(
+      pondMaskShape.createGeometryMask(),
+    );
+  }
+
+  private createEnvironmentProps(): void {
+    this.scene.add
+      .image(700, 650, 'prop-fountain')
+      .setDisplaySize(220, 190)
+      .setDepth(620);
+
+    this.scene.add
+      .image(
+        pond.x + pond.w / 2,
+        pond.y + pond.h / 2,
+        'prop-bridge',
+      )
+      .setDisplaySize(205, 106)
+      .setDepth(pond.y + pond.h / 2 + 40);
+
+    const treeKeys = [
+      'prop-treeGreen',
+      'prop-treePink',
+      'prop-treeGold',
+    ];
+
+    trees.forEach((tree, index) => {
+      const key =
+        treeKeys[
+          index % treeKeys.length
+        ]!;
+
+      this.scene.add
+        .image(
+          tree.x,
+          tree.y + 24,
+          key,
+        )
+        .setOrigin(0.5, 0.82)
+        .setDisplaySize(
+          index % 3 === 0 ? 92 : 82,
+          index % 3 === 0 ? 112 : 100,
+        )
+        .setDepth(
+          Math.round(tree.y + 30),
+        );
+    });
+
+    const bushes = [
+      [520, 520],
+      [1040, 520],
+      [1490, 510],
+      [360, 760],
+      [920, 790],
+      [1510, 1040],
+      [1120, 1090],
+    ];
+
+    for (const [x, y] of bushes) {
+      this.scene.add
+        .image(x, y, 'prop-bush')
+        .setDisplaySize(70, 48)
+        .setDepth(y);
+    }
+
+    const lamps = [
+      [596, 528],
+      [804, 528],
+      [596, 755],
+      [804, 755],
+      [1240, 710],
+      [1560, 710],
+    ];
+
+    for (const [x, y] of lamps) {
+      this.scene.add
+        .image(x, y, 'prop-lamp')
+        .setOrigin(0.5, 0.9)
+        .setDisplaySize(42, 110)
+        .setDepth(y + 18);
+    }
+
+    this.scene.add
+      .image(300, 1010, 'prop-fence')
+      .setDisplaySize(310, 92)
+      .setDepth(1012);
+
+    this.scene.add
+      .image(1370, 424, 'prop-market')
+      .setDisplaySize(190, 95)
+      .setDepth(430);
+  }
+
   private createLandmarkBuildings(): void {
     for (const object of this.landmarkObjects) {
       object.destroy();
@@ -251,37 +404,9 @@ export class WorldRenderer {
         )
         .setDepth(depth);
 
-      const nameplate = this.scene.add
-        .text(
-          x,
-          bottomY -
-            visual.height +
-            18,
-          building.name,
-          {
-            fontFamily:
-              'Georgia, serif',
-            fontSize:
-              '15px',
-            fontStyle:
-              'bold',
-            color:
-              '#fff5dc',
-            backgroundColor:
-              'rgba(76,48,30,.92)',
-            padding: {
-              x: 10,
-              y: 6,
-            },
-          },
-        )
-        .setOrigin(0.5)
-        .setDepth(depth + 0.2);
+      this.landmarkObjects.push(image);
 
-      this.landmarkObjects.push(
-        image,
-        nameplate,
-      );
+
 
       for (const glowConfig of visual.glow ?? []) {
         const glow = this.scene.add

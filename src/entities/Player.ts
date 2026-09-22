@@ -26,7 +26,7 @@ export class Player extends Phaser.GameObjects.Container {
   private readonly scarf: Phaser.GameObjects.Rectangle;
   private readonly backpack: Phaser.GameObjects.Rectangle;
   private walkPhase = 0;
-  private sprite?: Phaser.GameObjects.Image;
+  private sprite?: Phaser.GameObjects.Sprite;
 
   speed = 210;
   radius = 18;
@@ -289,9 +289,9 @@ export class Player extends Phaser.GameObjects.Container {
     if (this.sprite) this.sprite.destroy();
 
     this.sprite = this.scene.add
-      .image(0, -4, textureKey)
-      .setDisplaySize(52, 65)
-      .setOrigin(0.5, 0.62);
+      .sprite(0, -3, textureKey, 0)
+      .setDisplaySize(58, 64)
+      .setOrigin(0.5, 0.78);
 
     this.visualRoot.setVisible(false);
     this.addAt(this.sprite, 1);
@@ -324,8 +324,30 @@ export class Player extends Phaser.GameObjects.Container {
           ) * 0.22;
 
     if (this.sprite) {
-      this.sprite.y = -4 + bob;
-      this.sprite.rotation = moving ? Math.sin(phase * 0.5) * 0.016 : 0;
+      const alternate =
+        Math.floor(phase / Math.PI) % 2 === 0;
+
+      const frame =
+        this.facing === 'left'
+          ? moving
+            ? alternate ? 4 : 6
+            : 2
+          : this.facing === 'right'
+            ? moving
+              ? alternate ? 5 : 7
+              : 3
+            : this.facing === 'up'
+              ? 1
+              : 0;
+
+      this.sprite
+        .setFrame(frame)
+        .setPosition(0, -3 + bob)
+        .setRotation(
+          moving
+            ? Math.sin(phase * 0.5) * 0.012
+            : 0,
+        );
     }
 
     this.visualRoot.y = bob;
@@ -377,6 +399,19 @@ export class Player extends Phaser.GameObjects.Container {
 
     const lookingAway =
       this.facing === 'up';
+
+    if (this.sprite) {
+      const frame =
+        this.facing === 'left'
+          ? 2
+          : this.facing === 'right'
+            ? 3
+            : this.facing === 'up'
+              ? 1
+              : 0;
+
+      this.sprite.setFrame(frame);
+    }
 
     this.leftEye.setVisible(
       !lookingAway,
