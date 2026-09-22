@@ -21,6 +21,15 @@ import type { DoorDefinition, EconomyEvent, LifeEvent, Point, Rect } from '../ty
 
 const VILLAGE_ENVIRONMENT_URL = new URL('../assets/villageEnvironment.svg', import.meta.url).href;
 
+const CHARACTER_ASSETS = {
+  patrick: new URL('../assets/characters/patrick.svg', import.meta.url).href,
+  elena: new URL('../assets/characters/elena.svg', import.meta.url).href,
+  bram: new URL('../assets/characters/bram.svg', import.meta.url).href,
+  mira: new URL('../assets/characters/mira.svg', import.meta.url).href,
+  theo: new URL('../assets/characters/theo.svg', import.meta.url).href,
+  luma: new URL('../assets/characters/luma.svg', import.meta.url).href,
+} as const;
+
 interface VillageSceneData {
   spawn?: Point;
   fromInterior?: boolean;
@@ -92,6 +101,12 @@ export class VillageScene extends Phaser.Scene {
       );
     }
 
+    for (const [id, assetUrl] of Object.entries(CHARACTER_ASSETS)) {
+      const key = 'character-' + id;
+      if (this.textures.exists(key)) continue;
+      this.load.svg(key, assetUrl, { width: 64, height: 80 });
+    }
+
     for (const visual of Object.values(BUILDING_VISUALS)) {
       if (this.textures.exists(visual.key)) continue;
 
@@ -144,6 +159,9 @@ export class VillageScene extends Phaser.Scene {
 
     const start = this.spawnOverride ?? this.save.snapshot.player ?? { x: 930, y: 790 };
     this.player = new Player(this, start.x, start.y);
+    if (this.textures.exists('character-patrick')) {
+      this.player.useTexture('character-patrick');
+    }
     this.syncNpcRoster();
 
     this.cursors = this.input.keyboard!.createCursorKeys();
@@ -416,7 +434,12 @@ export class VillageScene extends Phaser.Scene {
 
     for (const definition of definitions) {
       if (existing.has(definition.id)) continue;
-      this.npcs.push(new Npc(this, definition));
+      const npc = new Npc(this, definition);
+      const assetKey = 'character-' + definition.id;
+      if (this.textures.exists(assetKey)) {
+        npc.useTexture(assetKey);
+      }
+      this.npcs.push(npc);
       existing.add(definition.id);
     }
   }
