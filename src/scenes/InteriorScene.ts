@@ -549,11 +549,26 @@ export class InteriorScene extends Phaser.Scene {
 
   private leaveInterior(): void {
     this.persistTime();
-    this.hud.showToast('🌿 De volta à Vila de Aster.');
-    this.scene.start('VillageScene', {
-      spawn: this.returnPoint,
-      fromInterior: true,
-    });
+    this.cameras.main.fadeOut(
+      170,
+      20,
+      24,
+      22,
+    );
+
+    this.time.delayedCall(
+      180,
+      () => {
+        this.scene.start(
+          'VillageScene',
+          {
+            spawn:
+              this.returnPoint,
+            fromInterior: true,
+          },
+        );
+      },
+    );
   }
 
   private showLifeEvents(events: LifeEvent[]): void {
@@ -599,11 +614,23 @@ export class InteriorScene extends Phaser.Scene {
   }
 
   private resizeCamera(gameSize: Phaser.Structs.Size): void {
-    this.cameras.main.setZoom(Math.min(
-      gameSize.width / INTERIOR_SIZE.width,
-      gameSize.height / INTERIOR_SIZE.height,
-    ));
-    this.cameras.main.centerOn(INTERIOR_SIZE.width / 2, INTERIOR_SIZE.height / 2);
+    this.cameras.main.setZoom(
+      Phaser.Math.Clamp(
+        Math.min(
+          gameSize.width /
+            INTERIOR_SIZE.width,
+          gameSize.height /
+            INTERIOR_SIZE.height,
+        ),
+        0.78,
+        1.35,
+      ),
+    );
+
+    this.cameras.main.centerOn(
+      INTERIOR_SIZE.width / 2,
+      INTERIOR_SIZE.height / 2,
+    );
   }
 }
 
