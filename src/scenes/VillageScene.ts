@@ -167,8 +167,24 @@ export class VillageScene extends Phaser.Scene {
     this.refreshDynamicCollisions();
     this.atmosphereRenderer = new AtmosphereRenderer(this);
 
-    const start = this.spawnOverride ?? this.save.snapshot.player ?? { x: 930, y: 790 };
-    this.player = new Player(this, start.x, start.y);
+    const requestedStart =
+      this.spawnOverride ??
+      this.save.snapshot.player ??
+      { x: 930, y: 820 };
+
+    const start = this.canMove(
+      requestedStart.x,
+      requestedStart.y,
+      18,
+    )
+      ? requestedStart
+      : { x: 930, y: 820 };
+
+    this.player = new Player(
+      this,
+      start.x,
+      start.y,
+    );
     if (this.textures.exists('character-patrick')) {
       this.player.useTexture('character-patrick');
     }
@@ -471,11 +487,55 @@ export class VillageScene extends Phaser.Scene {
       return false;
     }
 
-    return ![...collisionRects, ...this.dynamicCollisionRects].some((rect) => {
-      const nearestX = Phaser.Math.Clamp(x, rect.x, rect.x + rect.w);
-      const nearestY = Phaser.Math.Clamp(y, rect.y, rect.y + rect.h);
-      return Phaser.Math.Distance.Between(x, y, nearestX, nearestY) < radius;
-    });
+    for (const rect of collisionRects) {
+      const nearestX = Phaser.Math.Clamp(
+        x,
+        rect.x,
+        rect.x + rect.w,
+      );
+      const nearestY = Phaser.Math.Clamp(
+        y,
+        rect.y,
+        rect.y + rect.h,
+      );
+
+      if (
+        Phaser.Math.Distance.Between(
+          x,
+          y,
+          nearestX,
+          nearestY,
+        ) < radius
+      ) {
+        return false;
+      }
+    }
+
+    for (const rect of this.dynamicCollisionRects) {
+      const nearestX = Phaser.Math.Clamp(
+        x,
+        rect.x,
+        rect.x + rect.w,
+      );
+      const nearestY = Phaser.Math.Clamp(
+        y,
+        rect.y,
+        rect.y + rect.h,
+      );
+
+      if (
+        Phaser.Math.Distance.Between(
+          x,
+          y,
+          nearestX,
+          nearestY,
+        ) < radius
+      ) {
+        return false;
+      }
+    }
+
+    return true;
   };
 
   private doorForZone(zoneId: string): DoorDefinition | undefined {
