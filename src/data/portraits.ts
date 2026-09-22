@@ -9,8 +9,23 @@ export const portraitByNpcId: Record<string, string> = {
 export const playerPortrait =
   new URL('../assets/portraits/patrick.svg', import.meta.url).href;
 
+const portraitByName: Record<string, string> = {
+  Elena: portraitByNpcId.elena!,
+  Bram: portraitByNpcId.bram!,
+  Mira: portraitByNpcId.mira!,
+  Theo: portraitByNpcId.theo!,
+  Luma: portraitByNpcId.luma!,
+  Patrick: playerPortrait,
+};
+
 export function portraitForNpc(
   npcId: string,
 ): string | undefined {
   return portraitByNpcId[npcId];
+}
+
+export function portraitForName(
+  name: string,
+): string | undefined {
+  return portraitByName[name];
 }
