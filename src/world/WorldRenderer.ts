@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { pond, WORLD } from '../data/world';
+import { buildings, pond, WORLD } from '../data/world';
+import { BUILDING_VISUALS, isLandmarkBuildingId } from '../data/buildingAssets';
 import { settlementLots } from '../data/economy';
 import type {
   ConstructionProject,
@@ -13,6 +14,8 @@ export class WorldRenderer {
   private settlementObjects: Phaser.GameObjects.GameObject[] = [];
   private waterAnimation: Phaser.GameObjects.Graphics;
   private lanternGlows: Phaser.GameObjects.Arc[] = [];
+  private landmarkObjects: Phaser.GameObjects.GameObject[] = [];
+  private buildingGlows: Phaser.GameObjects.Arc[] = [];
   private lastDynamicUpdate = -Infinity;
 
   constructor(
@@ -47,6 +50,7 @@ export class WorldRenderer {
         WORLD.height,
       );
 
+    this.createLandmarkBuildings();
     this.createNightLanterns();
 
     this.syncSettlement(
@@ -102,6 +106,32 @@ export class WorldRenderer {
 
       glow.setAlpha(
         glowAlpha * pulse,
+      );
+    }
+
+    for (
+      let index = 0;
+      index <
+      this.buildingGlows.length;
+      index += 1
+    ) {
+      const glow =
+        this.buildingGlows[
+          index
+        ]!;
+
+      const pulse =
+        0.88 +
+        Math.sin(
+          elapsedSeconds * 1.45 +
+            index * 0.91,
+        ) *
+          0.12;
+
+      glow.setAlpha(
+        glowAlpha *
+          pulse *
+          0.78,
       );
     }
   }
@@ -172,6 +202,100 @@ export class WorldRenderer {
       }
 
       this.drawEmptyLot(lot);
+    }
+  }
+
+  private createLandmarkBuildings(): void {
+    for (const object of this.landmarkObjects) {
+      object.destroy();
+    }
+    this.landmarkObjects = [];
+
+    for (const glow of this.buildingGlows) {
+      glow.destroy();
+    }
+    this.buildingGlows = [];
+
+    for (const building of buildings) {
+      if (!isLandmarkBuildingId(building.id)) continue;
+
+      const visual = BUILDING_VISUALS[building.id];
+      const x =
+        building.x +
+        building.w / 2 +
+        (visual.offsetX ?? 0);
+      const bottomY =
+        building.y +
+        building.h +
+        (visual.offsetY ?? 0);
+      const depth =
+        building.y +
+        building.h -
+        2;
+
+      const image = this.scene.add
+        .image(
+          x,
+          bottomY,
+          visual.key,
+        )
+        .setOrigin(0.5, 1)
+        .setDisplaySize(
+          visual.width,
+          visual.height,
+        )
+        .setDepth(depth);
+
+      const nameplate = this.scene.add
+        .text(
+          x,
+          bottomY -
+            visual.height +
+            18,
+          building.name,
+          {
+            fontFamily:
+              'Georgia, serif',
+            fontSize:
+              '15px',
+            fontStyle:
+              'bold',
+            color:
+              '#fff5dc',
+            backgroundColor:
+              'rgba(76,48,30,.92)',
+            padding: {
+              x: 10,
+              y: 6,
+            },
+          },
+        )
+        .setOrigin(0.5)
+        .setDepth(depth + 0.2);
+
+      this.landmarkObjects.push(
+        image,
+        nameplate,
+      );
+
+      for (const glowConfig of visual.glow ?? []) {
+        const glow = this.scene.add
+          .circle(
+            x + glowConfig.x,
+            bottomY + glowConfig.y,
+            glowConfig.radius,
+            glowConfig.color,
+            0,
+          )
+          .setDepth(depth + 0.1)
+          .setBlendMode(
+            Phaser.BlendModes.ADD,
+          );
+
+        this.buildingGlows.push(
+          glow,
+        );
+      }
     }
   }
 
