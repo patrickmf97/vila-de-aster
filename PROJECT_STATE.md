@@ -2,74 +2,60 @@
 
 ## Versão atual
 
-**v0.8.3 — Full Art Integration**
+**v0.9.0 — World Rebuild**
 
-## Meta
+## Mundo
 
-Alinhar o jogo em todos os pontos ao concept art oficial sem regredir em performance.
+A vila agora usa uma planta desenhada para os assets de produção.
 
-## Camadas visuais
+### Distritos
+
+- Noroeste: Taverna Lua Cheia
+- Norte: Forja do Bram
+- Nordeste: Empório da Mira
+- Centro: Praça e fonte
+- Sudoeste: Casa/Jardim da Elena
+- Leste: Rio vertical
+- Sudeste: Casa e docas do Theo
+- Sul: expansão dinâmica
+
+## Física
+
+- prédios com hitboxes menores que a arte;
+- ponte é corredor navegável;
+- rio é intransponível fora da ponte;
+- árvores/fonte/cercas/docas colidem;
+- saves antigos têm fallback de spawn;
+- NPCs usam waypoint de travessia do rio.
+
+## Renderização
 
 ```text
-VillageScene
-├── villageEnvironment.svg
-│   ├── terreno
-│   ├── caminhos
-│   ├── prédios
-│   ├── praça
-│   ├── rio
-│   ├── vegetação
-│   └── props
-├── WorldRenderer
-│   ├── textura estática
-│   ├── settlement
-│   ├── água
-│   └── luzes
-├── AtmosphereRenderer
-├── NPC / Player
-└── UI DOM
-    ├── marca
-    ├── calendário
-    ├── hotbar
-    ├── diálogo
-    ├── chat
-    └── compêndio
+WorldRenderer
+├── terreno
+├── caminhos/praça
+├── rio/margens
+├── props
+├── prédios
+├── settlement
+└── efeitos
 ```
 
-## Retratos
+## Efeitos
 
-SVGs individuais ficam em:
+- água animada;
+- fonte;
+- fumaça;
+- lanternas;
+- fireflies;
+- névoa;
+- ciclo dia/noite;
+- Eco do Rio.
 
-`src/assets/portraits/`
+## Interiores
 
-Mapeamento:
+Cada prédio tem layout próprio, colisões por móvel e iluminação temática animada.
 
-`src/data/portraits.ts`
+## Performance
 
-## UI
-
-O concept foi traduzido para componentes leves:
-
-- brand card;
-- parchment card;
-- player medallion;
-- status bars;
-- date chip;
-- hotbar;
-- quick menu;
-- codex;
-- dialogue portrait;
-- NPC chat portrait.
-
-## Performance preservada
-
-- render/movimento: até 60 fps;
-- simulação: 10 Hz;
-- atmosfera: 15 Hz;
-- água: 12 Hz;
-- HUD: 4 Hz;
-- roster: 1 Hz.
-
-## Próximo passo
-
-v0.9 — Generations & RPG Systems.
+A arquitetura throttled permanece ativa. A reconstrução não adiciona biblioteca externa nem pathfinding pesado.

@@ -4,11 +4,21 @@ import {
 } from '../data/interiors';
 import type {
   InteriorDefinition,
+  InteriorObjectDefinition,
   Rect,
 } from '../types';
 
+interface InteriorGlow {
+  body: Phaser.GameObjects.Arc;
+  phase: number;
+  baseAlpha: number;
+}
+
 export class InteriorRenderer {
   readonly collisionRects: Rect[];
+
+  private glows: InteriorGlow[] = [];
+  private lastUpdate = -Infinity;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -68,130 +78,66 @@ export class InteriorRenderer {
   }
 
   create(): void {
-    const g = this.scene.add
+    const base = this.scene.add
       .graphics()
       .setDepth(-1000);
 
-    this.drawShell(g);
-    this.drawFloor(g);
-    this.drawWindows(g);
-    this.drawRug(g);
-    this.drawDecor(g);
-    this.drawDoorway(g);
+    this.drawShell(base);
+    this.drawFloor(base);
+    this.drawArchitecture(base);
+    this.drawRug(base);
+    this.drawDoorway(base);
     this.drawHeader();
 
-    this.definition.objects.forEach(
-      (object) => {
-        const objectGraphics =
-          this.scene.add
-            .graphics()
-            .setDepth(
-              object.y,
-            );
+    for (const object of this.definition.objects) {
+      this.drawFurniture(object);
+    }
+  }
 
-        objectGraphics.fillStyle(
-          0x14251a,
-          0.16,
-        );
+  update(
+    elapsedSeconds: number,
+  ): void {
+    if (
+      elapsedSeconds -
+        this.lastUpdate <
+      1 / 15
+    ) {
+      return;
+    }
 
-        objectGraphics.fillRoundedRect(
-          object.x + 6,
-          object.y + 8,
-          object.w,
-          object.h,
-          11,
-        );
+    this.lastUpdate =
+      elapsedSeconds;
 
-        objectGraphics.fillStyle(
-          this.definition.accent,
-          object.solid
-            ? 0.82
-            : 0.34,
-        );
+    for (
+      let index = 0;
+      index < this.glows.length;
+      index += 1
+    ) {
+      const glow =
+        this.glows[index]!;
 
-        objectGraphics.fillRoundedRect(
-          object.x,
-          object.y,
-          object.w,
-          object.h,
-          10,
-        );
+      const pulse =
+        0.86 +
+        Math.sin(
+          elapsedSeconds * 4.1 +
+            glow.phase,
+        ) *
+          0.14;
 
-        objectGraphics.fillStyle(
-          0xffffff,
-          0.08,
-        );
+      glow.body.setAlpha(
+        glow.baseAlpha *
+          pulse,
+      );
 
-        objectGraphics.fillRoundedRect(
-          object.x + 6,
-          object.y + 6,
-          Math.max(
-            12,
-            object.w - 12,
-          ),
-          Math.min(
-            11,
-            object.h * 0.18,
-          ),
-          5,
-        );
-
-        this.scene.add
-          .text(
-            object.x +
-              object.w / 2,
-            object.y +
-              object.h / 2 -
-              4,
-            object.emoji,
-            {
-              fontFamily:
-                'serif',
-              fontSize:
-                object.w < 80
-                  ? '24px'
-                  : '30px',
-            },
-          )
-          .setOrigin(0.5)
-          .setDepth(
-            object.y + 1,
-          );
-
-        this.scene.add
-          .text(
-            object.x +
-              object.w / 2,
-            object.y +
-              object.h +
-              7,
-            object.label,
-            {
-              fontFamily:
-                'system-ui',
-              fontSize:
-                '10px',
-              fontStyle:
-                'bold',
-              color:
-                '#fffaf0',
-              backgroundColor:
-                'rgba(14,24,18,.76)',
-              padding: {
-                x: 6,
-                y: 3,
-              },
-            },
-          )
-          .setOrigin(
-            0.5,
-            0,
-          )
-          .setDepth(
-            object.y + 2,
-          );
-      },
-    );
+      glow.body.setScale(
+        0.94 +
+          Math.sin(
+            elapsedSeconds * 3.3 +
+              glow.phase,
+          ) *
+            0.045,
+      );
+    }
   }
 
   private drawShell(
@@ -209,9 +155,10 @@ export class InteriorRenderer {
       INTERIOR_SIZE.height,
     );
 
+    // Thick timber frame.
     g.fillStyle(
-      0x142018,
-      0.14,
+      0x2c251e,
+      0.42,
     );
 
     g.fillRect(
@@ -229,8 +176,7 @@ export class InteriorRenderer {
     );
 
     g.fillRect(
-      INTERIOR_SIZE.width -
-        34,
+      INTERIOR_SIZE.width - 34,
       0,
       34,
       INTERIOR_SIZE.height,
@@ -238,25 +184,22 @@ export class InteriorRenderer {
 
     g.fillRect(
       0,
-      INTERIOR_SIZE.height -
-        34,
+      INTERIOR_SIZE.height - 34,
       INTERIOR_SIZE.width,
       34,
     );
 
     g.lineStyle(
-      2,
-      0xffffff,
-      0.06,
+      3,
+      0xf2e4bd,
+      0.07,
     );
 
     g.strokeRoundedRect(
-      35,
-      35,
-      INTERIOR_SIZE.width -
-        70,
-      INTERIOR_SIZE.height -
-        70,
+      38,
+      38,
+      INTERIOR_SIZE.width - 76,
+      INTERIOR_SIZE.height - 76,
       12,
     );
   }
@@ -272,19 +215,16 @@ export class InteriorRenderer {
     g.fillRect(
       34,
       34,
-      INTERIOR_SIZE.width -
-        68,
-      INTERIOR_SIZE.height -
-        68,
+      INTERIOR_SIZE.width - 68,
+      INTERIOR_SIZE.height - 68,
     );
 
-    const plankHeight = 28;
+    const plankHeight = 24;
 
     for (
       let y = 42;
       y <
-      INTERIOR_SIZE.height -
-        42;
+      INTERIOR_SIZE.height - 42;
       y += plankHeight
     ) {
       const row =
@@ -292,52 +232,29 @@ export class InteriorRenderer {
           y / plankHeight,
         );
 
-      g.fillStyle(
-        row % 2 === 0
-          ? 0xffffff
-          : 0x493d31,
-        row % 2 === 0
-          ? 0.022
-          : 0.025,
-      );
-
-      g.fillRect(
-        35,
-        y,
-        INTERIOR_SIZE.width -
-          70,
-        plankHeight - 1,
-      );
-
       g.lineStyle(
         1,
-        0x42382d,
-        0.11,
+        0x4a392d,
+        0.15,
       );
 
       g.lineBetween(
         35,
-        y +
-          plankHeight -
-          1,
-        INTERIOR_SIZE.width -
-          35,
-        y +
-          plankHeight -
-          1,
+        y,
+        INTERIOR_SIZE.width - 35,
+        y,
       );
 
-      const offset =
+      const start =
         row % 2 === 0
-          ? 75
-          : 115;
+          ? 70
+          : 120;
 
       for (
-        let x = offset;
+        let x = start;
         x <
-        INTERIOR_SIZE.width -
-          35;
-        x += 120
+        INTERIOR_SIZE.width - 35;
+        x += 125
       ) {
         g.lineBetween(
           x,
@@ -351,117 +268,170 @@ export class InteriorRenderer {
 
     g.fillStyle(
       this.definition.accent,
-      0.35,
+      0.3,
     );
 
     g.fillRect(
       35,
       35,
-      INTERIOR_SIZE.width -
-        70,
+      INTERIOR_SIZE.width - 70,
       7,
     );
   }
 
-  private drawWindows(
+  private drawArchitecture(
     g: Phaser.GameObjects.Graphics,
   ): void {
     const windows = [
-      230,
-      590,
+      220,
+      600,
     ];
 
     for (const x of windows) {
       g.fillStyle(
-        0x4a3b2e,
-        0.86,
+        0x4d392a,
+        0.95,
       );
 
       g.fillRoundedRect(
-        x - 42,
-        52,
-        84,
-        62,
+        x - 44,
+        54,
+        88,
+        64,
         7,
       );
 
       g.fillStyle(
-        0x9ed8df,
-        0.82,
+        0x8bc6d1,
+        0.88,
       );
 
       g.fillRoundedRect(
-        x - 36,
-        58,
-        72,
+        x - 37,
+        61,
+        74,
         50,
-        5,
+        4,
       );
 
       g.fillStyle(
-        0xf3d98a,
-        0.16,
+        0xf5dda1,
+        0.13,
       );
 
       g.fillRect(
         x - 31,
-        63,
-        26,
-        11,
+        66,
+        27,
+        12,
       );
 
       g.lineStyle(
         3,
-        0xede0bb,
+        0xe8d8ac,
         0.62,
       );
 
       g.lineBetween(
         x,
-        59,
+        62,
         x,
-        107,
+        110,
       );
 
       g.lineBetween(
-        x - 35,
-        83,
-        x + 35,
-        83,
+        x - 36,
+        86,
+        x + 36,
+        86,
       );
+    }
+
+    // Wall lamps.
+    for (
+      const x of [
+        120,
+        INTERIOR_SIZE.width - 120,
+      ]
+    ) {
+      g.fillStyle(
+        0x4f3b2c,
+        1,
+      );
+
+      g.fillRoundedRect(
+        x - 4,
+        131,
+        8,
+        30,
+        3,
+      );
+
+      g.fillStyle(
+        0xf1bf5c,
+        1,
+      );
+
+      g.fillCircle(
+        x,
+        127,
+        7,
+      );
+
+      const glow =
+        this.scene.add
+          .circle(
+            x,
+            127,
+            31,
+            0xf2c96b,
+            0.11,
+          )
+          .setDepth(
+            -880,
+          )
+          .setBlendMode(
+            Phaser.BlendModes.ADD,
+          );
+
+      this.glows.push({
+        body: glow,
+        phase: x * 0.01,
+        baseAlpha: 0.12,
+      });
     }
   }
 
   private drawRug(
     g: Phaser.GameObjects.Graphics,
   ): void {
-    const rugColor =
+    const color =
       rugColorFor(
         this.definition.id,
       );
 
     g.fillStyle(
-      0x1b261d,
+      0x241b16,
       0.12,
     );
 
     g.fillRoundedRect(
-      306,
-      210,
-      208,
+      290,
+      216,
+      240,
       128,
       22,
     );
 
     g.fillStyle(
-      rugColor,
-      0.72,
+      color,
+      0.68,
     );
 
     g.fillRoundedRect(
-      300,
-      203,
-      208,
+      284,
+      210,
+      240,
       128,
       22,
     );
@@ -469,140 +439,16 @@ export class InteriorRenderer {
     g.lineStyle(
       4,
       0xf0dba2,
-      0.22,
+      0.2,
     );
 
     g.strokeRoundedRect(
-      311,
-      214,
-      186,
+      296,
+      221,
+      216,
       106,
-      17,
+      16,
     );
-
-    g.lineStyle(
-      2,
-      0xffffff,
-      0.07,
-    );
-
-    g.lineBetween(
-      330,
-      267,
-      478,
-      267,
-    );
-  }
-
-  private drawDecor(
-    g: Phaser.GameObjects.Graphics,
-  ): void {
-    // warm wall lamps
-    const lamps = [150, INTERIOR_SIZE.width - 150];
-    for (const x of lamps) {
-      g.fillStyle(0x4f3d2e, 1);
-      g.fillRoundedRect(x - 4, 128, 8, 32, 3);
-      g.fillStyle(0xf0c96b, 1);
-      g.fillCircle(x, 126, 7);
-      g.fillStyle(0xf0c96b, 0.08);
-      g.fillCircle(x, 126, 31);
-    }
-
-    // wall tapestry / emblem
-    g.fillStyle(this.definition.accent, 0.9);
-    g.fillRoundedRect(
-      INTERIOR_SIZE.width / 2 - 42,
-      47,
-      84,
-      58,
-      8,
-    );
-    g.fillStyle(0xf1deb0, 0.78);
-    g.fillCircle(
-      INTERIOR_SIZE.width / 2,
-      73,
-      12,
-    );
-    g.lineStyle(3, 0xf1deb0, 0.55);
-    g.strokeCircle(
-      INTERIOR_SIZE.width / 2,
-      73,
-      21,
-    );
-
-    // plants soften corners
-    const plantXs = [72, INTERIOR_SIZE.width - 72];
-    for (const x of plantXs) {
-      g.fillStyle(0x765438, 1);
-      g.fillRoundedRect(
-        x - 15,
-        INTERIOR_SIZE.height - 105,
-        30,
-        25,
-        5,
-      );
-      g.fillStyle(0x4d8a4f, 1);
-      g.fillCircle(
-        x - 8,
-        INTERIOR_SIZE.height - 112,
-        13,
-      );
-      g.fillCircle(
-        x + 7,
-        INTERIOR_SIZE.height - 118,
-        15,
-      );
-      g.fillStyle(0x6faa62, 0.75);
-      g.fillCircle(
-        x,
-        INTERIOR_SIZE.height - 130,
-        11,
-      );
-    }
-
-    // building-specific visual identity
-    if (this.definition.id === 'inn') {
-      g.fillStyle(0x8b5f3d, 1);
-      g.fillRoundedRect(72, 188, 90, 30, 6);
-      g.fillRoundedRect(
-        INTERIOR_SIZE.width - 162,
-        188,
-        90,
-        30,
-        6,
-      );
-      g.fillStyle(0xe0b65b, 0.78);
-      g.fillCircle(105, 184, 5);
-      g.fillCircle(INTERIOR_SIZE.width - 105, 184, 5);
-    } else if (this.definition.id === 'smith') {
-      g.fillStyle(0x424a4c, 1);
-      g.fillRoundedRect(72, 188, 110, 32, 5);
-      g.fillStyle(0xe78345, 0.72);
-      g.fillCircle(115, 181, 10);
-    } else if (this.definition.id === 'shop') {
-      g.fillStyle(0xa97b4b, 1);
-      g.fillRoundedRect(65, 180, 105, 42, 5);
-      g.fillStyle(0xd7b969, 0.92);
-      for (let i = 0; i < 4; i += 1) {
-        g.fillCircle(88 + i * 22, 174, 6);
-      }
-    } else if (
-      this.definition.id === 'home' ||
-      this.definition.id === 'settlement-home'
-    ) {
-      g.fillStyle(0xc37d8f, 0.55);
-      g.fillRoundedRect(70, 184, 96, 28, 6);
-      g.fillStyle(0xf2d36e, 0.95);
-      g.fillCircle(92, 179, 6);
-      g.fillCircle(118, 176, 6);
-      g.fillCircle(144, 180, 6);
-    } else if (this.definition.id === 'fisher-home') {
-      g.lineStyle(3, 0x6d6c59, 0.75);
-      g.strokeCircle(118, 190, 24);
-      g.lineStyle(1, 0xd8d1ba, 0.55);
-      g.lineBetween(99, 173, 137, 207);
-      g.lineBetween(99, 205, 137, 173);
-    }
   }
 
   private drawDoorway(
@@ -610,43 +456,734 @@ export class InteriorRenderer {
   ): void {
     g.fillStyle(
       this.definition.accent,
-      1,
+      0.92,
     );
 
     g.fillRoundedRect(
       350,
-      INTERIOR_SIZE.height -
-        44,
+      INTERIOR_SIZE.height - 44,
       120,
       44,
       10,
     );
 
     g.fillStyle(
-      0x171717,
-      0.28,
+      0x19130f,
+      0.32,
     );
 
     g.fillRoundedRect(
       382,
-      INTERIOR_SIZE.height -
-        35,
+      INTERIOR_SIZE.height - 35,
       56,
       17,
       6,
     );
 
     g.fillStyle(
-      0xf0d58c,
-      0.1,
+      0xf1d38a,
+      0.08,
     );
 
     g.fillEllipse(
       410,
-      INTERIOR_SIZE.height -
-        58,
-      115,
-      40,
+      INTERIOR_SIZE.height - 61,
+      130,
+      42,
+    );
+  }
+
+  private drawFurniture(
+    object: InteriorObjectDefinition,
+  ): void {
+    const g =
+      this.scene.add
+        .graphics()
+        .setDepth(
+          object.y +
+            object.h,
+        );
+
+    const shadowAlpha =
+      object.solid
+        ? 0.19
+        : 0.1;
+
+    g.fillStyle(
+      0x17120f,
+      shadowAlpha,
+    );
+
+    g.fillRoundedRect(
+      object.x + 5,
+      object.y + 7,
+      object.w,
+      object.h,
+      9,
+    );
+
+    if (
+      object.id.includes(
+        'forge',
+      ) ||
+      object.id.includes(
+        'hearth',
+      )
+    ) {
+      this.drawHearth(
+        g,
+        object,
+      );
+    } else if (
+      object.id.includes(
+        'bed',
+      )
+    ) {
+      this.drawBed(
+        g,
+        object,
+      );
+    } else if (
+      object.id.includes(
+        'table',
+      ) ||
+      object.id.includes(
+        'tea',
+      )
+    ) {
+      this.drawTable(
+        g,
+        object,
+      );
+    } else if (
+      object.id.includes(
+        'counter',
+      ) ||
+      object.id.includes(
+        'workbench',
+      )
+    ) {
+      this.drawCounter(
+        g,
+        object,
+      );
+    } else if (
+      object.id.includes(
+        'shelf',
+      ) ||
+      object.id.includes(
+        'books',
+      ) ||
+      object.id.includes(
+        'rack',
+      )
+    ) {
+      this.drawShelf(
+        g,
+        object,
+      );
+    } else if (
+      object.id.includes(
+        'plants',
+      )
+    ) {
+      this.drawPlants(
+        g,
+        object,
+      );
+    } else if (
+      object.id.includes(
+        'nets',
+      ) ||
+      object.id.includes(
+        'rod-rack',
+      )
+    ) {
+      this.drawFishingGear(
+        g,
+        object,
+      );
+    } else if (
+      object.id.includes(
+        'anvil',
+      ) ||
+      object.id.includes(
+        'ore',
+      )
+    ) {
+      this.drawSmithProp(
+        g,
+        object,
+      );
+    } else {
+      this.drawGeneric(
+        g,
+        object,
+      );
+    }
+
+    this.scene.add
+      .text(
+        object.x +
+          object.w / 2,
+        object.y +
+          object.h / 2,
+        object.emoji,
+        {
+          fontFamily:
+            'serif',
+          fontSize:
+            object.w < 80
+              ? '21px'
+              : '27px',
+        },
+      )
+      .setOrigin(0.5)
+      .setDepth(
+        object.y +
+          object.h +
+          1,
+      )
+      .setAlpha(0.88);
+  }
+
+  private drawHearth(
+    g: Phaser.GameObjects.Graphics,
+    object: InteriorObjectDefinition,
+  ): void {
+    g.fillStyle(
+      0x4b4844,
+      1,
+    );
+
+    g.fillRoundedRect(
+      object.x,
+      object.y,
+      object.w,
+      object.h,
+      9,
+    );
+
+    g.fillStyle(
+      0x251b17,
+      1,
+    );
+
+    g.fillRoundedRect(
+      object.x + 20,
+      object.y + 24,
+      object.w - 40,
+      object.h - 35,
+      12,
+    );
+
+    g.fillStyle(
+      0xff8a2c,
+      0.96,
+    );
+
+    g.fillEllipse(
+      object.x +
+        object.w / 2,
+      object.y +
+        object.h * 0.63,
+      Math.max(
+        30,
+        object.w * 0.45,
+      ),
+      Math.max(
+        28,
+        object.h * 0.42,
+      ),
+    );
+
+    g.fillStyle(
+      0xffd05d,
+      0.9,
+    );
+
+    g.fillEllipse(
+      object.x +
+        object.w / 2,
+      object.y +
+        object.h * 0.58,
+      Math.max(
+        15,
+        object.w * 0.24,
+      ),
+      Math.max(
+        22,
+        object.h * 0.3,
+      ),
+    );
+
+    const glow =
+      this.scene.add
+        .circle(
+          object.x +
+            object.w / 2,
+          object.y +
+            object.h / 2,
+          Math.max(
+            object.w,
+            object.h,
+          ) *
+            0.65,
+          0xff9f37,
+          0.12,
+        )
+        .setDepth(
+          object.y +
+            object.h -
+            1,
+        )
+        .setBlendMode(
+          Phaser.BlendModes.ADD,
+        );
+
+    this.glows.push({
+      body: glow,
+      phase:
+        object.x *
+        0.013,
+      baseAlpha: 0.14,
+    });
+  }
+
+  private drawBed(
+    g: Phaser.GameObjects.Graphics,
+    object: InteriorObjectDefinition,
+  ): void {
+    g.fillStyle(
+      0x65462f,
+      1,
+    );
+
+    g.fillRoundedRect(
+      object.x,
+      object.y,
+      object.w,
+      object.h,
+      8,
+    );
+
+    g.fillStyle(
+      this.definition.accent,
+      0.75,
+    );
+
+    g.fillRoundedRect(
+      object.x + 8,
+      object.y + 10,
+      object.w - 16,
+      object.h - 18,
+      7,
+    );
+
+    g.fillStyle(
+      0xf0e4c8,
+      0.9,
+    );
+
+    g.fillRoundedRect(
+      object.x + 12,
+      object.y + 12,
+      Math.min(
+        48,
+        object.w * 0.32,
+      ),
+      object.h - 24,
+      6,
+    );
+  }
+
+  private drawTable(
+    g: Phaser.GameObjects.Graphics,
+    object: InteriorObjectDefinition,
+  ): void {
+    g.fillStyle(
+      0x765033,
+      1,
+    );
+
+    g.fillRoundedRect(
+      object.x,
+      object.y,
+      object.w,
+      object.h,
+      8,
+    );
+
+    g.lineStyle(
+      3,
+      0xa97849,
+      0.8,
+    );
+
+    g.lineBetween(
+      object.x + 10,
+      object.y + 14,
+      object.x +
+        object.w -
+        10,
+      object.y + 14,
+    );
+
+    const chairColor =
+      0x5d412d;
+
+    g.fillStyle(
+      chairColor,
+      1,
+    );
+
+    g.fillRoundedRect(
+      object.x - 14,
+      object.y + 18,
+      12,
+      Math.min(
+        38,
+        object.h - 20,
+      ),
+      4,
+    );
+
+    g.fillRoundedRect(
+      object.x +
+        object.w +
+        2,
+      object.y + 18,
+      12,
+      Math.min(
+        38,
+        object.h - 20,
+      ),
+      4,
+    );
+  }
+
+  private drawCounter(
+    g: Phaser.GameObjects.Graphics,
+    object: InteriorObjectDefinition,
+  ): void {
+    g.fillStyle(
+      0x765035,
+      1,
+    );
+
+    g.fillRoundedRect(
+      object.x,
+      object.y,
+      object.w,
+      object.h,
+      7,
+    );
+
+    g.fillStyle(
+      0xa87845,
+      0.9,
+    );
+
+    g.fillRoundedRect(
+      object.x + 4,
+      object.y + 5,
+      object.w - 8,
+      13,
+      5,
+    );
+
+    g.lineStyle(
+      2,
+      0x4d3526,
+      0.65,
+    );
+
+    const segments =
+      Math.max(
+        2,
+        Math.floor(
+          object.w / 70,
+        ),
+      );
+
+    for (
+      let index = 1;
+      index < segments;
+      index += 1
+    ) {
+      const x =
+        object.x +
+        (object.w /
+          segments) *
+          index;
+
+      g.lineBetween(
+        x,
+        object.y + 22,
+        x,
+        object.y +
+          object.h -
+          8,
+      );
+    }
+  }
+
+  private drawShelf(
+    g: Phaser.GameObjects.Graphics,
+    object: InteriorObjectDefinition,
+  ): void {
+    g.fillStyle(
+      0x67462f,
+      1,
+    );
+
+    g.fillRoundedRect(
+      object.x,
+      object.y,
+      object.w,
+      object.h,
+      6,
+    );
+
+    for (
+      let y =
+        object.y + 24;
+      y <
+      object.y +
+        object.h -
+        10;
+      y += 30
+    ) {
+      g.fillStyle(
+        0xb28250,
+        0.95,
+      );
+
+      g.fillRect(
+        object.x + 7,
+        y,
+        object.w - 14,
+        6,
+      );
+
+      for (
+        let x =
+          object.x + 14;
+        x <
+        object.x +
+          object.w -
+          12;
+        x += 17
+      ) {
+        g.fillStyle(
+          ((x + y) /
+            17) %
+              2 >
+            1
+            ? 0x8a4c42
+            : 0x5f7f54,
+          0.88,
+        );
+
+        g.fillRoundedRect(
+          x,
+          y - 13,
+          9,
+          13,
+          2,
+        );
+      }
+    }
+  }
+
+  private drawPlants(
+    g: Phaser.GameObjects.Graphics,
+    object: InteriorObjectDefinition,
+  ): void {
+    g.fillStyle(
+      0x704c33,
+      1,
+    );
+
+    g.fillRoundedRect(
+      object.x + 10,
+      object.y +
+        object.h -
+        36,
+      object.w - 20,
+      30,
+      7,
+    );
+
+    for (
+      let index = 0;
+      index < 5;
+      index += 1
+    ) {
+      const x =
+        object.x +
+        18 +
+        (index *
+          (object.w - 36)) /
+          4;
+
+      const y =
+        object.y +
+        object.h -
+        42 -
+        (index % 2) *
+          14;
+
+      g.fillStyle(
+        index % 2 === 0
+          ? 0x4f8b4e
+          : 0x6ba45e,
+        1,
+      );
+
+      g.fillCircle(
+        x,
+        y,
+        13,
+      );
+
+      g.fillStyle(
+        index % 3 === 0
+          ? 0xef9caf
+          : 0xf1d36f,
+        0.9,
+      );
+
+      g.fillCircle(
+        x + 4,
+        y - 4,
+        4,
+      );
+    }
+  }
+
+  private drawFishingGear(
+    g: Phaser.GameObjects.Graphics,
+    object: InteriorObjectDefinition,
+  ): void {
+    g.fillStyle(
+      0x66513c,
+      0.8,
+    );
+
+    g.fillRoundedRect(
+      object.x,
+      object.y,
+      object.w,
+      object.h,
+      5,
+    );
+
+    g.lineStyle(
+      2,
+      0xd4c5a4,
+      0.7,
+    );
+
+    for (
+      let index = 0;
+      index < 4;
+      index += 1
+    ) {
+      const x =
+        object.x +
+        10 +
+        index *
+          Math.max(
+            12,
+            (object.w - 20) /
+              4,
+          );
+
+      g.lineBetween(
+        x,
+        object.y + 8,
+        x +
+          object.w *
+            0.35,
+        object.y +
+          object.h -
+          8,
+      );
+    }
+  }
+
+  private drawSmithProp(
+    g: Phaser.GameObjects.Graphics,
+    object: InteriorObjectDefinition,
+  ): void {
+    g.fillStyle(
+      0x4d5152,
+      1,
+    );
+
+    g.fillRoundedRect(
+      object.x,
+      object.y,
+      object.w,
+      object.h,
+      7,
+    );
+
+    g.fillStyle(
+      0x737a78,
+      0.9,
+    );
+
+    g.fillRoundedRect(
+      object.x + 10,
+      object.y + 10,
+      object.w - 20,
+      Math.max(
+        14,
+        object.h * 0.28,
+      ),
+      5,
+    );
+  }
+
+  private drawGeneric(
+    g: Phaser.GameObjects.Graphics,
+    object: InteriorObjectDefinition,
+  ): void {
+    g.fillStyle(
+      this.definition.accent,
+      object.solid
+        ? 0.78
+        : 0.38,
+    );
+
+    g.fillRoundedRect(
+      object.x,
+      object.y,
+      object.w,
+      object.h,
+      8,
+    );
+
+    g.fillStyle(
+      0xffffff,
+      0.07,
+    );
+
+    g.fillRoundedRect(
+      object.x + 6,
+      object.y + 6,
+      Math.max(
+        12,
+        object.w - 12,
+      ),
+      Math.min(
+        10,
+        object.h *
+          0.2,
+      ),
+      5,
     );
   }
 
@@ -658,15 +1195,15 @@ export class InteriorRenderer {
         this.definition.name,
         {
           fontFamily:
-            'system-ui',
+            'Georgia, serif',
           fontSize:
             '21px',
           fontStyle:
             'bold',
           color:
-            '#fffaf0',
+            '#fff8e7',
           backgroundColor:
-            'rgba(18,29,22,.66)',
+            'rgba(25,31,25,.68)',
           padding: {
             x: 12,
             y: 8,
@@ -682,13 +1219,13 @@ export class InteriorRenderer {
         this.definition.subtitle,
         {
           fontFamily:
-            'system-ui',
+            'Georgia, serif',
           fontSize:
-            '12px',
+            '11px',
           color:
-            '#f4ead2',
+            '#efe5ce',
           backgroundColor:
-            'rgba(18,29,22,.42)',
+            'rgba(25,31,25,.42)',
           padding: {
             x: 8,
             y: 5,

@@ -2,79 +2,118 @@
 
 RPG 2D top-down para navegador com mundo vivo, memória, relações, famílias, economia e direção de arte cozy fantasy.
 
-## v0.8.6 — Production Assets
+## v0.9.0 — World Rebuild
 
-Esta versão substitui os principais placeholders visuais por **assets derivados diretamente dos quatro sheets aprovados**.
+A v0.9.0 reconstrói a vila em torno dos assets de produção, em vez de encaixar os assets na planta antiga.
 
-### Assets realmente integrados
+### Nova planta da vila
 
-**Terreno**
-- grama ilustrada;
-- pavimento de pedra;
-- água ilustrada.
+- praça central mais compacta e legível;
+- eixo comercial ao norte;
+- Taverna a noroeste;
+- Forja ao norte;
+- Empório a nordeste;
+- Casa da Elena e jardim no sudoeste;
+- rio vertical separando o distrito do Theo;
+- ponte funcional como corredor real;
+- Casa do Theo e docas no sudeste;
+- prado sul reservado para expansão econômica.
 
-**Cenário**
-- fonte;
-- ponte;
-- cerca;
-- postes;
-- árvores verdes;
-- árvores rosadas;
-- árvores douradas;
-- arbustos;
-- prop de mercado.
+### Física e colisões
 
-**Construções**
+- hitboxes dos prédios redesenhadas;
+- colisão do rio dividida ao redor da ponte;
+- fonte, cercas, árvores e docas entram na física;
+- saves antigos com spawn inválido migram para um ponto seguro;
+- colisão do player não cria arrays a cada frame;
+- NPCs usam navegação leve para atravessar o rio pela ponte.
+
+### Visual
+
+O WorldRenderer agora é explicitamente dividido em:
+
+```text
+terrain
+roads / plaza
+river / banks
+environment props
+landmark buildings
+settlement
+ambient effects
+```
+
+Efeitos implementados:
+
+- água em movimento;
+- brilho/reflexo do rio;
+- fonte animada;
+- fumaça de Taverna/Forja;
+- lanternas noturnas;
+- luzes de janelas;
+- vaga-lumes;
+- névoa leve em horários adequados;
+- transição de manhã/tarde/entardecer/noite;
+- efeito do Eco do Rio adaptado ao novo curso d'água.
+
+### Interiores
+
+Todos os interiores principais foram redesenhados:
+
 - Taverna Lua Cheia;
 - Forja do Bram;
 - Empório da Mira;
 - Casa da Elena;
-- Casa do Theo.
+- Casa do Theo;
+- casas geradas pelo settlement.
 
-Os cinco prédios agora usam recortes WebP reais do sheet de construções, não SVGs redesenhados.
+Cada interior possui:
 
-**Personagens**
-- Patrick;
-- Elena;
-- Bram;
-- Mira;
-- Theo;
-- Luma.
+- fluxo livre da porta para o centro;
+- zona de trabalho;
+- zona social;
+- zona privada;
+- mobiliário específico;
+- colisões por objeto;
+- iluminação animada;
+- fogo/lareira/forja animados;
+- personagens usando os sprites de produção.
 
-Cada personagem usa um spritesheet real de 8 frames derivado do sheet aprovado:
-1. frente;
-2. costas;
-3. esquerda;
-4. direita;
-5. andar esquerda 1;
-6. andar direita 1;
-7. andar esquerda 2;
-8. andar direita 2.
+### NPCs e animações
 
-NPCs gerados continuam usando o fallback procedural.
+- spritesheets de produção continuam ativos;
+- idle por direção;
+- caminhada lateral alternando frames;
+- movimento de rotina;
+- animações de trabalho/pesca/socialização preservadas;
+- navegação pelo rio agora respeita a ponte;
+- rotinas dos cinco moradores foram atualizadas para a nova geografia.
 
 ### Mobile
 
-A interface touch continua ativa automaticamente em dispositivos móveis:
 - D-pad;
 - Falar;
 - Interagir;
 - multitouch;
-- funciona dentro e fora dos prédios.
+- funciona no exterior e interiores;
+- UI responsiva preservada.
 
 ### Performance
 
-Os recortes foram convertidos para WebP e empacotados no projeto:
-- nenhuma dependência externa;
-- nenhum download de IA;
-- nenhuma imagem gigante do concept durante gameplay;
-- simulação continua throttled;
-- assets são carregados uma vez pelo Phaser.
+- simulação: 10 Hz;
+- atmosfera: 15 Hz;
+- água/luzes: 12 Hz;
+- HUD: 4 Hz;
+- roster: 1 Hz;
+- mundo estático usa GameObjects leves;
+- assets continuam WebP compactados;
+- nenhum pathfinder pesado foi adicionado.
 
-## Próximo passo
+## Controles
 
-Após validação visual da v0.8.6:
-- ajustar escala/posição dos assets reais;
-- ampliar uso de props do catálogo;
-- refinar interiores com o pack;
-- criar variações de settlement com a mesma linguagem visual.
+- WASD / setas: mover
+- E / Enter: interagir
+- F: conversa por escolhas
+- B: NPC Brain
+- M: economia
+- 1–8: hotbar
+- Esc: fechar compêndio

@@ -129,10 +129,16 @@ export class InteriorScene extends Phaser.Scene {
 
     this.cameras.main.setBounds(0, 0, INTERIOR_SIZE.width, INTERIOR_SIZE.height);
     this.cameras.main.centerOn(INTERIOR_SIZE.width / 2, INTERIOR_SIZE.height / 2);
-    this.cameras.main.setZoom(Math.min(
-      this.scale.width / INTERIOR_SIZE.width,
-      this.scale.height / INTERIOR_SIZE.height,
-    ));
+    this.cameras.main.setZoom(
+      Phaser.Math.Clamp(
+        Math.min(
+          this.scale.width / INTERIOR_SIZE.width,
+          this.scale.height / INTERIOR_SIZE.height,
+        ),
+        0.78,
+        1.35,
+      ),
+    );
 
     this.scale.on('resize', this.resizeCamera, this);
     this.hud.setQuest('Explore ' + this.definition.name + ' e observe quem realmente vive aqui.');
@@ -217,6 +223,9 @@ export class InteriorScene extends Phaser.Scene {
     }
 
     this.syncResidents(simulationDt);
+    this.interiorRenderer.update(
+      this.time.now / 1000,
+    );
 
     const target = this.getInteractionTarget();
     this.hud.setInteractionHint(
