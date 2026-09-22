@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { characterStyleFor, type CharacterVisualStyle } from '../data/characterStyles';
+import { navigationWaypoint } from '../data/world';
 import type {
   Facing,
   NpcActivity,
@@ -317,8 +318,21 @@ export class Npc extends Phaser.GameObjects.Container {
             y: schedule.y,
           });
 
-    const targetX = baseTarget.x + micro.x;
-    const targetY = baseTarget.y + micro.y;
+    const desiredTarget = {
+      x: baseTarget.x + micro.x,
+      y: baseTarget.y + micro.y,
+    };
+
+    const routedTarget =
+      this.scene.scene.key === 'VillageScene'
+        ? navigationWaypoint(
+            { x: this.x, y: this.y },
+            desiredTarget,
+          )
+        : desiredTarget;
+
+    const targetX = routedTarget.x;
+    const targetY = routedTarget.y;
 
     const distance = Phaser.Math.Distance.Between(
       this.x,
@@ -378,6 +392,21 @@ export class Npc extends Phaser.GameObjects.Container {
     this.setAlpha(1);
     this.activityProp.setVisible(false);
 
+    const routedTarget =
+      this.scene.scene.key === 'VillageScene'
+        ? navigationWaypoint(
+            { x: this.x, y: this.y },
+            target,
+          )
+        : target;
+
+    const routeDistance = Phaser.Math.Distance.Between(
+      this.x,
+      this.y,
+      routedTarget.x,
+      routedTarget.y,
+    );
+
     const distance = Phaser.Math.Distance.Between(
       this.x,
       this.y,
@@ -397,14 +426,14 @@ export class Npc extends Phaser.GameObjects.Container {
     const angle = Phaser.Math.Angle.Between(
       this.x,
       this.y,
-      target.x,
-      target.y,
+      routedTarget.x,
+      routedTarget.y,
     );
 
     const vx = Math.cos(angle);
     const vy = Math.sin(angle);
     const step = Math.min(
-      distance,
+      routeDistance,
       speed * deltaSeconds,
     );
 
