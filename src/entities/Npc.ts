@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { characterStyleFor } from '../data/characterStyles';
+import { characterStyleFor, type CharacterVisualStyle } from '../data/characterStyles';
 import type {
   Facing,
   NpcActivity,
@@ -35,31 +35,7 @@ export class Npc extends Phaser.GameObjects.Container {
   private facing: Facing = 'down';
   private walkPhase = 0;
   private readonly wanderSeed: number;
-  private readonly style = characterStyleFor(this.definitionPlaceholder);
-
-  private static readonly placeholderDefinition: NpcDefinition = {
-    id: 'placeholder',
-    name: 'placeholder',
-    emoji: '',
-    role: 'Criança',
-    color: 0x888888,
-    x: 0,
-    y: 0,
-    intro: '',
-    remembered: '',
-    topic: '',
-    life: {
-      ageYears: 0,
-      residenceId: 'home',
-      familyDesire: 0,
-      sociability: 0,
-    },
-    schedule: [],
-  };
-
-  private get definitionPlaceholder(): NpcDefinition {
-    return Npc.placeholderDefinition;
-  }
+  private readonly style: CharacterVisualStyle;
 
   constructor(
     scene: Phaser.Scene,
@@ -73,7 +49,7 @@ export class Npc extends Phaser.GameObjects.Container {
     );
 
     const style = characterStyleFor(definition);
-    Object.assign(this.style, style);
+    this.style = style;
 
     this.shadow = scene.add.ellipse(
       0,
