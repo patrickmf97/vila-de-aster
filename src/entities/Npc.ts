@@ -1,6 +1,9 @@
 import Phaser from 'phaser';
 import { characterStyleFor, type CharacterVisualStyle } from '../data/characterStyles';
-import { navigationWaypoint } from '../data/world';
+import {
+  isWorldWalkable,
+  navigationWaypoint,
+} from '../data/world';
 import type {
   Facing,
   NpcActivity,
@@ -362,8 +365,43 @@ export class Npc extends Phaser.GameObjects.Container {
       const vx = Math.cos(angle);
       const vy = Math.sin(angle);
 
-      this.x += vx * speed * deltaSeconds;
-      this.y += vy * speed * deltaSeconds;
+      const step =
+        speed *
+        deltaSeconds;
+
+      if (
+        this.scene.scene.key !==
+        'VillageScene'
+      ) {
+        this.x += vx * step;
+        this.y += vy * step;
+      } else {
+        const nextX =
+          this.x + vx * step;
+        const nextY =
+          this.y + vy * step;
+
+        if (
+          isWorldWalkable(
+            nextX,
+            this.y,
+            12,
+          )
+        ) {
+          this.x = nextX;
+        }
+
+        if (
+          isWorldWalkable(
+            this.x,
+            nextY,
+            12,
+          )
+        ) {
+          this.y = nextY;
+        }
+      }
+
       this.updateFacing(vx, vy);
 
       this.walkPhase += deltaSeconds * 9.5;
@@ -437,8 +475,39 @@ export class Npc extends Phaser.GameObjects.Container {
       speed * deltaSeconds,
     );
 
-    this.x += vx * step;
-    this.y += vy * step;
+    if (
+      this.scene.scene.key !==
+      'VillageScene'
+    ) {
+      this.x += vx * step;
+      this.y += vy * step;
+    } else {
+      const nextX =
+        this.x + vx * step;
+      const nextY =
+        this.y + vy * step;
+
+      if (
+        isWorldWalkable(
+          nextX,
+          this.y,
+          12,
+        )
+      ) {
+        this.x = nextX;
+      }
+
+      if (
+        isWorldWalkable(
+          this.x,
+          nextY,
+          12,
+        )
+      ) {
+        this.y = nextY;
+      }
+    }
+
     this.updateFacing(vx, vy);
 
     this.walkPhase += deltaSeconds * 9.5;
