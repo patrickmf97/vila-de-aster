@@ -21,11 +21,11 @@ export const roads: Rect[] = [
 ];
 
 export const buildings: Building[] = [
-  { id: 'inn', name: 'Taverna Lua Cheia', x: 260, y: 180, w: 310, h: 220, roof: 0x9b4a3c, wall: 0xe5c890, sign: '🍲' },
-  { id: 'smith', name: 'Forja do Bram', x: 860, y: 160, w: 300, h: 220, roof: 0x425f76, wall: 0xd8bd87, sign: '⚒️' },
-  { id: 'shop', name: 'Empório da Mira', x: 1370, y: 190, w: 300, h: 215, roof: 0x607a47, wall: 0xe2ca97, sign: '🧺' },
-  { id: 'home', name: 'Casa da Elena', x: 165, y: 825, w: 270, h: 205, roof: 0x755a92, wall: 0xd9c696, sign: '🌸' },
-  { id: 'fisher-home', name: 'Casa do Theo', x: 1580, y: 825, w: 245, h: 185, roof: 0x47748b, wall: 0xd3c39b, sign: '🎣' },
+  { id: 'inn', name: 'Taverna Lua Cheia', x: 260, y: 180, w: 310, h: 220, roof: 0xaa604c, wall: 0xddd0a9, sign: '🍲' },
+  { id: 'smith', name: 'Forja do Bram', x: 860, y: 160, w: 300, h: 220, roof: 0x58789b, wall: 0xd5c39a, sign: '⚒️' },
+  { id: 'shop', name: 'Empório da Mira', x: 1370, y: 190, w: 300, h: 215, roof: 0x718558, wall: 0xddd0a9, sign: '🧺' },
+  { id: 'home', name: 'Casa da Elena', x: 165, y: 825, w: 270, h: 205, roof: 0x8d5a6d, wall: 0xded0aa, sign: '🌸' },
+  { id: 'fisher-home', name: 'Casa do Theo', x: 1580, y: 825, w: 245, h: 185, roof: 0x58789b, wall: 0xd8caa8, sign: '🎣' },
 ];
 
 export const doors: DoorDefinition[] = buildings.map((building) => ({
