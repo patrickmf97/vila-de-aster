@@ -1,8 +1,8 @@
 import type { DoorDefinition, Rect } from '../types';
 
 export const WORLD = {
-  width: 1900,
-  height: 1250,
+  width: 2000,
+  height: 1400,
 };
 
 export interface Building extends Rect {
@@ -13,19 +13,81 @@ export interface Building extends Rect {
   sign: string;
 }
 
+export interface WorldPropCollision extends Rect {
+  id: string;
+}
+
+export const plaza = {
+  x: 930,
+  y: 665,
+  radius: 205,
+};
+
 export const roads: Rect[] = [
-  { x: 610, y: 0, w: 180, h: 1250 },
-  { x: 0, y: 575, w: 1900, h: 170 },
-  { x: 1180, y: 520, w: 180, h: 730 },
-  { x: 1530, y: 900, w: 300, h: 90 },
+  { x: 0, y: 575, w: 1320, h: 170 },
+  { x: 885, y: 0, w: 170, h: 1400 },
+  { x: 340, y: 335, w: 1320, h: 130 },
+  { x: 270, y: 745, w: 130, h: 360 },
+  { x: 1320, y: 795, w: 680, h: 115 },
+  { x: 1630, y: 900, w: 120, h: 330 },
 ];
 
 export const buildings: Building[] = [
-  { id: 'inn', name: 'Taverna Lua Cheia', x: 260, y: 180, w: 310, h: 220, roof: 0xaa604c, wall: 0xddd0a9, sign: '🍲' },
-  { id: 'smith', name: 'Forja do Bram', x: 860, y: 160, w: 300, h: 220, roof: 0x58789b, wall: 0xd5c39a, sign: '⚒️' },
-  { id: 'shop', name: 'Empório da Mira', x: 1370, y: 190, w: 300, h: 215, roof: 0x718558, wall: 0xddd0a9, sign: '🧺' },
-  { id: 'home', name: 'Casa da Elena', x: 165, y: 825, w: 270, h: 205, roof: 0x8d5a6d, wall: 0xded0aa, sign: '🌸' },
-  { id: 'fisher-home', name: 'Casa do Theo', x: 1580, y: 825, w: 245, h: 185, roof: 0x58789b, wall: 0xd8caa8, sign: '🎣' },
+  {
+    id: 'inn',
+    name: 'Taverna Lua Cheia',
+    x: 150,
+    y: 125,
+    w: 360,
+    h: 250,
+    roof: 0xaa604c,
+    wall: 0xddd0a9,
+    sign: '🍲',
+  },
+  {
+    id: 'smith',
+    name: 'Forja do Bram',
+    x: 780,
+    y: 105,
+    w: 360,
+    h: 265,
+    roof: 0x58789b,
+    wall: 0xd5c39a,
+    sign: '⚒️',
+  },
+  {
+    id: 'shop',
+    name: 'Empório da Mira',
+    x: 1400,
+    y: 125,
+    w: 390,
+    h: 250,
+    roof: 0x718558,
+    wall: 0xddd0a9,
+    sign: '🧺',
+  },
+  {
+    id: 'home',
+    name: 'Casa da Elena',
+    x: 135,
+    y: 930,
+    w: 390,
+    h: 255,
+    roof: 0x8d5a6d,
+    wall: 0xded0aa,
+    sign: '🌸',
+  },
+  {
+    id: 'fisher-home',
+    name: 'Casa do Theo',
+    x: 1590,
+    y: 965,
+    w: 365,
+    h: 265,
+    roof: 0x58789b,
+    wall: 0xd8caa8,
+    sign: '🎣',
+  },
 ];
 
 export const doors: DoorDefinition[] = buildings.map((building) => ({
@@ -33,28 +95,88 @@ export const doors: DoorDefinition[] = buildings.map((building) => ({
   buildingId: building.id,
   label: 'Entrar em ' + building.name,
   x: building.x + building.w / 2,
-  y: building.y + building.h + 22,
+  y: building.y + building.h + 18,
   returnPoint: {
     x: building.x + building.w / 2,
-    y: building.y + building.h + 58,
+    y: building.y + building.h + 52,
   },
 }));
 
-export const pond: Rect = { x: 1260, y: 745, w: 280, h: 160 };
+// Vertical river that divides the village from Theo's dock district.
+// The bridge corridor (y 790–920) is intentionally left collision-free.
+export const pond: Rect = {
+  x: 1320,
+  y: 620,
+  w: 260,
+  h: 780,
+};
+
+export const bridgeRect: Rect = {
+  x: 1300,
+  y: 790,
+  w: 300,
+  h: 130,
+};
 
 export const trees = [
-  [90,120],[145,180],[180,110],[80,450],[170,490],[330,500],[470,480],
-  [1180,95],[1280,120],[1750,110],[1780,470],[1650,500],[1510,490],
-  [80,1060],[530,1080],[650,1010],[810,1120],
-  [1030,980],[1120,1040],[1160,930],[520,820],[460,900]
-].map(([x, y]) => ({ x, y, r: 32 }));
+  [70, 90], [120, 500], [225, 535], [560, 110], [610, 225],
+  [1220, 105], [1300, 190], [1880, 110], [1910, 480], [1740, 500],
+  [70, 820], [570, 820], [625, 1040], [725, 1190], [1060, 1080],
+  [1140, 1240], [1240, 1020], [1885, 1280], [1500, 1220], [1250, 520],
+  [515, 1260], [280, 1280], [1160, 470], [1820, 665],
+].map(([x, y]) => ({ x, y, r: 30 }));
+
+export const decorativeCollisions: WorldPropCollision[] = [
+  { id: 'fountain', x: 845, y: 565, w: 170, h: 145 },
+  { id: 'elena-fence-left', x: 70, y: 1180, w: 190, h: 30 },
+  { id: 'elena-fence-right', x: 400, y: 1180, w: 165, h: 30 },
+  { id: 'dock-edge', x: 1588, y: 1235, w: 360, h: 22 },
+];
+
+const buildingCollisions: Rect[] = buildings.map((b) => ({
+  x: b.x + 20,
+  y: b.y + Math.round(b.h * 0.34),
+  w: b.w - 40,
+  h: Math.round(b.h * 0.66),
+}));
+
+const riverCollisions: Rect[] = [
+  {
+    x: pond.x,
+    y: pond.y,
+    w: pond.w,
+    h: bridgeRect.y - pond.y,
+  },
+  {
+    x: pond.x,
+    y: bridgeRect.y + bridgeRect.h,
+    w: pond.w,
+    h: WORLD.height - (bridgeRect.y + bridgeRect.h),
+  },
+];
 
 export const collisionRects: Rect[] = [
-  ...buildings.map((b) => ({ x: b.x + 10, y: b.y + 44, w: b.w - 20, h: b.h - 44 })),
-  { x: 0, y: 0, w: 46, h: 1250 },
-  { x: 1854, y: 0, w: 46, h: 1250 },
-  { x: 0, y: 0, w: 1900, h: 46 },
-  { x: 0, y: 1204, w: 1900, h: 46 },
-  { x: 1260, y: 745, w: 280, h: 65 },
-  ...trees.map((t) => ({ x: t.x - 22, y: t.y - 20, w: 44, h: 42 })),
+  ...buildingCollisions,
+  ...riverCollisions,
+  ...decorativeCollisions,
+  { x: 0, y: 0, w: 42, h: WORLD.height },
+  { x: WORLD.width - 42, y: 0, w: 42, h: WORLD.height },
+  { x: 0, y: 0, w: WORLD.width, h: 42 },
+  { x: 0, y: WORLD.height - 42, w: WORLD.width, h: 42 },
+  ...trees.map((t) => ({
+    x: t.x - 17,
+    y: t.y + 5,
+    w: 34,
+    h: 30,
+  })),
 ];
+
+export const zones = {
+  tavernYard: { x: 120, y: 410, w: 420, h: 140 },
+  forgeYard: { x: 755, y: 395, w: 420, h: 150 },
+  marketYard: { x: 1360, y: 405, w: 470, h: 155 },
+  elenaGarden: { x: 95, y: 780, w: 500, h: 400 },
+  riverWalk: { x: 1120, y: 690, w: 180, h: 430 },
+  theoDock: { x: 1590, y: 860, w: 380, h: 380 },
+  southMeadow: { x: 690, y: 1010, w: 520, h: 300 },
+};
