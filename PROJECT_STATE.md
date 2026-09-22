@@ -2,80 +2,98 @@
 
 ## Versão atual
 
-**v0.8.0 — Art Direction & Atmosphere**
+**v0.8.1 — Characters & Animation Polish**
 
-## Objetivo da versão
+## Direção visual
 
-Transformar a vila de um protótipo funcional em um RPG cozy fantasy com identidade visual própria, sem reescrever os sistemas de simulação já existentes.
+Aster agora possui uma linguagem visual consistente entre:
 
-## Renderização
+- mundo externo;
+- iluminação;
+- prédios;
+- personagens;
+- interiores;
+- HUD;
+- diálogos.
 
-### WorldRenderer
+## Character System
 
-Responsável por:
+### Perfis visuais nomeados
 
-- terreno;
-- textura de grama;
-- caminhos;
-- praça;
-- fonte;
-- lago/ponte;
-- vegetação;
-- decoração;
-- prédios estáticos;
-- construções e casas de settlement;
-- animação da água.
+Elena, Bram, Mira, Theo e Luma possuem estilos próprios em:
 
-### AtmosphereRenderer
+`src/data/characterStyles.ts`
 
-Responsável por:
+### Fallback
 
-- tint global por horário;
-- manhã;
-- entardecer;
-- noite;
-- vaga-lumes;
-- glow narrativo do rio;
-- limpeza automática ao trocar de cena.
+NPCs gerados usam:
 
-## Paleta principal
+- profissão;
+- seed do id;
+- idade/role;
+- paletas pré-definidas.
 
-```text
-grama clara      #91C96F
-grama média      #72AD5C
-vegetação escura #456F42
-caminho           #D4BD8D
-terra             #B58C60
-madeira           #89603F
-madeira escura    #5A3D2A
-parede creme      #DDD0A9
-água clara        #62B2D8
-água profunda     #438AB7
-terracota         #AA604C
-azul telhado      #58789B
-verde telhado     #718558
-luz quente        #F1CE78
-lilás dos Ecos    #A79AE8
-ciano mágico      #76DCE7
-```
+Isso permite que filhos e futuros moradores nasçam sem depender de assets manuais.
+
+## Animações
+
+### Movimento
+
+- alternância de pés;
+- braços;
+- bob vertical;
+- pequena rotação corporal;
+- sombra reage ao passo.
+
+### Idle
+
+- respiração sutil;
+- microgestos.
+
+### Atividades
+
+- trabalho;
+- pesca;
+- socialização;
+- comer;
+- brincar;
+- família;
+- investigação;
+- sono.
+
+## Jogador
+
+O jogador agora usa a mesma linguagem chibi modular dos NPCs, mantendo identidade azul própria.
+
+## Interiores
+
+InteriorRenderer agora desenha:
+
+- piso de tábuas;
+- janelas;
+- tapete;
+- rodapé;
+- entrada iluminada;
+- objetos com highlight/sombra.
 
 ## Sistemas preservados
 
-- v0.7.1 Dialogue & Movement Hotfix;
+- v0.8.0 Art & Atmosphere;
+- v0.7.1 Dialogue & Movement;
 - Economy & Settlement;
 - Choice Dialogue;
 - NPC Brain;
-- Life Simulation;
-- interiores;
-- construções dinâmicas.
+- Life Simulation.
 
-## Próxima etapa
+## Próximo alvo
 
-**v0.8.1 — Characters & Animation Polish**
+**v0.9 — Generations & RPG Systems**
 
-- redesign visual dos NPCs;
-- silhuetas mais distintas;
-- microanimações;
-- idle por profissão;
-- refinamento visual de interiores;
-- polimento final da HUD.
+- envelhecimento completo;
+- profissão/aprendizado;
+- morte e legado;
+- herança;
+- inventário;
+- quests;
+- combate;
+- região externa.
