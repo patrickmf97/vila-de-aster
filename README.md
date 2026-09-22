@@ -1,104 +1,102 @@
 # Vila de Aster
 
-RPG 2D top-down para navegador com foco em **mundo vivo, memória, relações, família, economia simulada e uma ambientação cozy fantasy leve para web**.
+RPG 2D top-down para navegador com foco em **mundo vivo, memória, relações, família, economia simulada e direção de arte cozy fantasy**.
 
-## Estado atual — v0.8.2 Performance & Visual Match
+## Estado atual — v0.8.3 Full Art Integration
 
-A v0.8.2 corrige o principal problema da primeira implementação visual: o mundo estava bonito como protótipo vetorial, mas distante do concept art e caro demais para renderizar continuamente no navegador.
+A v0.8.3 integra de forma completa a direção visual aprovada no concept art, preservando a arquitetura leve da v0.8.2.
 
-### Novo mapa ilustrado
+### Mundo
 
-O cenário principal agora usa uma composição SVG de 1900×1250 rasterizada uma única vez pelo Phaser.
-
-A linguagem visual aproxima o jogo do concept art oficial:
-
+- mapa ilustrado SVG pré-renderizado;
 - caminhos de pedra;
-- gramado com textura;
-- árvores em camadas e variações de cor;
-- árvores rosadas/douradas;
-- vegetação mais densa;
-- flores e arbustos;
-- praça de pedra;
-- fonte refinada;
-- lanternas;
-- prédios com telhados texturizados;
-- placas de madeira;
-- toldo do Empório;
-- Forja com chaminé;
-- jardim da Elena;
-- detalhes de pesca na casa do Theo;
-- rio com margem, pedras, reflexos e ponte.
+- praça e fonte refinadas;
+- rio com reflexos, pedras e vida;
+- ponte de madeira;
+- vegetação densa;
+- árvores verdes, rosadas e douradas;
+- flores, arbustos e cercas;
+- banners;
+- postes;
+- placas;
+- caixas e barris;
+- jardim;
+- detalhes específicos dos prédios.
+
+### Personagens
+
+- sistema chibi modular;
+- retratos ilustrados em SVG para:
+  - Patrick;
+  - Elena;
+  - Bram;
+  - Mira;
+  - Theo;
+  - Luma;
+- retratos usados em diálogos e compêndio;
+- animações e props profissionais preservados.
 
 ### Interface
 
-O glass/blur escuro foi substituído por uma UI mais próxima do guia conceitual:
+A HUD agora segue o concept:
 
-- pergaminho/creme;
-- bordas de madeira;
-- verde musgo;
-- dourado suave;
-- painel de escolhas verde;
-- diálogo claro e legível.
+- painel azul-escuro da marca;
+- subtítulo narrativo;
+- cartão de dia/hora em pergaminho;
+- hotbar inferior;
+- medalhão do protagonista;
+- barras visuais;
+- atalhos de inventário;
+- menu rápido;
+- diálogo com retrato;
+- conversa por escolhas com retrato;
+- painel verde/madeira/pergaminho.
 
-Além de combinar melhor com o jogo, isso remove o caro `backdrop-filter` sobre o canvas.
+### Compêndio
 
-## Otimizações
+Novo painel navegável com:
 
-### Renderização
-
-Antes:
-
-```text
-centenas de comandos Phaser Graphics
-+ árvores/prédios como objetos separados
-+ água redesenhada a 60fps
-+ blur CSS sobre canvas animado
-```
-
-Agora:
-
-```text
-1 textura do mapa ilustrado
-+ settlement dinâmico
-+ água a 12fps
-+ atmosfera a 15fps
-+ UI sem backdrop blur
-```
-
-### Simulação
-
-- Life Simulation / NPC Brain / Economy: 10 Hz;
-- movimento dos personagens continua na taxa de renderização;
-- HUD: 4 Hz;
-- roster: 1 Hz;
-- colisões dinâmicas são cacheadas;
-- texto dos NPCs só recria textura quando realmente muda;
-- nomes/atividades só aparecem quando o jogador está próximo;
-- resolução do renderer fixada em 1 para evitar custo excessivo em telas HiDPI.
-
-## Sistemas preservados
-
-- Life Simulation;
-- NPC Brain;
-- Choice Dialogue;
-- Economy & Settlement;
-- famílias;
+- personagens principais;
 - construções;
-- interiores;
-- movimento físico entre zonas;
-- v0.8.1 Characters & Animation.
+- ciclo de dia/noite;
+- mapa do mundo.
+
+O compêndio pausa movimento e simulação enquanto está aberto.
+
+### Interiores
+
+- piso de madeira;
+- janelas;
+- tapetes;
+- luminárias;
+- plantas;
+- tapeçaria;
+- decoração específica de cada prédio.
+
+## Performance
+
+A base da v0.8.2 foi preservada:
+
+- mapa estático rasterizado uma vez;
+- simulação em 10 Hz;
+- atmosfera em 15 Hz;
+- água em 12 Hz;
+- HUD em 4 Hz;
+- roster em 1 Hz;
+- labels e textos cacheados;
+- sem backdrop blur;
+- SVGs leves.
 
 ## Controles
 
 - WASD / setas: mover
 - E / Enter: interagir
 - F: diálogo por escolhas
-- B: painel NPC Brain
+- B: NPC Brain
 - M: economia
-- R: reiniciar simulação
+- 1–8: selecionar slot visual
+- Esc: fechar compêndio
 
 ## Próximo marco
-
-Após validar fluidez e visual no navegador:
 
 **v0.9 — Generations & RPG Systems**
