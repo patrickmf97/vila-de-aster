@@ -216,7 +216,6 @@ export class Npc extends Phaser.GameObjects.Container {
       this.rightEye,
       this.mouth,
       this.accessory,
-      this.activityProp,
     ]);
 
     this.nameLabel = scene.add
@@ -253,6 +252,7 @@ export class Npc extends Phaser.GameObjects.Container {
     this.add([
       this.shadow,
       this.visualRoot,
+      this.activityProp,
       this.nameLabel,
       this.activityLabel,
     ]);
@@ -277,6 +277,9 @@ export class Npc extends Phaser.GameObjects.Container {
       .setOrigin(0.5, 0.78);
 
     this.visualRoot.setVisible(false);
+    this.activityProp
+      .setVisible(false)
+      .setDepth(3);
     this.addAt(this.sprite, 1);
   }
 
