@@ -5,6 +5,7 @@ import { npcDefinitions } from '../data/npcs';
 import { collisionRects, doors, WORLD } from '../data/world';
 import { settlementCollisionRect, settlementDoor } from '../data/economy';
 import { WorldRenderer, VILLAGE_ENVIRONMENT_KEY } from '../world/WorldRenderer';
+import { BUILDING_VISUALS } from '../data/buildingAssets';
 import { AtmosphereRenderer } from '../world/AtmosphereRenderer';
 import { SaveSystem } from '../systems/SaveSystem';
 import { TimeSystem } from '../systems/TimeSystem';
@@ -79,6 +80,19 @@ export class VillageScene extends Phaser.Scene {
         {
           width: WORLD.width,
           height: WORLD.height,
+        },
+      );
+    }
+
+    for (const visual of Object.values(BUILDING_VISUALS)) {
+      if (this.textures.exists(visual.key)) continue;
+
+      this.load.svg(
+        visual.key,
+        visual.assetUrl,
+        {
+          width: visual.width,
+          height: visual.height,
         },
       );
     }
