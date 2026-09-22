@@ -48,7 +48,6 @@ export class WorldRenderer {
   private fountainDrops: AmbientParticle[] = [];
   private smoke: SmokePuff[] = [];
   private swayingProps: SwayingProp[] = [];
-  private river?: Phaser.GameObjects.Image;
   private riverSheen: Phaser.GameObjects.Graphics;
   private lastDynamicUpdate = -Infinity;
 
@@ -197,27 +196,6 @@ export class WorldRenderer {
       520,
     );
 
-    this.createMeadowPatch(
-      500,
-      870,
-      390,
-      245,
-      0.5,
-    );
-    this.createMeadowPatch(
-      1030,
-      1135,
-      470,
-      250,
-      0.38,
-    );
-    this.createMeadowPatch(
-      1780,
-      610,
-      330,
-      235,
-      0.42,
-    );
 
     const roadGraphics =
       this.scene.add
@@ -244,35 +222,9 @@ export class WorldRenderer {
       plaza.radius + 8,
     );
 
-    const plazaMask =
-      this.scene.add
-        .graphics()
-        .fillStyle(
-          0xffffff,
-          1,
-        )
-        .fillCircle(
-          plaza.x,
-          plaza.y,
-          plaza.radius - 12,
-        )
-        .setVisible(false);
-
-    this.scene.add
-      .image(
-        plaza.x,
-        plaza.y,
-        'env-stone',
-      )
-      .setDisplaySize(
-        plaza.radius * 2.1,
-        plaza.radius * 2.1,
-      )
-      .setAlpha(0.52)
-      .setDepth(-952)
-      .setMask(
-        plazaMask.createGeometryMask(),
-      );
+    this.drawPlazaCobbles(
+      roadGraphics,
+    );
 
     roadGraphics.lineStyle(
       6,
@@ -288,43 +240,89 @@ export class WorldRenderer {
     this.createRiver();
   }
 
-  private createMeadowPatch(
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    alpha: number,
+  private drawPlazaCobbles(
+    graphics: Phaser.GameObjects.Graphics,
   ): void {
-    const maskShape =
-      this.scene.add
-        .graphics()
-        .fillStyle(
-          0xffffff,
-          1,
-        )
-        .fillEllipse(
-          x,
-          y,
+    const spacing = 29;
+    let row = 0;
+
+    for (
+      let y =
+        plaza.y -
+        plaza.radius +
+        26;
+      y <=
+      plaza.y +
+        plaza.radius -
+        26;
+      y += spacing
+    ) {
+      const offset =
+        row % 2 === 0
+          ? 0
+          : spacing / 2;
+
+      for (
+        let x =
+          plaza.x -
+          plaza.radius +
+          24 +
+          offset;
+        x <=
+        plaza.x +
+          plaza.radius -
+          24;
+        x += spacing
+      ) {
+        const dx =
+          x - plaza.x;
+        const dy =
+          y - plaza.y;
+
+        if (
+          dx * dx +
+            dy * dy >
+          (plaza.radius - 25) *
+            (plaza.radius - 25)
+        ) {
+          continue;
+        }
+
+        const seed =
+          Math.abs(
+            Math.floor(
+              x * 13 +
+                y * 7,
+            ),
+          );
+
+        const width =
+          19 +
+          (seed % 8);
+        const height =
+          11 +
+          (seed % 5);
+
+        graphics.fillStyle(
+          seed % 3 === 0
+            ? 0xb3a287
+            : seed % 3 === 1
+              ? 0xdccdae
+              : 0xc5b596,
+          0.62,
+        );
+
+        graphics.fillRoundedRect(
+          x - width / 2,
+          y - height / 2,
           width,
           height,
-        )
-        .setVisible(false);
+          4,
+        );
+      }
 
-    this.scene.add
-      .image(
-        x,
-        y,
-        'env-grass',
-      )
-      .setDisplaySize(
-        width * 1.08,
-        height * 1.08,
-      )
-      .setAlpha(alpha)
-      .setDepth(-986)
-      .setMask(
-        maskShape.createGeometryMask(),
-      );
+      row += 1;
+    }
   }
 
   private drawRoadPath(
@@ -458,7 +456,7 @@ export class WorldRenderer {
           index % 2 === 0
             ? 0xa9997d
             : 0xe2d6ba,
-          0.28,
+          0.42,
         );
         graphics.fillRoundedRect(
           x +
@@ -498,41 +496,6 @@ export class WorldRenderer {
       pond.h,
       44,
     );
-
-    const riverMask =
-      this.scene.add
-        .graphics()
-        .fillStyle(
-          0xffffff,
-          1,
-        )
-        .fillRoundedRect(
-          pond.x + 4,
-          pond.y + 4,
-          pond.w - 8,
-          pond.h - 8,
-          40,
-        )
-        .setVisible(false);
-
-    this.river =
-      this.scene.add
-        .image(
-          pond.x +
-            pond.w / 2,
-          pond.y +
-            pond.h / 2,
-          'env-water',
-        )
-        .setDisplaySize(
-          pond.w + 24,
-          pond.h + 24,
-        )
-        .setAlpha(0.82)
-        .setDepth(-925)
-        .setMask(
-          riverMask.createGeometryMask(),
-        );
 
     const bank =
       this.scene.add
@@ -575,8 +538,8 @@ export class WorldRenderer {
         'prop-bridge',
       )
       .setDisplaySize(
-        bridgeRect.w,
-        bridgeRect.h,
+        bridgeRect.w - 34,
+        bridgeRect.h - 18,
       )
       .setDepth(
         bridgeRect.y +
@@ -1138,37 +1101,17 @@ export class WorldRenderer {
   private animateWater(
     elapsedSeconds: number,
   ): void {
-    if (this.river) {
-      this.river
-        .setAlpha(
-          0.79 +
-            Math.sin(
-              elapsedSeconds *
-                0.7,
-            ) *
-              0.025,
-        )
-        .setScale(
-          1 +
-            Math.sin(
-              elapsedSeconds *
-                0.31,
-            ) *
-              0.004,
-        );
-    }
-
     this.riverSheen.clear();
 
     for (
       let row = 0;
-      row < 8;
+      row < 10;
       row += 1
     ) {
       const y =
         pond.y +
-        60 +
-        row * 88;
+        44 +
+        row * 82;
 
       const drift =
         ((elapsedSeconds *
@@ -1179,16 +1122,16 @@ export class WorldRenderer {
       this.riverSheen
         .lineStyle(
           2,
-          0xd4f4f5,
-          0.15,
+          0xd9f5f7,
+          0.24,
         )
         .lineBetween(
           pond.x +
-            42 +
+            32 +
             drift,
           y,
           pond.x +
-            102 +
+            112 +
             drift,
           y,
         );
