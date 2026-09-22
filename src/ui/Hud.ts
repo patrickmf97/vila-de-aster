@@ -1,3 +1,8 @@
+import {
+  playerPortrait,
+  portraitByNpcId,
+} from '../data/portraits';
+
 export class Hud {
   private clock = document.getElementById('clock')!;
   private dayText = document.getElementById('dayText')!;
@@ -12,6 +17,8 @@ export class Hud {
   private economyDebug = document.getElementById('economyDebug')!;
   private economyDebugContent = document.getElementById('economyDebugContent')!;
   private economyDebugSignature = '';
+  private codex = document.getElementById('codex')!;
+  private codexTitle = document.getElementById('codexTitle')!;
   private toastTimer: number | undefined;
   private lastClock = '';
   private lastDay = -1;
@@ -20,6 +27,14 @@ export class Hud {
   private lastHint = '';
   private lastHintVisible = false;
   private lastQuest = '';
+
+  constructor() {
+    this.setupConceptUi();
+  }
+
+  get isModalOpen(): boolean {
+    return !this.codex.classList.contains('hidden');
+  }
 
   setClock(time: string, day: number, icon: string): void {
     if (time !== this.lastClock) {
@@ -64,7 +79,9 @@ export class Hud {
   }
 
   setRiverQuest(): void {
-    this.setQuest('Algo despertou perto do rio. Converse com os moradores para juntar pistas.');
+    this.setQuest(
+      'Algo despertou perto do rio. Converse com os moradores para juntar pistas.',
+    );
   }
 
   toggleBrainDebug(): void {
@@ -108,7 +125,121 @@ export class Hud {
   showToast(message: string): void {
     this.toast.textContent = message;
     this.toast.classList.remove('hidden');
-    if (this.toastTimer) window.clearTimeout(this.toastTimer);
-    this.toastTimer = window.setTimeout(() => this.toast.classList.add('hidden'), 3200);
+
+    if (this.toastTimer) {
+      window.clearTimeout(this.toastTimer);
+    }
+
+    this.toastTimer = window.setTimeout(
+      () => this.toast.classList.add('hidden'),
+      3200,
+    );
+  }
+
+  private setupConceptUi(): void {
+    const playerImage = document.getElementById('playerPortrait') as HTMLImageElement | null;
+    if (playerImage) {
+      playerImage.src = playerPortrait;
+    }
+
+    const portraitElements = document.querySelectorAll<HTMLImageElement>(
+      '[data-portrait]',
+    );
+
+    portraitElements.forEach((image) => {
+      const id = image.dataset.portrait;
+      if (!id) return;
+
+      const source =
+        id === 'patrick'
+          ? playerPortrait
+          : portraitByNpcId[id];
+
+      if (source) image.src = source;
+    });
+
+    const panelButtons = document.querySelectorAll<HTMLButtonElement>(
+      '[data-panel]',
+    );
+
+    panelButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const panel = button.dataset.panel;
+        if (panel) this.openCodex(panel);
+      });
+    });
+
+    document
+      .getElementById('codexClose')
+      ?.addEventListener('click', () => this.closeCodex());
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !this.codex.classList.contains('hidden')) {
+        this.closeCodex();
+      }
+
+      const slot = Number(event.key);
+      if (slot >= 1 && slot <= 8) {
+        this.setHotbarSlot(slot - 1);
+      }
+    });
+
+    document
+      .querySelectorAll<HTMLButtonElement>('.slot')
+      .forEach((button, index) => {
+        button.addEventListener('click', () => this.setHotbarSlot(index));
+      });
+  }
+
+  private openCodex(panel: string): void {
+    const normalized =
+      panel === 'characters' ||
+      panel === 'village' ||
+      panel === 'cycle' ||
+      panel === 'map'
+        ? panel
+        : 'characters';
+
+    const titles: Record<string, string> = {
+      characters: 'Personagens Principais',
+      village: 'Construções de Aster',
+      cycle: 'Ciclo de Dia e Noite',
+      map: 'Mapa do Mundo',
+    };
+
+    document
+      .querySelectorAll<HTMLElement>('.codex-page')
+      .forEach((page) => {
+        page.classList.toggle(
+          'hidden',
+          page.dataset.page !== normalized,
+        );
+      });
+
+    document
+      .querySelectorAll<HTMLButtonElement>('.codex-tabs [data-panel]')
+      .forEach((button) => {
+        button.classList.toggle(
+          'active',
+          button.dataset.panel === normalized,
+        );
+      });
+
+    this.codexTitle.textContent = titles[normalized] ?? 'Vila de Aster';
+    this.codex.classList.remove('hidden');
+  }
+
+  private closeCodex(): void {
+    this.codex.classList.add('hidden');
+  }
+
+  private setHotbarSlot(index: number): void {
+    const slots = Array.from(
+      document.querySelectorAll<HTMLButtonElement>('.slot'),
+    );
+
+    slots.forEach((slot, slotIndex) => {
+      slot.classList.toggle('active', slotIndex === index);
+    });
   }
 }

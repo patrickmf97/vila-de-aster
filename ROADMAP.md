@@ -67,6 +67,17 @@
 - cache de textos e colisões;
 - otimização Firefox/Linux.
 
+## ✅ v0.8.3 — Full Art Integration
+- concept art integrado ao mundo;
+- props, banners e decoração;
+- retratos ilustrados;
+- HUD completa de RPG;
+- hotbar;
+- compêndio;
+- diálogos com retrato;
+- interiores alinhados ao concept;
+- responsividade e performance preservadas.
+
 ## v0.9 — Generations & RPG Systems
 - envelhecimento completo;
 - profissão e herança;

@@ -1,3 +1,4 @@
+import { portraitForNpc } from '../data/portraits';
 import type {
   NpcBrainState,
   NpcDefinition,
@@ -42,6 +43,7 @@ export class DynamicDialogueSystem {
   private root = document.getElementById('npcChat')!;
   private name = document.getElementById('npcChatName')!;
   private status = document.getElementById('npcChatStatus')!;
+  private portrait = document.getElementById('npcChatPortrait') as HTMLImageElement;
   private messages = document.getElementById('npcChatMessages')!;
   private choices = document.getElementById('npcChatChoices')!;
   private closeButton = document.getElementById('npcChatClose') as HTMLButtonElement;
@@ -64,11 +66,20 @@ export class DynamicDialogueSystem {
     this.lastIntent = 'greeting';
 
     this.name.textContent =
-      context.definition.emoji +
-      ' ' +
       context.definition.name +
       ' • ' +
       context.definition.role;
+
+    const portraitUrl = portraitForNpc(context.definition.id);
+    if (portraitUrl) {
+      this.portrait.src = portraitUrl;
+      this.portrait.alt = 'Retrato de ' + context.definition.name;
+      this.portrait.classList.remove('hidden');
+    } else {
+      this.portrait.removeAttribute('src');
+      this.portrait.alt = '';
+      this.portrait.classList.add('hidden');
+    }
 
     this.messages.replaceChildren();
     this.renderSavedConversation(context.definition.id);
