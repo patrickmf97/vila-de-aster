@@ -89,7 +89,19 @@
 - interiores reconstruídos;
 - performance preservada.
 
-## v0.9.1 — Generations & RPG Systems
+## ✅ v0.9.1 — World Polish
+- remoção de seams/grade dos recortes;
+- caminhos contínuos;
+- rio único mascarado;
+- colisões alinhadas aos assets;
+- navegação de NPC com obstáculos;
+- activity props restaurados;
+- vegetação animada;
+- câmera responsiva;
+- interiores diferenciados;
+- transições refinadas.
+
+## v0.10.0 — Generations & RPG Systems
 - envelhecimento completo;
 - profissão e herança;
 - morte e legado;
