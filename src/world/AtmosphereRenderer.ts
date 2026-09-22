@@ -14,6 +14,8 @@ interface Firefly {
 
 interface MistPatch {
   shape: Phaser.GameObjects.Ellipse;
+  baseX: number;
+  baseY: number;
   phase: number;
 }
 
@@ -206,6 +208,8 @@ export class AtmosphereRenderer {
 
         this.mist.push({
           shape,
+          baseX: x,
+          baseY: y,
           phase:
             index * 1.47,
         });
@@ -291,14 +295,20 @@ export class AtmosphereRenderer {
                 0.025),
         )
         .setPosition(
-          patch.shape.x +
+          patch.baseX +
             Math.sin(
               elapsedSeconds *
                 0.12 +
                 patch.phase,
             ) *
-              0.12,
-          patch.shape.y,
+              18,
+          patch.baseY +
+            Math.cos(
+              elapsedSeconds *
+                0.09 +
+                patch.phase,
+            ) *
+              4,
         );
     }
   }
