@@ -57,6 +57,16 @@
 - interiores refinados;
 - diálogo/UI final.
 
+## ✅ v0.8.2 — Performance & Visual Match
+- mapa SVG ilustrado pré-renderizado;
+- UI pergaminho/verde;
+- remoção de backdrop blur;
+- simulação em 10 Hz;
+- água/atmosfera throttled;
+- HUD e roster throttled;
+- cache de textos e colisões;
+- otimização Firefox/Linux.
+
 ## v0.9 — Generations & RPG Systems
 - envelhecimento completo;
 - profissão e herança;
