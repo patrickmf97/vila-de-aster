@@ -4,7 +4,7 @@ import { Npc } from '../entities/Npc';
 import { npcDefinitions } from '../data/npcs';
 import { collisionRects, doors, WORLD } from '../data/world';
 import { settlementCollisionRect, settlementDoor } from '../data/economy';
-import { WorldRenderer } from '../world/WorldRenderer';
+import { WorldRenderer, VILLAGE_ENVIRONMENT_KEY } from '../world/WorldRenderer';
 import { AtmosphereRenderer } from '../world/AtmosphereRenderer';
 import { SaveSystem } from '../systems/SaveSystem';
 import { TimeSystem } from '../systems/TimeSystem';
@@ -16,7 +16,9 @@ import { NpcBrainSystem } from '../systems/NpcBrainSystem';
 import { DynamicDialogueSystem } from '../systems/DynamicDialogueSystem';
 import { EconomySystem } from '../systems/EconomySystem';
 import { Hud } from '../ui/Hud';
-import type { DoorDefinition, EconomyEvent, LifeEvent, Point } from '../types';
+import type { DoorDefinition, EconomyEvent, LifeEvent, Point, Rect } from '../types';
+
+const VILLAGE_ENVIRONMENT_URL = new URL('../assets/villageEnvironment.svg', import.meta.url).href;
 
 interface VillageSceneData {
   spawn?: Point;
@@ -55,6 +57,10 @@ export class VillageScene extends Phaser.Scene {
   private marketKey!: Phaser.Input.Keyboard.Key;
 
   private persistAccumulator = 0;
+  private simulationAccumulator = 0;
+  private hudAccumulator = 0;
+  private rosterAccumulator = 0;
+  private dynamicCollisionRects: Rect[] = [];
 
   constructor() {
     super('VillageScene');
@@ -63,6 +69,19 @@ export class VillageScene extends Phaser.Scene {
   init(data: VillageSceneData): void {
     this.spawnOverride = data.spawn;
     this.fromInterior = !!data.fromInterior;
+  }
+
+  preload(): void {
+    if (!this.textures.exists(VILLAGE_ENVIRONMENT_KEY)) {
+      this.load.svg(
+        VILLAGE_ENVIRONMENT_KEY,
+        VILLAGE_ENVIRONMENT_URL,
+        {
+          width: WORLD.width,
+          height: WORLD.height,
+        },
+      );
+    }
   }
 
   create(): void {
@@ -85,6 +104,7 @@ export class VillageScene extends Phaser.Scene {
       this.save.snapshot.settlementBuildings,
       this.save.snapshot.constructionProjects,
     );
+    this.refreshDynamicCollisions();
     this.atmosphereRenderer = new AtmosphereRenderer(this);
 
     const start = this.spawnOverride ?? this.save.snapshot.player ?? { x: 930, y: 790 };
@@ -146,26 +166,44 @@ export class VillageScene extends Phaser.Scene {
       gameMinutes: this.timeSystem.minutes,
     });
 
-    const lifeEvents = this.lifeSystem.update(
-      this.timeSystem.day,
-      this.timeSystem.minuteOfDay,
-      simulationDt,
-    );
-    this.showLifeEvents(lifeEvents);
-    this.syncNpcRoster();
+    this.simulationAccumulator += simulationDt;
+    this.rosterAccumulator += dt;
 
-    this.brainSystem.update(
-      this.timeSystem.day,
-      this.timeSystem.minuteOfDay,
-      simulationDt,
-    );
+    if (this.simulationAccumulator >= 0.1) {
+      const step = Math.min(this.simulationAccumulator, 0.25);
+      this.simulationAccumulator = 0;
 
-    const economyEvents = this.economySystem.update(
-      this.timeSystem.day,
-      this.timeSystem.minuteOfDay,
-      simulationDt,
-    );
-    this.showEconomyEvents(economyEvents);
+      const lifeEvents = this.lifeSystem.update(
+        this.timeSystem.day,
+        this.timeSystem.minuteOfDay,
+        step,
+      );
+      this.showLifeEvents(lifeEvents);
+
+      this.brainSystem.update(
+        this.timeSystem.day,
+        this.timeSystem.minuteOfDay,
+        step,
+      );
+
+      const economyEvents = this.economySystem.update(
+        this.timeSystem.day,
+        this.timeSystem.minuteOfDay,
+        step,
+      );
+      this.showEconomyEvents(economyEvents);
+
+      this.relationshipSystem.update(
+        this.npcs.filter((npc) => npc.visible),
+        step,
+        this.timeSystem.day,
+      );
+    }
+
+    if (this.rosterAccumulator >= 1) {
+      this.rosterAccumulator = 0;
+      this.syncNpcRoster();
+    }
 
     const elapsedSeconds = this.time.now / 1000;
     for (const npc of this.npcs) {
@@ -246,11 +284,16 @@ export class VillageScene extends Phaser.Scene {
       );
     }
 
-    this.relationshipSystem.update(
-      this.npcs.filter((npc) => npc.visible),
-      simulationDt,
-      this.timeSystem.day,
-    );
+    for (const npc of this.npcs) {
+      if (!npc.visible) continue;
+      const distance = Phaser.Math.Distance.Between(
+        this.player.x,
+        this.player.y,
+        npc.x,
+        npc.y,
+      );
+      npc.setLabelVisibility(distance < 155, distance < 105);
+    }
 
     const target = this.nearestInteraction();
     this.hud.setInteractionHint(
@@ -322,7 +365,12 @@ export class VillageScene extends Phaser.Scene {
       elapsedSeconds,
       this.eventSystem.riverEchoActive,
     );
-    this.syncHud();
+
+    this.hudAccumulator += dt;
+    if (this.hudAccumulator >= 0.25) {
+      this.hudAccumulator = 0;
+      this.syncHud();
+    }
   }
 
   private syncNpcRoster(): void {
@@ -346,12 +394,7 @@ export class VillageScene extends Phaser.Scene {
       return false;
     }
 
-    const dynamicCollisions =
-      this.save.snapshot.settlementBuildings.map(
-        settlementCollisionRect,
-      );
-
-    return ![...collisionRects, ...dynamicCollisions].some((rect) => {
+    return ![...collisionRects, ...this.dynamicCollisionRects].some((rect) => {
       const nearestX = Phaser.Math.Clamp(x, rect.x, rect.x + rect.w);
       const nearestY = Phaser.Math.Clamp(y, rect.y, rect.y + rect.h);
       return Phaser.Math.Distance.Between(x, y, nearestX, nearestY) < radius;
@@ -573,6 +616,7 @@ export class VillageScene extends Phaser.Scene {
         this.save.snapshot.settlementBuildings,
         this.save.snapshot.constructionProjects,
       );
+      this.refreshDynamicCollisions();
     }
 
     const important = events
@@ -601,6 +645,13 @@ export class VillageScene extends Phaser.Scene {
     this.hud.showToast(
       icon + ' ' + important.text,
     );
+  }
+
+  private refreshDynamicCollisions(): void {
+    this.dynamicCollisionRects =
+      this.save.snapshot.settlementBuildings.map(
+        settlementCollisionRect,
+      );
   }
 
   private syncHud(): void {

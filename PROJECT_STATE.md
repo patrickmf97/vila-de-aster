@@ -2,98 +2,55 @@
 
 ## Versão atual
 
-**v0.8.1 — Characters & Animation Polish**
+**v0.8.2 — Performance & Visual Match**
 
-## Direção visual
+## Motivo
 
-Aster agora possui uma linguagem visual consistente entre:
+A v0.8.0/v0.8.1 aumentou muito a quantidade de objetos gráficos vivos.
 
-- mundo externo;
-- iluminação;
-- prédios;
-- personagens;
-- interiores;
-- HUD;
-- diálogos.
+Em especial:
 
-## Character System
+- Phaser Graphics estáticos continuavam sendo enviados ao renderer;
+- água era redesenhada a cada frame;
+- textos de atividade podiam ser regenerados continuamente;
+- HUD atualizava DOM a cada frame;
+- `backdrop-filter` forçava composição cara no Firefox/Linux.
 
-### Perfis visuais nomeados
+## Nova arquitetura visual
 
-Elena, Bram, Mira, Theo e Luma possuem estilos próprios em:
+```text
+VillageScene
+├── villageEnvironment.svg
+│   └── rasterizado 1x pelo Phaser
+├── WorldRenderer
+│   ├── mapa estático
+│   ├── settlement dinâmico
+│   ├── água 12Hz
+│   └── luzes noturnas
+├── AtmosphereRenderer
+│   └── efeitos 15Hz
+└── personagens
+    └── animação frame-rate
+```
 
-`src/data/characterStyles.ts`
+## Frequências
 
-### Fallback
+- render/movimento: até 60 fps;
+- simulação: 10 Hz;
+- atmosfera: 15 Hz;
+- água: 12 Hz;
+- HUD: 4 Hz;
+- sincronização de roster: 1 Hz;
+- persistência: a cada 3 s.
 
-NPCs gerados usam:
+## UI
 
-- profissão;
-- seed do id;
-- idade/role;
-- paletas pré-definidas.
+A interface agora segue a direção visual de pergaminho + madeira + verde musgo, sem blur de fundo.
 
-Isso permite que filhos e futuros moradores nasçam sem depender de assets manuais.
+## Compatibilidade
 
-## Animações
+Toda a lógica das versões anteriores permanece preservada.
 
-### Movimento
+## Próximo passo
 
-- alternância de pés;
-- braços;
-- bob vertical;
-- pequena rotação corporal;
-- sombra reage ao passo.
-
-### Idle
-
-- respiração sutil;
-- microgestos.
-
-### Atividades
-
-- trabalho;
-- pesca;
-- socialização;
-- comer;
-- brincar;
-- família;
-- investigação;
-- sono.
-
-## Jogador
-
-O jogador agora usa a mesma linguagem chibi modular dos NPCs, mantendo identidade azul própria.
-
-## Interiores
-
-InteriorRenderer agora desenha:
-
-- piso de tábuas;
-- janelas;
-- tapete;
-- rodapé;
-- entrada iluminada;
-- objetos com highlight/sombra.
-
-## Sistemas preservados
-
-- v0.8.0 Art & Atmosphere;
-- v0.7.1 Dialogue & Movement;
-- Economy & Settlement;
-- Choice Dialogue;
-- NPC Brain;
-- Life Simulation.
-
-## Próximo alvo
-
-**v0.9 — Generations & RPG Systems**
-
-- envelhecimento completo;
-- profissão/aprendizado;
-- morte e legado;
-- herança;
-- inventário;
-- quests;
-- combate;
-- região externa.
+Validar a v0.8.2 em Firefox/Chrome e, com a base estável, iniciar a v0.9.

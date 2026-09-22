@@ -13,23 +13,53 @@ export class Hud {
   private economyDebugContent = document.getElementById('economyDebugContent')!;
   private economyDebugSignature = '';
   private toastTimer: number | undefined;
+  private lastClock = '';
+  private lastDay = -1;
+  private lastIcon = '';
+  private lastPopulation = -1;
+  private lastHint = '';
+  private lastHintVisible = false;
+  private lastQuest = '';
 
   setClock(time: string, day: number, icon: string): void {
-    this.clock.textContent = time;
-    this.dayText.textContent = 'Dia ' + day;
-    this.dayIcon.textContent = icon;
+    if (time !== this.lastClock) {
+      this.lastClock = time;
+      this.clock.textContent = time;
+    }
+
+    if (day !== this.lastDay) {
+      this.lastDay = day;
+      this.dayText.textContent = 'Dia ' + day;
+    }
+
+    if (icon !== this.lastIcon) {
+      this.lastIcon = icon;
+      this.dayIcon.textContent = icon;
+    }
   }
 
   setPopulation(count: number): void {
-    this.populationText.textContent = count + (count === 1 ? ' morador' : ' moradores');
+    if (count === this.lastPopulation) return;
+    this.lastPopulation = count;
+    this.populationText.textContent =
+      count + (count === 1 ? ' morador' : ' moradores');
   }
 
   setInteractionHint(visible: boolean, label = 'conversar'): void {
-    this.hint.innerHTML = 'Pressione <kbd>E</kbd> para ' + label;
-    this.hint.classList.toggle('hidden', !visible);
+    if (visible !== this.lastHintVisible) {
+      this.lastHintVisible = visible;
+      this.hint.classList.toggle('hidden', !visible);
+    }
+
+    if (visible && label !== this.lastHint) {
+      this.lastHint = label;
+      this.hint.innerHTML = 'Pressione <kbd>E</kbd> para ' + label;
+    }
   }
 
   setQuest(text: string): void {
+    if (text === this.lastQuest) return;
+    this.lastQuest = text;
     this.questText.textContent = text;
   }
 

@@ -8,6 +8,11 @@ const config: Phaser.Types.Core.GameConfig = {
   parent: 'game',
   backgroundColor: '#15231f',
   scene: [VillageScene, InteriorScene],
+  fps: {
+    target: 60,
+    min: 30,
+    smoothStep: true,
+  },
   render: {
     antialias: true,
     pixelArt: false,
