@@ -78,7 +78,18 @@
 - interiores alinhados ao concept;
 - responsividade e performance preservadas.
 
-## v0.9 — Generations & RPG Systems
+## ✅ v0.9.0 — World Rebuild
+- nova planta completa da vila;
+- física e colisões redesenhadas;
+- ponte navegável e rio bloqueado;
+- assets distribuídos por área;
+- animação de água/fonte/fumaça/luzes;
+- ambientação renovada;
+- navegação leve de NPC;
+- interiores reconstruídos;
+- performance preservada.
+
+## v0.9.1 — Generations & RPG Systems
 - envelhecimento completo;
 - profissão e herança;
 - morte e legado;
