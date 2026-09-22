@@ -30,7 +30,12 @@ export class Npc extends Phaser.GameObjects.Container {
   private readonly rightFoot: Phaser.GameObjects.Ellipse;
   private readonly accessory: Phaser.GameObjects.Text;
   private readonly activityProp: Phaser.GameObjects.Text;
+  private readonly nameLabel: Phaser.GameObjects.Text;
   private readonly activityLabel: Phaser.GameObjects.Text;
+  private lastActivityLabel = '';
+  private lastActivityProp = '';
+  private nameLabelVisible = false;
+  private activityLabelVisible = false;
 
   private facing: Facing = 'down';
   private walkPhase = 0;
@@ -209,15 +214,7 @@ export class Npc extends Phaser.GameObjects.Container {
       this.activityProp,
     ]);
 
-    const icon = scene.add
-      .text(0, -38, definition.emoji, {
-        fontFamily: 'serif',
-        fontSize: '13px',
-      })
-      .setOrigin(0.5)
-      .setAlpha(0.82);
-
-    const label = scene.add
+    this.nameLabel = scene.add
       .text(0, 40, definition.name, {
         fontFamily: 'system-ui',
         fontSize: '12px',
@@ -230,7 +227,8 @@ export class Npc extends Phaser.GameObjects.Container {
           y: 2,
         },
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setVisible(false);
 
     this.activityLabel = scene.add
       .text(0, 56, '', {
@@ -244,13 +242,13 @@ export class Npc extends Phaser.GameObjects.Container {
           y: 2,
         },
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setVisible(false);
 
     this.add([
       this.shadow,
       this.visualRoot,
-      icon,
-      label,
+      this.nameLabel,
       this.activityLabel,
     ]);
 
@@ -316,7 +314,7 @@ export class Npc extends Phaser.GameObjects.Container {
       targetY,
     );
 
-    this.activityLabel.setText(
+    this.setActivityLabel(
       brain?.label ?? activityText(activity),
     );
 
@@ -362,7 +360,7 @@ export class Npc extends Phaser.GameObjects.Container {
     speed = 54,
   ): number {
     this.currentActivity = 'walk';
-    this.activityLabel.setText(label);
+    this.setActivityLabel(label);
     this.setRotation(0);
     this.setAlpha(1);
     this.activityProp.setVisible(false);
@@ -434,7 +432,7 @@ export class Npc extends Phaser.GameObjects.Container {
     label?: string,
   ): void {
     this.currentActivity = activity;
-    this.activityLabel.setText(
+    this.setActivityLabel(
       label ?? activityText(activity),
     );
 
@@ -453,6 +451,35 @@ export class Npc extends Phaser.GameObjects.Container {
     this.setRotation(
       activity === 'sleep' ? -0.08 : 0,
     );
+  }
+
+  setLabelVisibility(
+    showName: boolean,
+    showActivity: boolean,
+  ): void {
+    if (showName !== this.nameLabelVisible) {
+      this.nameLabelVisible = showName;
+      this.nameLabel.setVisible(showName);
+    }
+
+    if (showActivity !== this.activityLabelVisible) {
+      this.activityLabelVisible = showActivity;
+      this.activityLabel.setVisible(showActivity);
+    }
+  }
+
+  private setActivityLabel(text: string): void {
+    if (text === this.lastActivityLabel) return;
+    this.lastActivityLabel = text;
+    this.activityLabel.setText(text);
+  }
+
+  private setActivityProp(text: string): void {
+    if (text !== this.lastActivityProp) {
+      this.lastActivityProp = text;
+      this.activityProp.setText(text);
+    }
+    this.activityProp.setVisible(Boolean(text));
   }
 
   private applyWalkPose(
@@ -503,9 +530,7 @@ export class Npc extends Phaser.GameObjects.Container {
         this.style.idleProp,
       );
 
-    this.activityProp
-      .setText(prop)
-      .setVisible(!!prop);
+    this.setActivityProp(prop);
 
     if (activity === 'work') {
       const swing =
