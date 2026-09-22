@@ -220,6 +220,11 @@ export class WorldRenderer {
       if (!isLandmarkBuildingId(building.id)) continue;
 
       const visual = BUILDING_VISUALS[building.id];
+
+      if (!this.scene.textures.exists(visual.key)) {
+        continue;
+      }
+
       const x =
         building.x +
         building.w / 2 +
