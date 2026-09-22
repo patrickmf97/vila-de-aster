@@ -3,55 +3,65 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0c1515" />
-  <meta name="aster-build" content="0.8.2-performance-visual-match" />
+  <meta name="theme-color" content="#13242b" />
+  <meta name="aster-build" content="0.8.3-full-art-integration" />
   <title>Vila de Aster</title>
 </head>
 <body>
   <main id="app">
     <div id="game" aria-label="RPG 2D Vila de Aster"></div>
 
-    <div id="top-left" class="hud glass">
-      <div class="brand">🌿 Vila de Aster</div>
-      <div class="sub">v0.8.2 • Performance & Visual Match</div>
-    </div>
+    <section id="top-left" class="brand-card hud">
+      <div class="brand-mark">❧</div>
+      <div class="brand-copy">
+        <div class="brand">Vila de Aster</div>
+        <div class="brand-tagline">Um lugar para viver grandes histórias</div>
+        <div class="sub">v0.8.3 • Full Art Integration</div>
+      </div>
+      <div class="brand-features" aria-hidden="true">
+        <span>🤝 relações</span>
+        <span>🏡 vila viva</span>
+        <span>🧭 exploração</span>
+        <span>✦ mistérios</span>
+      </div>
+    </section>
 
-    <div id="top-right" class="hud glass stats">
-      <div><span id="dayIcon">☀️</span> <strong id="clock">08:00</strong></div>
+    <div id="top-right" class="hud parchment-card stats">
+      <div class="calendar-topline">
+        <span id="dayIcon">☀️</span>
+        <strong id="clock">08:00</strong>
+      </div>
       <div id="dayText">Dia 1</div>
       <div id="populationText">5 moradores</div>
     </div>
 
-    <div id="quest" class="hud glass quest">
+    <div id="quest" class="hud quest parchment-card">
       <strong>Objetivo atual</strong>
-      <span>Explore Aster com o novo mapa ilustrado e otimizado. Cenário, interface e simulação foram retrabalhados para fluidez no navegador.</span>
+      <span>Explore Aster, converse com os moradores e descubra o que está mudando perto do rio.</span>
     </div>
 
-    <aside id="brainDebug" class="brain-debug glass hidden" aria-live="polite">
+    <aside id="brainDebug" class="brain-debug parchment-card hidden" aria-live="polite">
       <div class="brain-debug-header">
         <strong>🧠 NPC Brain</strong>
         <span>B para fechar</span>
       </div>
-      <div id="brainDebugContent" class="brain-debug-content">
-        Aguardando decisões...
-      </div>
+      <div id="brainDebugContent" class="brain-debug-content">Aguardando decisões...</div>
     </aside>
 
-    <section id="npcChat" class="npc-chat glass hidden" aria-live="polite">
+    <section id="npcChat" class="npc-chat hidden" aria-live="polite">
       <div class="npc-chat-header">
-        <div>
+        <img id="npcChatPortrait" class="npc-chat-portrait" alt="" />
+        <div class="npc-chat-title">
           <strong id="npcChatName">NPC • conversa</strong>
           <span id="npcChatStatus">Escolha um assunto</span>
         </div>
         <button id="npcChatClose" type="button" aria-label="Fechar conversa">×</button>
       </div>
-
       <div id="npcChatMessages" class="npc-chat-messages"></div>
-
       <div id="npcChatChoices" class="npc-chat-choices" aria-label="Opções de diálogo"></div>
     </section>
 
-    <aside id="economyDebug" class="economy-debug glass hidden" aria-live="polite">
+    <aside id="economyDebug" class="economy-debug parchment-card hidden" aria-live="polite">
       <div class="economy-debug-header">
         <strong>📊 Economia de Aster</strong>
         <span>M para fechar</span>
@@ -64,7 +74,10 @@
     <div id="hint" class="hint hidden">Pressione <kbd>E</kbd> para interagir</div>
 
     <section id="dialogue" class="dialogue hidden" aria-live="polite">
-      <div class="portrait" id="portrait">🙂</div>
+      <div class="portrait-frame">
+        <img class="portrait-image hidden" id="portraitImage" alt="" />
+        <div class="portrait-fallback" id="portrait">🙂</div>
+      </div>
       <div class="dialogue-content">
         <div class="dialogue-name" id="dialogueName">NPC</div>
         <div class="dialogue-text" id="dialogueText"></div>
@@ -74,13 +87,103 @@
 
     <div id="toast" class="toast hidden" aria-live="polite"></div>
 
-    <div id="help" class="help glass">
-      <span><kbd>WASD</kbd>/<kbd>↑↓←→</kbd> mover</span>
-      <span><kbd>E</kbd> diálogo local</span>
-      <span><kbd>F</kbd> opções de diálogo</span>
+    <section id="gamebar" class="gamebar" aria-label="Barra de jogo">
+      <div class="player-medallion" title="Viajante">
+        <img id="playerPortrait" alt="Retrato do protagonista" />
+      </div>
+      <div class="status-bars" aria-hidden="true">
+        <div class="status-line life"><span></span></div>
+        <div class="status-line energy"><span></span></div>
+      </div>
+      <div class="date-chip">
+        <span>Ter</span>
+        <strong>16</strong>
+        <small>Primavera</small>
+      </div>
+      <div class="sun-chip">☀️</div>
+      <div class="coin-chip" title="Prosperidade da vila">🪙 <strong>AST</strong></div>
+      <div class="hotbar" aria-label="Atalhos de inventário">
+        <button class="slot active" type="button"><span>1</span>🪓</button>
+        <button class="slot" type="button"><span>2</span>⛏️</button>
+        <button class="slot" type="button"><span>3</span>🪣</button>
+        <button class="slot" type="button"><span>4</span>🪵</button>
+        <button class="slot" type="button"><span>5</span>🎣</button>
+        <button class="slot" type="button"><span>6</span>🌸</button>
+        <button class="slot" type="button"><span>7</span>🍅</button>
+        <button class="slot" type="button"><span>8</span>🍊</button>
+      </div>
+      <nav class="quick-menu" aria-label="Menu rápido">
+        <button type="button" data-panel="characters">Personagens</button>
+        <button type="button" data-panel="village">Sobre a vila</button>
+        <button type="button" data-panel="map">Mapa</button>
+      </nav>
+    </section>
+
+    <section id="codex" class="codex hidden" aria-live="polite">
+      <div class="codex-sheet">
+        <header class="codex-header">
+          <div>
+            <small>Compêndio</small>
+            <h2 id="codexTitle">Vila de Aster</h2>
+          </div>
+          <button id="codexClose" type="button" aria-label="Fechar compêndio">×</button>
+        </header>
+
+        <nav class="codex-tabs">
+          <button type="button" data-panel="characters">Personagens</button>
+          <button type="button" data-panel="village">Construções</button>
+          <button type="button" data-panel="cycle">Dia & Noite</button>
+          <button type="button" data-panel="map">Mapa</button>
+        </nav>
+
+        <div class="codex-page" data-page="characters">
+          <div class="portrait-grid">
+            <article><img data-portrait="patrick" alt="Patrick"/><strong>Patrick</strong><span>Um novo capítulo em Aster.</span></article>
+            <article><img data-portrait="elena" alt="Elena"/><strong>Elena</strong><span>Cuida das pessoas e da natureza.</span></article>
+            <article><img data-portrait="bram" alt="Bram"/><strong>Bram</strong><span>Força, experiência e trabalho.</span></article>
+            <article><img data-portrait="mira" alt="Mira"/><strong>Mira</strong><span>Comércio, conversa e novidades.</span></article>
+            <article><img data-portrait="theo" alt="Theo"/><strong>Theo</strong><span>Ama o rio e a vida simples.</span></article>
+            <article><img data-portrait="luma" alt="Luma"/><strong>Luma</strong><span>Traz alegria para a vila.</span></article>
+          </div>
+        </div>
+
+        <div class="codex-page hidden" data-page="village">
+          <div class="building-grid">
+            <article><div>🍺</div><strong>Taverna Lua Cheia</strong><span>O coração social de Aster.</span></article>
+            <article><div>⚒️</div><strong>Forja do Bram</strong><span>Metal, fogo e trabalho honesto.</span></article>
+            <article><div>🧺</div><strong>Empório da Mira</strong><span>Mercadorias e novidades.</span></article>
+            <article><div>🌸</div><strong>Casa da Elena</strong><span>Flores e cuidado.</span></article>
+            <article><div>🎣</div><strong>Casa do Theo</strong><span>Madeira, rio e pesca.</span></article>
+          </div>
+        </div>
+
+        <div class="codex-page hidden" data-page="cycle">
+          <div class="cycle-grid">
+            <article class="morning"><strong>Manhã</strong><span>Luz suave e a vila despertando.</span></article>
+            <article class="day"><strong>Tarde</strong><span>Cores vivas e trabalho em movimento.</span></article>
+            <article class="sunset"><strong>Entardecer</strong><span>Lanternas acendem e Aster desacelera.</span></article>
+            <article class="night"><strong>Noite</strong><span>Azul profundo, vaga-lumes e mistério.</span></article>
+          </div>
+        </div>
+
+        <div class="codex-page hidden" data-page="map">
+          <div class="world-map-card">
+            <div class="map-mountains">⛰️ ⛰️</div>
+            <div class="map-forest">🌲🌳🌲🌳🌲</div>
+            <div class="map-village">🏡 <strong>Vila de Aster</strong> 🏘️</div>
+            <div class="map-river">〰️〰️〰️🌉〰️〰️〰️</div>
+            <p>Entre o rio e as montanhas, Aster continua a crescer.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div id="help" class="help parchment-card">
+      <span><kbd>WASD</kbd> mover</span>
+      <span><kbd>E</kbd> interagir</span>
+      <span><kbd>F</kbd> conversar</span>
       <span><kbd>B</kbd> cérebro</span>
       <span><kbd>M</kbd> economia</span>
-      <span><kbd>R</kbd> reiniciar simulação</span>
     </div>
   </main>
 
