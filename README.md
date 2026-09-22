@@ -2,56 +2,88 @@
 
 RPG 2D top-down para navegador com foco em **mundo vivo, memória, relações, família, decisões autônomas, diálogo por escolhas, economia simulada e ambientação cozy fantasy**.
 
-## Estado atual — v0.8.0 Art Direction & Atmosphere
+## Estado atual — v0.8.1 Characters & Animation Polish
 
-A v0.8.0 é o primeiro grande overhaul visual da Vila de Aster.
+A v0.8.1 fecha o primeiro ciclo grande de overhaul visual.
 
-Ela mantém toda a lógica da v0.7.1, mas substitui a aparência de protótipo por uma direção de arte mais consistente e atmosférica.
+Depois da ambientação da v0.8.0, os personagens e interiores agora seguem a mesma identidade visual do mundo.
 
-### Novidades visuais
+### Personagens
 
-- nova paleta oficial;
-- grama com variação de tom e textura;
-- caminhos mais orgânicos;
-- praça central redesenhada;
-- fonte mais detalhada;
-- bancos e postes;
-- água com profundidade e animação;
-- margem com pedras e vegetação;
-- ponte refinada;
-- árvores em camadas;
-- flores, cercas, pedras e detalhes ambientais;
-- prédios com identidade visual própria;
-- HUD dark cozy glass;
-- iluminação variável por horário;
-- manhã, tarde, entardecer e noite com identidade própria;
-- vaga-lumes à noite;
-- brilho especial no rio quando o Eco está ativo.
+Os moradores continuam usando o estilo vetorial/chibi original de Aster, mas agora possuem:
 
-### Identidade dos prédios
+- proporções individuais;
+- cabelo em camadas;
+- cores próprias;
+- acabamento de roupa;
+- acessórios;
+- expressão facial;
+- silhueta distinta;
+- animações de caminhada mais orgânicas;
+- animação respiratória/idle;
+- gestos sociais;
+- objetos de profissão;
+- animação de sono;
+- animação de alimentação;
+- animação de investigação.
 
-- **Taverna Lua Cheia** → terracota, lanternas, bancos e calor;
-- **Forja do Bram** → azul ardósia, chaminé, metal e fumaça;
-- **Empório da Mira** → verde oliva, toldo e caixas;
-- **Casa da Elena** → flores e tons suaves;
-- **Casa do Theo** → detalhes ligados à pesca.
+### Identidades
 
-As casas criadas pelo Settlement System continuam compatíveis com a nova linguagem visual.
+- **Elena** → visual floral, rosa/creme, cabelo ondulado e animação ligada a plantas;
+- **Bram** → corpo mais robusto, tons terrosos, acabamento metálico e martelo;
+- **Mira** → visual organizado, verde/dourado, coque e caixas de comércio;
+- **Theo** → azul, cabelo mais solto e animação de pesca;
+- **Luma** → tons quentes, dourado e objeto de taverna.
+
+NPCs gerados e futuras crianças usam perfis visuais de fallback por profissão/idade.
+
+### Jogador
+
+O protagonista mantém o visual azul original, agora com:
+
+- roupa refinada;
+- faixa dourada;
+- mochila;
+- cabelo em camadas;
+- animação de braços/pernas;
+- caminhada com bob e rotação sutil;
+- melhor leitura de direção.
+
+### Interiores
+
+Os interiores receberam:
+
+- piso em tábuas;
+- rodapés;
+- janelas;
+- tapetes;
+- entrada mais acolhedora;
+- sombras de objetos;
+- highlights;
+- melhor profundidade visual.
+
+### Conversas
+
+A UI de diálogo foi refinada para combinar com o novo estilo:
+
+- retrato com moldura visual;
+- cabeçalho com profissão;
+- escolhas com hierarquia visual;
+- confidências com acento lilás;
+- hint de interação mais integrado.
 
 ## Sistemas preservados
 
-A atualização visual não altera a lógica de:
+A v0.8.1 não altera a lógica de:
 
 - Life Simulation;
 - NPC Brain;
 - Choice Dialogue;
 - Economy & Settlement;
-- memória;
-- relações;
 - famílias;
 - construções;
-- interiores;
-- movimento sem teleporte.
+- movimento físico entre zonas;
+- memória e afinidade.
 
 ## Controles
 
@@ -62,37 +94,28 @@ A atualização visual não altera a lógica de:
 - M: economia / mercado
 - R: reiniciar memória e simulação
 
-## Arquitetura visual
+## Arquivos visuais principais
 
 ```text
-VillageScene
-├── WorldRenderer
-│   ├── terreno
-│   ├── caminhos
-│   ├── praça
-│   ├── água
-│   ├── vegetação
-│   ├── prédios
-│   └── settlement
-│
-└── AtmosphereRenderer
-    ├── iluminação por horário
-    ├── vaga-lumes
-    ├── tint atmosférico
-    └── efeitos do Eco
+src/data/characterStyles.ts
+src/entities/Npc.ts
+src/entities/Player.ts
+src/world/InteriorRenderer.ts
+src/world/WorldRenderer.ts
+src/world/AtmosphereRenderer.ts
+src/styles.css
 ```
 
 Documentação:
 
 - `docs/ART_DIRECTION.md`
 - `docs/VISUAL_OVERHAUL.md`
+- `docs/CHARACTERS_ANIMATION.md`
 - `docs/LIFE_SIMULATION.md`
 - `docs/NPC_BRAIN.md`
 - `docs/CHOICE_DIALOGUE.md`
 - `docs/ECONOMY_SETTLEMENT.md`
 
-## Próximo marco visual
+## Próximo marco
 
-**v0.8.1 — Characters & Animation Polish**
-
-Depois disso, os sistemas de gerações/RPG passam para a linha **v0.9**.
+**v0.9 — Generations & RPG Systems**
