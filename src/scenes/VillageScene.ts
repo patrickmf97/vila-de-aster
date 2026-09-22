@@ -142,9 +142,9 @@ export class VillageScene extends Phaser.Scene {
   update(_time: number, delta: number): void {
     const dt = Math.min(delta / 1000, 0.033);
     const simulationDt =
-      this.dialogue.isOpen || this.dynamicDialogue.isOpen ? 0 : dt;
+      this.dialogue.isOpen || this.dynamicDialogue.isOpen || this.hud.isModalOpen ? 0 : dt;
 
-    if (!this.dialogue.isOpen && !this.dynamicDialogue.isOpen) {
+    if (!this.dialogue.isOpen && !this.dynamicDialogue.isOpen && !this.hud.isModalOpen) {
       this.player.updateMovement(
         {
           up: this.cursors.up.isDown || this.wasd.W.isDown,
