@@ -85,6 +85,7 @@ export class InteriorRenderer {
     this.drawShell(base);
     this.drawFloor(base);
     this.drawArchitecture(base);
+    this.drawRoomIdentity(base);
     this.drawRug(base);
     this.drawDoorway(base);
     this.drawHeader();
@@ -399,6 +400,170 @@ export class InteriorRenderer {
         phase: x * 0.01,
         baseAlpha: 0.12,
       });
+    }
+  }
+
+  private drawRoomIdentity(
+    g: Phaser.GameObjects.Graphics,
+  ): void {
+    const id =
+      this.definition.id;
+
+    if (id === 'inn') {
+      g.fillStyle(
+        0x4f3426,
+        0.34,
+      );
+      g.fillRoundedRect(
+        62,
+        78,
+        455,
+        112,
+        12,
+      );
+
+      g.lineStyle(
+        3,
+        0xe2b86a,
+        0.22,
+      );
+      g.lineBetween(
+        75,
+        191,
+        505,
+        191,
+      );
+      return;
+    }
+
+    if (id === 'smith') {
+      g.fillStyle(
+        0x4a4946,
+        0.35,
+      );
+      g.fillRoundedRect(
+        60,
+        78,
+        250,
+        190,
+        12,
+      );
+
+      g.fillStyle(
+        0x2f2f2d,
+        0.24,
+      );
+      for (
+        let x = 76;
+        x < 290;
+        x += 34
+      ) {
+        g.fillRoundedRect(
+          x,
+          230,
+          22,
+          11,
+          3,
+        );
+      }
+      return;
+    }
+
+    if (id === 'shop') {
+      g.fillStyle(
+        0x76865a,
+        0.18,
+      );
+      g.fillRoundedRect(
+        58,
+        78,
+        704,
+        112,
+        12,
+      );
+
+      g.lineStyle(
+        2,
+        0xe8d18f,
+        0.2,
+      );
+      for (
+        let x = 90;
+        x < 730;
+        x += 80
+      ) {
+        g.lineBetween(
+          x,
+          85,
+          x,
+          178,
+        );
+      }
+      return;
+    }
+
+    if (
+      id === 'home' ||
+      id === 'settlement-home'
+    ) {
+      g.fillStyle(
+        0xf0dcb0,
+        0.12,
+      );
+      g.fillEllipse(
+        410,
+        295,
+        420,
+        250,
+      );
+
+      g.lineStyle(
+        2,
+        0xc58a9b,
+        0.18,
+      );
+      g.strokeEllipse(
+        410,
+        295,
+        390,
+        220,
+      );
+      return;
+    }
+
+    if (
+      id ===
+      'fisher-home'
+    ) {
+      g.fillStyle(
+        0x527d90,
+        0.17,
+      );
+      g.fillRoundedRect(
+        56,
+        76,
+        708,
+        104,
+        12,
+      );
+
+      g.lineStyle(
+        2,
+        0xc7e4e5,
+        0.16,
+      );
+      for (
+        let x = 80;
+        x < 750;
+        x += 52
+      ) {
+        g.lineBetween(
+          x,
+          92,
+          x + 28,
+          164,
+        );
+      }
     }
   }
 
