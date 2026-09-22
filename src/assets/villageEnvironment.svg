@@ -438,4 +438,91 @@
 <rect x="570" y="365" width="32" height="27" rx="4"/><rect x="225" y="378" width="31" height="26" rx="4"/>
 </g>
 <g fill="#778676" opacity=".9"><ellipse cx="520" cy="530" rx="14" ry="9"/><ellipse cx="517" cy="527" rx="7" ry="4" fill="#a2ad98" opacity=".55"/><ellipse cx="1080" cy="865" rx="14" ry="9"/><ellipse cx="1077" cy="862" rx="7" ry="4" fill="#a2ad98" opacity=".55"/><ellipse cx="1470" cy="720" rx="14" ry="9"/><ellipse cx="1467" cy="717" rx="7" ry="4" fill="#a2ad98" opacity=".55"/><ellipse cx="325" cy="1090" rx="14" ry="9"/><ellipse cx="322" cy="1087" rx="7" ry="4" fill="#a2ad98" opacity=".55"/><ellipse cx="1130" cy="1090" rx="14" ry="9"/><ellipse cx="1127" cy="1087" rx="7" ry="4" fill="#a2ad98" opacity=".55"/></g>
+
+<!-- v0.8.3 concept props -->
+<g id="concept-props">
+  <!-- banners near plaza -->
+  <g transform="translate(535 520)">
+    <rect x="-3" y="0" width="6" height="78" rx="2" fill="#4c4033"/>
+    <path d="M5 8h42v53L26 48 5 61z" fill="#2f5e87" stroke="#d2a84f" stroke-width="3"/>
+    <path d="M26 18l5 10 11 2-8 8 2 11-10-5-10 5 2-11-8-8 11-2z" fill="#d8ad4f"/>
+  </g>
+  <g transform="translate(865 520)">
+    <rect x="-3" y="0" width="6" height="78" rx="2" fill="#4c4033"/>
+    <path d="M-47 8h42v53l-21-13-21 13z" fill="#2f5e87" stroke="#d2a84f" stroke-width="3"/>
+    <path d="M-26 18l5 10 11 2-8 8 2 11-10-5-10 5 2-11-8-8 11-2z" fill="#d8ad4f"/>
+  </g>
+
+  <!-- sign posts -->
+  <g transform="translate(475 470)">
+    <rect x="-4" y="0" width="8" height="54" rx="3" fill="#6f5136"/>
+    <rect x="-32" y="-9" width="64" height="24" rx="5" fill="#9a7448" stroke="#5b402c" stroke-width="3"/>
+    <path d="M-20 2h38" stroke="#d9bd7a" stroke-width="2" opacity=".7"/>
+  </g>
+  <g transform="translate(1730 520)">
+    <rect x="-4" y="0" width="8" height="54" rx="3" fill="#6f5136"/>
+    <rect x="-32" y="-9" width="64" height="24" rx="5" fill="#9a7448" stroke="#5b402c" stroke-width="3"/>
+    <path d="M-20 2h38" stroke="#d9bd7a" stroke-width="2" opacity=".7"/>
+  </g>
+
+  <!-- crates / barrels -->
+  <g fill="#9c7348" stroke="#65492f" stroke-width="3">
+    <rect x="205" y="388" width="36" height="32" rx="4"/>
+    <path d="M211 394l24 20M235 394l-24 20"/>
+    <rect x="575" y="370" width="38" height="34" rx="4"/>
+    <path d="M582 376l24 22M606 376l-24 22"/>
+    <rect x="1320" y="406" width="36" height="32" rx="4"/>
+    <path d="M1326 412l24 20M1350 412l-24 20"/>
+    <rect x="1678" y="392" width="38" height="34" rx="4"/>
+    <path d="M1685 398l24 22M1709 398l-24 22"/>
+  </g>
+  <g fill="#7f5c3c" stroke="#5f432d" stroke-width="3">
+    <ellipse cx="245" cy="405" rx="15" ry="19"/><path d="M232 399h26M232 410h26" fill="none"/>
+    <ellipse cx="535" cy="390" rx="15" ry="19"/><path d="M522 384h26M522 395h26" fill="none"/>
+    <ellipse cx="1368" cy="418" rx="15" ry="19"/><path d="M1355 412h26M1355 423h26" fill="none"/>
+  </g>
+
+  <!-- flower beds around plaza -->
+  <g transform="translate(505 555)"><path d="M0 0v10" stroke="#4f8d4e" stroke-width="2"/><circle cx="-4" cy="-2" r="4" fill="#f0a0b6"/><circle cx="4" cy="-2" r="4" fill="#f0a0b6"/><circle cx="0" cy="-6" r="4" fill="#f0a0b6"/><circle cx="0" cy="-3" r="2" fill="#fff0a6"/></g><g transform="translate(520 575)"><path d="M0 0v10" stroke="#4f8d4e" stroke-width="2"/><circle cx="-4" cy="-2" r="4" fill="#f6d66f"/><circle cx="4" cy="-2" r="4" fill="#f6d66f"/><circle cx="0" cy="-6" r="4" fill="#f6d66f"/><circle cx="0" cy="-3" r="2" fill="#fff0a6"/></g><g transform="translate(890 555)"><path d="M0 0v10" stroke="#4f8d4e" stroke-width="2"/><circle cx="-4" cy="-2" r="4" fill="#b79be9"/><circle cx="4" cy="-2" r="4" fill="#b79be9"/><circle cx="0" cy="-6" r="4" fill="#b79be9"/><circle cx="0" cy="-3" r="2" fill="#fff0a6"/></g><g transform="translate(875 580)"><path d="M0 0v10" stroke="#4f8d4e" stroke-width="2"/><circle cx="-4" cy="-2" r="4" fill="#f2a06d"/><circle cx="4" cy="-2" r="4" fill="#f2a06d"/><circle cx="0" cy="-6" r="4" fill="#f2a06d"/><circle cx="0" cy="-3" r="2" fill="#fff0a6"/></g><g transform="translate(520 730)"><path d="M0 0v10" stroke="#4f8d4e" stroke-width="2"/><circle cx="-4" cy="-2" r="4" fill="#f6d66f"/><circle cx="4" cy="-2" r="4" fill="#f6d66f"/><circle cx="0" cy="-6" r="4" fill="#f6d66f"/><circle cx="0" cy="-3" r="2" fill="#fff0a6"/></g><g transform="translate(540 748)"><path d="M0 0v10" stroke="#4f8d4e" stroke-width="2"/><circle cx="-4" cy="-2" r="4" fill="#e58da5"/><circle cx="4" cy="-2" r="4" fill="#e58da5"/><circle cx="0" cy="-6" r="4" fill="#e58da5"/><circle cx="0" cy="-3" r="2" fill="#fff0a6"/></g><g transform="translate(870 730)"><path d="M0 0v10" stroke="#4f8d4e" stroke-width="2"/><circle cx="-4" cy="-2" r="4" fill="#b79be9"/><circle cx="4" cy="-2" r="4" fill="#b79be9"/><circle cx="0" cy="-6" r="4" fill="#b79be9"/><circle cx="0" cy="-3" r="2" fill="#fff0a6"/></g><g transform="translate(895 748)"><path d="M0 0v10" stroke="#4f8d4e" stroke-width="2"/><circle cx="-4" cy="-2" r="4" fill="#f6d66f"/><circle cx="4" cy="-2" r="4" fill="#f6d66f"/><circle cx="0" cy="-6" r="4" fill="#f6d66f"/><circle cx="0" cy="-3" r="2" fill="#fff0a6"/></g>
+
+  <!-- river life -->
+  <g opacity=".9">
+    <g transform="translate(1490 805)">
+      <ellipse cx="0" cy="0" rx="12" ry="8" fill="#fff7e7"/>
+      <circle cx="10" cy="-6" r="5" fill="#fff7e7"/>
+      <path d="M13 -10q6 5 0 10" fill="none" stroke="#d89b52" stroke-width="2"/>
+      <path d="M-3 7q0 8-8 10M3 7q0 8 8 10" stroke="#d89b52" stroke-width="2" fill="none"/>
+    </g>
+    <g transform="translate(1315 850)">
+      <ellipse cx="0" cy="0" rx="10" ry="6" fill="#fff7e7"/>
+      <circle cx="8" cy="-5" r="4" fill="#fff7e7"/>
+      <path d="M10 -8q5 4 0 8" fill="none" stroke="#d89b52" stroke-width="2"/>
+    </g>
+  </g>
+
+  <!-- stepping stones / riverbank detail -->
+  <g fill="#7b8979">
+    <ellipse cx="1225" cy="770" rx="17" ry="10"/>
+    <ellipse cx="1580" cy="790" rx="14" ry="9"/>
+    <ellipse cx="1250" cy="915" rx="13" ry="8"/>
+    <ellipse cx="1555" cy="905" rx="18" ry="11"/>
+  </g>
+
+  <!-- extra fence near Elena -->
+  <g stroke="#8d6a46" stroke-width="5">
+    <path d="M135 1008h350M145 1026h330"/>
+    <path d="M145 998v38"/><path d="M190 998v38"/><path d="M235 998v38"/><path d="M280 998v38"/><path d="M325 998v38"/><path d="M370 998v38"/><path d="M415 998v38"/><path d="M460 998v38"/>
+  </g>
+
+  <!-- wood pile by Theo -->
+  <g transform="translate(1810 930)">
+    <circle cx="0" cy="0" r="13" fill="#8b633f" stroke="#5e432e" stroke-width="3"/>
+    <circle cx="24" cy="4" r="13" fill="#8b633f" stroke="#5e432e" stroke-width="3"/>
+    <circle cx="12" cy="-13" r="13" fill="#8b633f" stroke="#5e432e" stroke-width="3"/>
+    <circle cx="0" cy="0" r="4" fill="#d0a66f"/>
+    <circle cx="24" cy="4" r="4" fill="#d0a66f"/>
+    <circle cx="12" cy="-13" r="4" fill="#d0a66f"/>
+  </g>
+</g>
+
 </svg>
