@@ -419,9 +419,23 @@ export class InteriorScene extends Phaser.Scene {
       this.definition.exit.y,
     );
 
+    // The doorway has priority in its immediate threshold so residents
+    // cannot block the player from leaving by standing closer to the spawn.
+    if (exitDistance <= 62) {
+      return {
+        type: 'exit',
+        label: 'sair',
+        distance: exitDistance,
+      };
+    }
+
     let best: InteriorTarget | null =
-      exitDistance <= 76
-        ? { type: 'exit', label: 'sair', distance: exitDistance }
+      exitDistance <= 86
+        ? {
+            type: 'exit',
+            label: 'sair',
+            distance: exitDistance,
+          }
         : null;
 
     for (const npc of this.residents) {
