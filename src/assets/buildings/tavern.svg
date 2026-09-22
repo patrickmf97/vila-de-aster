@@ -1,11 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 300">
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="300" viewBox="0 0 420 300">
 <defs>
   <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#d8b87c"/><stop offset="1" stop-color="#bd8f57"/></linearGradient>
   <linearGradient id="roof" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#c9563f"/><stop offset="1" stop-color="#8e382e"/></linearGradient>
-  <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#7d5233"/><stop offset="1" stop-color="#50321f"/></linearGradient>
-  <filter id="s"><feDropShadow dx="0" dy="10" stdDeviation="7" flood-color="#263322" flood-opacity=".28"/></filter>
-</defs>
-<g filter="url(#s)">
+  <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#7d5233"/><stop offset="1" stop-color="#50321f"/></linearGradient></defs>
+<g>
   <ellipse cx="210" cy="274" rx="176" ry="18" fill="#244128" opacity=".22"/>
   <rect x="71" y="111" width="278" height="148" rx="13" fill="url(#wall)" stroke="#6c462b" stroke-width="5"/>
   <path d="M42 126 207 28l171 98-21 22-150-75-145 75z" fill="url(#roof)" stroke="#693227" stroke-width="6"/>
