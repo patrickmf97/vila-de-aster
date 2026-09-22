@@ -4,7 +4,7 @@ import {
   buildings,
   plaza,
   pond,
-  roads,
+  roadPaths,
   trees,
   WORLD,
   zones,
@@ -33,6 +33,13 @@ interface SmokePuff {
   phase: number;
 }
 
+interface SwayingProp {
+  body: Phaser.GameObjects.Image;
+  baseRotation: number;
+  phase: number;
+  amount: number;
+}
+
 export class WorldRenderer {
   private settlementObjects: Phaser.GameObjects.GameObject[] = [];
   private landmarkObjects: Phaser.GameObjects.GameObject[] = [];
@@ -40,7 +47,8 @@ export class WorldRenderer {
   private buildingGlows: Phaser.GameObjects.Arc[] = [];
   private fountainDrops: AmbientParticle[] = [];
   private smoke: SmokePuff[] = [];
-  private river?: Phaser.GameObjects.TileSprite;
+  private swayingProps: SwayingProp[] = [];
+  private river?: Phaser.GameObjects.Image;
   private riverSheen: Phaser.GameObjects.Graphics;
   private lastDynamicUpdate = -Infinity;
 
@@ -91,6 +99,7 @@ export class WorldRenderer {
     this.animateWater(elapsedSeconds);
     this.animateFountain(elapsedSeconds);
     this.animateSmoke(elapsedSeconds);
+    this.animateFoliage(elapsedSeconds);
     this.animateLights(
       elapsedSeconds,
       nightStrength,
@@ -130,135 +139,433 @@ export class WorldRenderer {
   }
 
   private createTerrain(): void {
-    this.scene.add
-      .tileSprite(
-        WORLD.width / 2,
-        WORLD.height / 2,
-        WORLD.width,
-        WORLD.height,
-        'env-grass',
-      )
+    const terrain = this.scene.add
+      .graphics()
       .setDepth(-1000);
 
-    // Subtle darker meadows visually break the huge grass plane without
-    // creating extra texture assets.
-    const meadow = this.scene.add
-      .graphics()
-      .setDepth(-985);
+    terrain.fillStyle(
+      0x739e59,
+      1,
+    );
+    terrain.fillRect(
+      0,
+      0,
+      WORLD.width,
+      WORLD.height,
+    );
 
-    meadow.fillStyle(0x315f3b, 0.08);
-    meadow.fillEllipse(530, 850, 520, 360);
-    meadow.fillEllipse(1020, 1130, 670, 390);
-    meadow.fillEllipse(1740, 680, 480, 310);
+    // Low-cost organic grass variation. These broad shapes replace the
+    // obvious square repetition that came from treating a catalog crop as
+    // a seamless tile.
+    terrain.fillStyle(
+      0x4f7e48,
+      0.09,
+    );
+    terrain.fillEllipse(
+      470,
+      870,
+      620,
+      390,
+    );
+    terrain.fillEllipse(
+      1060,
+      1140,
+      720,
+      410,
+    );
+    terrain.fillEllipse(
+      1770,
+      610,
+      470,
+      340,
+    );
+    terrain.fillEllipse(
+      330,
+      245,
+      520,
+      270,
+    );
 
-    for (const road of roads) {
+    terrain.fillStyle(
+      0xa8c67b,
+      0.07,
+    );
+    terrain.fillEllipse(
+      930,
+      660,
+      950,
+      520,
+    );
+
+    this.createMeadowPatch(
+      500,
+      870,
+      390,
+      245,
+      0.5,
+    );
+    this.createMeadowPatch(
+      1030,
+      1135,
+      470,
+      250,
+      0.38,
+    );
+    this.createMeadowPatch(
+      1780,
+      610,
+      330,
+      235,
+      0.42,
+    );
+
+    const roadGraphics =
       this.scene.add
-        .tileSprite(
-          road.x + road.w / 2,
-          road.y + road.h / 2,
-          road.w,
-          road.h,
-          'env-stone',
-        )
-        .setDepth(-955);
+        .graphics()
+        .setDepth(-960);
+
+    for (const path of roadPaths) {
+      this.drawRoadPath(
+        roadGraphics,
+        path.points,
+        path.width,
+      );
     }
 
-    const plazaMask = this.scene.add
-      .graphics()
-      .fillStyle(0xffffff)
-      .fillCircle(
-        plaza.x,
-        plaza.y,
-        plaza.radius,
-      )
-      .setVisible(false);
+    // Plaza uses one source crop only, stretched and clipped as a single
+    // surface. No repeated seams.
+    roadGraphics.fillStyle(
+      0xcdbd99,
+      1,
+    );
+    roadGraphics.fillCircle(
+      plaza.x,
+      plaza.y,
+      plaza.radius + 8,
+    );
+
+    const plazaMask =
+      this.scene.add
+        .graphics()
+        .fillStyle(
+          0xffffff,
+          1,
+        )
+        .fillCircle(
+          plaza.x,
+          plaza.y,
+          plaza.radius - 12,
+        )
+        .setVisible(false);
 
     this.scene.add
-      .tileSprite(
+      .image(
         plaza.x,
         plaza.y,
-        plaza.radius * 2,
-        plaza.radius * 2,
         'env-stone',
       )
-      .setDepth(-948)
+      .setDisplaySize(
+        plaza.radius * 2.1,
+        plaza.radius * 2.1,
+      )
+      .setAlpha(0.52)
+      .setDepth(-952)
       .setMask(
         plazaMask.createGeometryMask(),
       );
 
-    // A soft ring makes the plaza feel deliberately landscaped rather than
-    // simply cut out of the road texture.
+    roadGraphics.lineStyle(
+      6,
+      0xe3d5b4,
+      0.48,
+    );
+    roadGraphics.strokeCircle(
+      plaza.x,
+      plaza.y,
+      plaza.radius - 4,
+    );
+
+    this.createRiver();
+  }
+
+  private createMeadowPatch(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    alpha: number,
+  ): void {
+    const maskShape =
+      this.scene.add
+        .graphics()
+        .fillStyle(
+          0xffffff,
+          1,
+        )
+        .fillEllipse(
+          x,
+          y,
+          width,
+          height,
+        )
+        .setVisible(false);
+
     this.scene.add
-      .graphics()
-      .setDepth(-947)
-      .lineStyle(
-        8,
-        0xd7c99d,
-        0.32,
+      .image(
+        x,
+        y,
+        'env-grass',
       )
-      .strokeCircle(
-        plaza.x,
-        plaza.y,
-        plaza.radius - 5,
-      );
-
-    const riverMask = this.scene.add
-      .graphics()
-      .fillStyle(0xffffff)
-      .fillRoundedRect(
-        pond.x,
-        pond.y,
-        pond.w,
-        pond.h,
-        48,
+      .setDisplaySize(
+        width * 1.08,
+        height * 1.08,
       )
-      .setVisible(false);
-
-    this.river = this.scene.add
-      .tileSprite(
-        pond.x + pond.w / 2,
-        pond.y + pond.h / 2,
-        pond.w,
-        pond.h,
-        'env-water',
-      )
-      .setDepth(-925)
+      .setAlpha(alpha)
+      .setDepth(-986)
       .setMask(
-        riverMask.createGeometryMask(),
+        maskShape.createGeometryMask(),
       );
+  }
 
-    // River banks.
-    const bank = this.scene.add
-      .graphics()
-      .setDepth(-926);
+  private drawRoadPath(
+    graphics: Phaser.GameObjects.Graphics,
+    points: Array<{ x: number; y: number }>,
+    width: number,
+  ): void {
+    if (points.length < 2) return;
+
+    graphics.lineStyle(
+      width + 18,
+      0x6d684f,
+      0.18,
+    );
+    graphics.beginPath();
+    graphics.moveTo(
+      points[0]!.x,
+      points[0]!.y,
+    );
+    for (
+      let index = 1;
+      index < points.length;
+      index += 1
+    ) {
+      graphics.lineTo(
+        points[index]!.x,
+        points[index]!.y,
+      );
+    }
+    graphics.strokePath();
+
+    graphics.lineStyle(
+      width,
+      0xc8b894,
+      1,
+    );
+    graphics.beginPath();
+    graphics.moveTo(
+      points[0]!.x,
+      points[0]!.y,
+    );
+    for (
+      let index = 1;
+      index < points.length;
+      index += 1
+    ) {
+      graphics.lineTo(
+        points[index]!.x,
+        points[index]!.y,
+      );
+    }
+    graphics.strokePath();
+
+    for (const point of points) {
+      graphics.fillStyle(
+        0xc8b894,
+        1,
+      );
+      graphics.fillCircle(
+        point.x,
+        point.y,
+        width / 2,
+      );
+    }
+
+    // Deterministic cobblestone accents: enough texture to feel paved, but
+    // much cheaper and cleaner than repeating the sheet crop.
+    for (
+      let segment = 0;
+      segment < points.length - 1;
+      segment += 1
+    ) {
+      const from =
+        points[segment]!;
+      const to =
+        points[segment + 1]!;
+      const distance =
+        Phaser.Math.Distance.Between(
+          from.x,
+          from.y,
+          to.x,
+          to.y,
+        );
+      const count =
+        Math.max(
+          2,
+          Math.floor(
+            distance / 46,
+          ),
+        );
+
+      for (
+        let index = 1;
+        index < count;
+        index += 1
+      ) {
+        const t =
+          index / count;
+        const x =
+          Phaser.Math.Linear(
+            from.x,
+            to.x,
+            t,
+          );
+        const y =
+          Phaser.Math.Linear(
+            from.y,
+            to.y,
+            t,
+          );
+        const normalX =
+          -(to.y - from.y) /
+          Math.max(
+            1,
+            distance,
+          );
+        const normalY =
+          (to.x - from.x) /
+          Math.max(
+            1,
+            distance,
+          );
+        const offset =
+          (((index * 37 +
+            segment * 19) %
+            41) -
+            20) *
+          0.58;
+
+        graphics.fillStyle(
+          index % 2 === 0
+            ? 0xa9997d
+            : 0xe2d6ba,
+          0.28,
+        );
+        graphics.fillRoundedRect(
+          x +
+            normalX *
+              offset -
+            8,
+          y +
+            normalY *
+              offset -
+            4,
+          16 +
+            (index % 3) *
+              4,
+          8 +
+            (index % 2) *
+              3,
+          3,
+        );
+      }
+    }
+  }
+
+  private createRiver(): void {
+    const riverBase =
+      this.scene.add
+        .graphics()
+        .setDepth(-930);
+
+    riverBase.fillStyle(
+      0x4d9ec5,
+      1,
+    );
+    riverBase.fillRoundedRect(
+      pond.x,
+      pond.y,
+      pond.w,
+      pond.h,
+      44,
+    );
+
+    const riverMask =
+      this.scene.add
+        .graphics()
+        .fillStyle(
+          0xffffff,
+          1,
+        )
+        .fillRoundedRect(
+          pond.x + 4,
+          pond.y + 4,
+          pond.w - 8,
+          pond.h - 8,
+          40,
+        )
+        .setVisible(false);
+
+    this.river =
+      this.scene.add
+        .image(
+          pond.x +
+            pond.w / 2,
+          pond.y +
+            pond.h / 2,
+          'env-water',
+        )
+        .setDisplaySize(
+          pond.w + 24,
+          pond.h + 24,
+        )
+        .setAlpha(0.82)
+        .setDepth(-925)
+        .setMask(
+          riverMask.createGeometryMask(),
+        );
+
+    const bank =
+      this.scene.add
+        .graphics()
+        .setDepth(-924);
 
     bank.lineStyle(
-      20,
-      0x4f7848,
-      0.82,
+      18,
+      0x527a49,
+      0.9,
     );
     bank.strokeRoundedRect(
-      pond.x - 7,
-      pond.y - 7,
-      pond.w + 14,
-      pond.h + 14,
-      50,
+      pond.x - 5,
+      pond.y - 5,
+      pond.w + 10,
+      pond.h + 10,
+      48,
     );
 
     bank.lineStyle(
-      6,
-      0xb8a274,
+      5,
+      0xb9a77d,
       0.42,
     );
     bank.strokeRoundedRect(
-      pond.x + 4,
-      pond.y + 4,
-      pond.w - 8,
-      pond.h - 8,
-      42,
+      pond.x + 5,
+      pond.y + 5,
+      pond.w - 10,
+      pond.h - 10,
+      40,
     );
 
-    // The bridge visually covers the passable gap in the river collision.
+    // Bridge is centered exactly over the collision corridor.
     this.scene.add
       .image(
         bridgeRect.x +
@@ -268,8 +575,8 @@ export class WorldRenderer {
         'prop-bridge',
       )
       .setDisplaySize(
-        bridgeRect.w + 22,
-        bridgeRect.h + 30,
+        bridgeRect.w,
+        bridgeRect.h,
       )
       .setDepth(
         bridgeRect.y +
@@ -300,43 +607,48 @@ export class WorldRenderer {
       'prop-treeGold',
     ];
 
-    trees.forEach((tree, index) => {
-      const key =
-        treeKeys[
-          index %
-            treeKeys.length
-        ]!;
+    trees.forEach(
+      (tree, index) => {
+        const key =
+          treeKeys[
+            index %
+              treeKeys.length
+          ]!;
 
-      const width =
-        index % 4 === 0
-          ? 110
-          : 92;
+        const width =
+          index % 4 === 0
+            ? 98
+            : 84;
+        const height =
+          index % 4 === 0
+            ? 118
+            : 102;
 
-      const height =
-        index % 4 === 0
-          ? 132
-          : 112;
+        const image =
+          this.addMaskedProp(
+            key,
+            tree.x,
+            tree.y,
+            width,
+            height,
+            Math.round(
+              tree.y + 24,
+            ),
+            0.9,
+          );
 
-      this.scene.add
-        .image(
-          tree.x,
-          tree.y,
-          key,
-        )
-        .setOrigin(
-          0.5,
-          0.78,
-        )
-        .setDisplaySize(
-          width,
-          height,
-        )
-        .setDepth(
-          Math.round(
-            tree.y + 28,
-          ),
-        );
-    });
+        this.swayingProps.push({
+          body: image,
+          baseRotation: 0,
+          phase:
+            index * 0.71,
+          amount:
+            index % 3 === 0
+              ? 0.012
+              : 0.007,
+        });
+      },
+    );
 
     this.createGarden();
     this.createMarketYard();
@@ -346,60 +658,112 @@ export class WorldRenderer {
     this.createLamps();
   }
 
+  private addMaskedProp(
+    key: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    depth: number,
+    alpha = 1,
+  ): Phaser.GameObjects.Image {
+    const mask =
+      this.scene.add
+        .graphics()
+        .fillStyle(
+          0xffffff,
+          1,
+        )
+        .fillEllipse(
+          x,
+          y,
+          width * 0.94,
+          height * 0.94,
+        )
+        .setVisible(false);
+
+    return this.scene.add
+      .image(
+        x,
+        y,
+        key,
+      )
+      .setDisplaySize(
+        width,
+        height,
+      )
+      .setAlpha(alpha)
+      .setDepth(depth)
+      .setMask(
+        mask.createGeometryMask(),
+      );
+  }
+
   private createGarden(): void {
-    const garden = zones.elenaGarden;
+    const garden =
+      zones.elenaGarden;
 
     this.scene.add
       .image(
-        garden.x + 215,
-        garden.y + 350,
+        garden.x + 225,
+        garden.y + 365,
         'prop-fence',
       )
       .setDisplaySize(
-        375,
-        105,
+        390,
+        102,
       )
       .setDepth(
-        garden.y + 365,
+        garden.y + 382,
       );
 
-    const flowerSpots = [
-      [205, 850],
-      [285, 830],
-      [375, 855],
-      [470, 825],
-      [185, 900],
-      [485, 920],
-      [555, 900],
+    const shrubs = [
+      [180, 850, 64, 46],
+      [255, 830, 58, 42],
+      [425, 845, 62, 45],
+      [505, 875, 60, 44],
+      [180, 925, 58, 42],
+      [510, 940, 62, 45],
     ];
 
-    for (
-      let index = 0;
-      index <
-      flowerSpots.length;
-      index += 1
-    ) {
-      const [x, y] =
-        flowerSpots[index]!;
+    shrubs.forEach(
+      ([x, y, w, h], index) => {
+        const image =
+          this.addMaskedProp(
+            'prop-bush',
+            x,
+            y,
+            w,
+            h,
+            y,
+            0.95,
+          );
 
-      this.scene.add
-        .image(
-          x,
-          y,
-          index % 2 === 0
-            ? 'prop-bush'
-            : 'prop-treePink',
-        )
-        .setDisplaySize(
-          index % 2 === 0
-            ? 58
-            : 54,
-          index % 2 === 0
-            ? 42
-            : 64,
-        )
-        .setDepth(y);
-    }
+        if (index % 2 === 0) {
+          image.setTint(
+            0xfff2f5,
+          );
+        }
+      },
+    );
+
+    const blossom =
+      this.addMaskedProp(
+        'prop-treePink',
+        425,
+        1010,
+        92,
+        106,
+        1030,
+        0.92,
+      );
+
+    this.swayingProps.push({
+      body: blossom,
+      baseRotation: 0,
+      phase: 1.4,
+      amount: 0.008,
+    });
   }
 
   private createMarketYard(): void {
@@ -775,14 +1139,23 @@ export class WorldRenderer {
     elapsedSeconds: number,
   ): void {
     if (this.river) {
-      this.river.tilePositionY =
-        elapsedSeconds * 7;
-
-      this.river.tilePositionX =
-        Math.sin(
-          elapsedSeconds * 0.35,
-        ) *
-        5;
+      this.river
+        .setAlpha(
+          0.79 +
+            Math.sin(
+              elapsedSeconds *
+                0.7,
+            ) *
+              0.025,
+        )
+        .setScale(
+          1 +
+            Math.sin(
+              elapsedSeconds *
+                0.31,
+            ) *
+              0.004,
+        );
     }
 
     this.riverSheen.clear();
@@ -819,6 +1192,32 @@ export class WorldRenderer {
             drift,
           y,
         );
+    }
+  }
+
+  private animateFoliage(
+    elapsedSeconds: number,
+  ): void {
+    for (
+      let index = 0;
+      index <
+      this.swayingProps.length;
+      index += 1
+    ) {
+      const prop =
+        this.swayingProps[
+          index
+        ]!;
+
+      prop.body.setRotation(
+        prop.baseRotation +
+          Math.sin(
+            elapsedSeconds *
+              0.82 +
+              prop.phase,
+          ) *
+            prop.amount,
+      );
     }
   }
 
