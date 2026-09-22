@@ -5,7 +5,6 @@ import { InteriorScene } from './scenes/InteriorScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
-  resolution: 1,
   parent: 'game',
   backgroundColor: '#15231f',
   scene: [VillageScene, InteriorScene],
