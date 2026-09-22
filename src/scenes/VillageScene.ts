@@ -221,7 +221,13 @@ export class VillageScene extends Phaser.Scene {
       },
     );
 
-    this.eventSystem.riverEchoActive && this.hud.setRiverQuest();
+    if (this.eventSystem.riverEchoActive) {
+      this.hud.setRiverQuest();
+    } else {
+      this.hud.setQuest(
+        'Explore Aster, converse com os moradores e descubra o que está mudando perto do rio.',
+      );
+    }
 
     if (this.fromInterior) {
       this.hud.showToast('🌿 Você voltou para as ruas da vila.');
