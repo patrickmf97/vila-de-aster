@@ -2,60 +2,71 @@
 
 ## Versão atual
 
-**v0.9.0 — World Rebuild**
+**v0.9.1 — World Polish**
 
-## Mundo
+## Estado visual
 
-A vila agora usa uma planta desenhada para os assets de produção.
+A vila deixou de usar crops não-seamless como TileSprites repetidos.
 
-### Distritos
+### Composição atual
 
-- Noroeste: Taverna Lua Cheia
-- Norte: Forja do Bram
-- Nordeste: Empório da Mira
-- Centro: Praça e fonte
-- Sudoeste: Casa/Jardim da Elena
-- Leste: Rio vertical
-- Sudeste: Casa e docas do Theo
-- Sul: expansão dinâmica
+```text
+base contínua
+├── grass color field
+├── meadow decals mascarados
+├── road paths contínuos
+├── praça mascarada
+├── rio único mascarado
+├── props mascarados
+├── prédios
+├── personagens
+└── atmosfera
+```
 
 ## Física
 
-- prédios com hitboxes menores que a arte;
-- ponte é corredor navegável;
-- rio é intransponível fora da ponte;
-- árvores/fonte/cercas/docas colidem;
-- saves antigos têm fallback de spawn;
-- NPCs usam waypoint de travessia do rio.
+A geometria central vive em `src/data/world.ts`.
 
-## Renderização
+Ela define:
 
-```text
-WorldRenderer
-├── terreno
-├── caminhos/praça
-├── rio/margens
-├── props
-├── prédios
-├── settlement
-└── efeitos
-```
+- edifícios;
+- portas;
+- rio;
+- ponte;
+- árvores;
+- props físicos;
+- colisões;
+- zonas;
+- rotas leves de NPC.
 
-## Efeitos
+NPC e player usam a mesma noção de área caminhável.
 
-- água animada;
-- fonte;
-- fumaça;
-- lanternas;
-- fireflies;
-- névoa;
-- ciclo dia/noite;
-- Eco do Rio.
+## NPCs
+
+- respeitam colisões no exterior;
+- atravessam o rio pela ponte;
+- fazem desvio leve de obstáculos;
+- mantêm rotinas, Brain e Life Simulation;
+- props de atividades funcionam junto aos sprites de produção.
 
 ## Interiores
 
-Cada prédio tem layout próprio, colisões por móvel e iluminação temática animada.
+- cinco interiores principais;
+- casas geradas;
+- colisão por móvel;
+- identidade visual por prédio;
+- iluminação dinâmica;
+- transição fade exterior/interior.
 
 ## Performance
 
-A arquitetura throttled permanece ativa. A reconstrução não adiciona biblioteca externa nem pathfinding pesado.
+A arquitetura continua throttled e sem pathfinder pesado.
+
+## Próximo foco
+
+Depois da validação visual/funcional da v0.9.1:
+
+- sistemas RPG;
+- regiões externas;
+- clima/estações;
+- gerações e legado.

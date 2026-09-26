@@ -2,91 +2,71 @@
 
 RPG 2D top-down para navegador com mundo vivo, memória, relações, famílias, economia e direção de arte cozy fantasy.
 
-## v0.9.0 — World Rebuild
+## v0.9.1 — World Polish
 
-A v0.9.0 reconstrói a vila em torno dos assets de produção, em vez de encaixar os assets na planta antiga.
+A v0.9.1 é uma revisão estrutural da reconstrução anterior. O foco foi remover artefatos visuais dos recortes, alinhar física e arte, melhorar rotas dos NPCs e refinar interiores/animações.
 
-### Nova planta da vila
+### Terreno e mapa
 
-- praça central mais compacta e legível;
-- eixo comercial ao norte;
-- Taverna a noroeste;
-- Forja ao norte;
-- Empório a nordeste;
-- Casa da Elena e jardim no sudoeste;
-- rio vertical separando o distrito do Theo;
-- ponte funcional como corredor real;
-- Casa do Theo e docas no sudeste;
-- prado sul reservado para expansão econômica.
+O jogo não trata mais os recortes do catálogo como tiles perfeitamente repetíveis.
 
-### Física e colisões
+- base de grama contínua;
+- manchas orgânicas mascaradas com a arte aprovada;
+- caminhos desenhados como superfícies contínuas;
+- detalhes de pedra aplicados sem grade aparente;
+- praça com um único recorte mascarado;
+- rio composto por uma única superfície de água mascarada;
+- ponte centralizada no corredor físico;
+- margens do rio redesenhadas;
+- vegetação mascarada para esconder bordas quadradas dos recortes.
 
-- hitboxes dos prédios redesenhadas;
-- colisão do rio dividida ao redor da ponte;
-- fonte, cercas, árvores e docas entram na física;
-- saves antigos com spawn inválido migram para um ponto seguro;
-- colisão do player não cria arrays a cada frame;
-- NPCs usam navegação leve para atravessar o rio pela ponte.
+Isso elimina o efeito de tabuleiro/colagem visível da v0.9.0.
 
-### Visual
+### Física
 
-O WorldRenderer agora é explicitamente dividido em:
+Arte, colisão e navegação agora compartilham a mesma geometria.
 
-```text
-terrain
-roads / plaza
-river / banks
-environment props
-landmark buildings
-settlement
-ambient effects
-```
+- footprint dos prédios considera apenas a parte física inferior;
+- player pode passar visualmente atrás dos telhados;
+- ponte é o único corredor de travessia do rio;
+- árvores, fonte, cercas e doca possuem colisões explícitas;
+- destinos inválidos de NPC são corrigidos para pontos caminháveis;
+- NPCs fazem detour leve ao redor de obstáculos;
+- movimento dos NPCs valida colisão a cada eixo, assim como o player.
 
-Efeitos implementados:
+### Personagens e animações
 
-- água em movimento;
-- brilho/reflexo do rio;
+- spritesheets de produção preservados;
+- idle por direção;
+- caminhada lateral alternada;
+- bob/rotação suave;
+- props de atividade voltaram a funcionar com sprites reais;
+- martelo, pesca, comida, investigação e sono permanecem visíveis;
+- animações continuam leves para browser/mobile.
+
+### Ambientação
+
+- água com pulso/reflexo leve sem deslocar o recorte;
+- brilho do rio;
 - fonte animada;
-- fumaça de Taverna/Forja;
-- lanternas noturnas;
-- luzes de janelas;
-- vaga-lumes;
-- névoa leve em horários adequados;
-- transição de manhã/tarde/entardecer/noite;
-- efeito do Eco do Rio adaptado ao novo curso d'água.
+- fumaça;
+- luzes noturnas;
+- vegetação com sway sutil;
+- vaga-lumes e névoa;
+- ciclo dia/noite preservado.
 
 ### Interiores
 
-Todos os interiores principais foram redesenhados:
+Cada interior mantém mobiliário e colisões próprios e ganhou identidade visual mais clara:
 
-- Taverna Lua Cheia;
-- Forja do Bram;
-- Empório da Mira;
-- Casa da Elena;
-- Casa do Theo;
-- casas geradas pelo settlement.
+- Taverna: madeira e zona social quente;
+- Forja: zona de trabalho escura/metálica;
+- Empório: faixa de exposição/comércio;
+- Casa da Elena: ambiente claro e orgânico;
+- Casa do Theo: tons frios, cordas e influência do rio;
+- casas geradas continuam suportadas.
 
-Cada interior possui:
-
-- fluxo livre da porta para o centro;
-- zona de trabalho;
-- zona social;
-- zona privada;
-- mobiliário específico;
-- colisões por objeto;
-- iluminação animada;
-- fogo/lareira/forja animados;
-- personagens usando os sprites de produção.
-
-### NPCs e animações
-
-- spritesheets de produção continuam ativos;
-- idle por direção;
-- caminhada lateral alternando frames;
-- movimento de rotina;
-- animações de trabalho/pesca/socialização preservadas;
-- navegação pelo rio agora respeita a ponte;
-- rotinas dos cinco moradores foram atualizadas para a nova geografia.
+Entrada e saída agora usam transição de câmera consistente.
 
 ### Mobile
 
@@ -94,19 +74,18 @@ Cada interior possui:
 - Falar;
 - Interagir;
 - multitouch;
-- funciona no exterior e interiores;
-- UI responsiva preservada.
+- câmera adaptada a tablet/celular;
+- funciona dentro e fora dos prédios.
 
 ### Performance
 
+- nenhuma biblioteca nova;
+- sem pathfinder pesado;
 - simulação: 10 Hz;
 - atmosfera: 15 Hz;
-- água/luzes: 12 Hz;
+- efeitos de mundo: 12 Hz;
 - HUD: 4 Hz;
-- roster: 1 Hz;
-- mundo estático usa GameObjects leves;
-- assets continuam WebP compactados;
-- nenhum pathfinder pesado foi adicionado.
+- roster: 1 Hz.
 
 ## Controles
 

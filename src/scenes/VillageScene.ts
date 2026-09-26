@@ -204,8 +204,30 @@ export class VillageScene extends Phaser.Scene {
 
     this.cameras.main.setBounds(0, 0, WORLD.width, WORLD.height);
     this.cameras.main.startFollow(this.player, true, 0.09, 0.09);
+    this.resizeCamera(this.scale.gameSize);
+    this.scale.on(
+      'resize',
+      this.resizeCamera,
+      this,
+    );
+    this.events.once(
+      Phaser.Scenes.Events.SHUTDOWN,
+      () => {
+        this.scale.off(
+          'resize',
+          this.resizeCamera,
+          this,
+        );
+      },
+    );
 
-    this.eventSystem.riverEchoActive && this.hud.setRiverQuest();
+    if (this.eventSystem.riverEchoActive) {
+      this.hud.setRiverQuest();
+    } else {
+      this.hud.setQuest(
+        'Explore Aster, converse com os moradores e descubra o que está mudando perto do rio.',
+      );
+    }
 
     if (this.fromInterior) {
       this.hud.showToast('🌿 Você voltou para as ruas da vila.');
@@ -819,6 +841,34 @@ export class VillageScene extends Phaser.Scene {
       gameMinutes: this.timeSystem.minutes,
     });
     this.save.persist();
+  }
+
+  private resizeCamera(
+    gameSize: Phaser.Structs.Size,
+  ): void {
+    const mobile =
+      document.documentElement.classList.contains(
+        'is-mobile',
+      );
+
+    const width =
+      gameSize.width;
+
+    const zoom = mobile
+      ? width >= 1100
+        ? 1.12
+        : width >= 760
+          ? 1.04
+          : 0.94
+      : width >= 1500
+        ? 1.1
+        : width >= 1100
+          ? 1.05
+          : 1;
+
+    this.cameras.main.setZoom(
+      zoom,
+    );
   }
 
 }

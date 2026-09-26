@@ -43,3 +43,11 @@ jobs:
       - name: TypeScript and Vite build
         if: steps.manifest.outputs.exists == 'true'
         run: npm run build
+
+      - name: Upload preview artifact
+        if: steps.manifest.outputs.exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-dist
+          path: dist
+          retention-days: 1
